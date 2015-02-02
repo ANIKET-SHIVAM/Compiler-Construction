@@ -2,13 +2,16 @@ package Frontend;
 
 import java.util.*;
 
+import Frontend.TokenType;
 import Frontend.Result.Type;
 
 
 public class Parser{
 	Token tt;
 	private Scanner scanner;
-	private HashMap<String,Result>Result_cache;
+	private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
+	private HashMap<String,Result> Result_cache;
+	private ArrayList<Instruction> insts;
 	private HashMap<String,ArrayList<Result>> Function_param;
 	public char sym;
 	public int index=0;
@@ -17,6 +20,8 @@ public class Parser{
 	public Parser(String filename){
 		scanner = new Scanner(filename);
 		Result_cache = new HashMap<String,Result>();
+		insts=new ArrayList<Instruction>();
+		Sym_table = new HashMap<Integer,Instruction>();
 		tt = scanner.getToken();
 	}
 	
@@ -25,6 +30,13 @@ public class Parser{
 		tt = scanner.getToken();
 	}
 
+	public int String2Id(String s){
+	
+		int res=0;
+		res = scanner.var_cache.get(s);
+		return res;
+	}
+	
 	public int compute()
 	{
 		int res=-1;
@@ -164,15 +176,16 @@ public class Parser{
 	public int stat_seq()
 	{
 		int res=0;
-		while(tt.getType() != TokenType.)
+		while(tt.getType() != TokenType.endToken)
 		{
-		res = statement();
+			res = statement();
+		}
 		return res;
 	}
 	
-	public int statement()
+	public Result statement()
 	{
-		int res=0;
+		Result res;
 		if(tt.getType() == TokenType.letToken)	//let 
 		{
 			res = assignment();
@@ -203,24 +216,46 @@ public class Parser{
 	public int assignment()		//"let"
 	{
 		int res=0;
+		int index=0;
+		String var;
+		Result x;
 		Next();
-		if(tt.getType() == TokenType.ident)
+		if(tt.getType() == TokenType.ident)				//if its a var
 		{
+			var = tt.getCharacters();
+			index = String2Id(tt.getCharacters());
 			Next();
 			if(tt.getType() == TokenType.openbracketToken)	//"["
 			{
-				res = E();
+				x = E();
 				Next();
+			
+				if(tt.getType()!= TokenType.closebracketToken)	//"]"
+				{
+					error("Syntax error: ']' missing");
+				}
+				else
+					Next();
 			}
-			if(tt.getType()!= TokenType.closebracketToken)//"]"
-			{
-				error("Syntax error: ']' missing");
-			}
-			Next();
 			if(tt.getType() == TokenType.becomesToken) //"<-"
 			{
 				Next();
-				res = E();
+				
+				x = E();
+				//if(x.getType() == Type.number)			//e.g. let x <- 51;
+				//{
+					Instruction i = new Instruction("move",x, Result_cache.get(var));
+					insts.add(i);				//add instruction to instruction list
+					Sym_table.put(index,i);
+					if(x.getType() ==Type.number)
+					{
+						System.out.println("move "+ x.getValue() + " " + var);
+					}
+					else if(x.getType() == Type.instruction)
+					{
+						System.out.println("move ("+insts.indexOf(i)+") "+ var);
+					}
+				//}
 			}
 		}
 		
@@ -253,9 +288,9 @@ public class Parser{
 	}
 	
 	
-	public int E(){
-		int res=0;
-		
+	public Result E(){
+		//int res=0;
+		Result res;
 		res = T();
 		while(tt.getType() == TokenType.plusToken || tt.getType()==TokenType.minusToken)
 		{
@@ -273,8 +308,8 @@ public class Parser{
 	}
 	
 	//1+2*3-4
-	int T(){
-		int res=0;
+	Result T(){
+		Result res;
 		
 		res=F();
 		while(tt.getType() == TokenType.timesToken || tt.getType()== TokenType.divToken)
@@ -298,8 +333,8 @@ public class Parser{
 		System.out.println(s);
 	}
 	
-	int F(){
-		int res=0;
+	Result F(){
+		Result res;
 		
 		if(tt.getType() != TokenType.number)
 		{
@@ -318,11 +353,11 @@ public class Parser{
 		return res;
 	}
 	
-	int num(){
-		int res=0;
+	Result num(){
+		Result res;
 		String sym;
 		sym = tt.getCharacters();
-		res = Integer.parseInt(sym);
+		res = new Result(Type.number,Integer.parseInt(sym));
 		
 		return res;
 	}
