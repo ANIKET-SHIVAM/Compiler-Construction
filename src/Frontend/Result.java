@@ -2,8 +2,16 @@ package Frontend;
 
 public class Result {
 	public enum Type{
-		variable,number,register,condition,arr,function,param,
+		variable,
+		number,
+		register,
+		condition,
+		arr,
+		function,
+		param,
+		instruction
 	}
+	
 	public enum Cond_Type{
 		bne,beq,ble,blt,bge,bgt
 	}

@@ -124,7 +124,8 @@ public class Parser{
 	}
 	
 	public void func_decl()
-	{	String funcname = null;
+	{	
+		String funcname = null;
 		Next();
 		if(tt.getType() == TokenType.ident)
 		{
@@ -133,7 +134,7 @@ public class Parser{
 			Result_cache.put(funcname,x); //store function name in hash map
 		}
 		else
-				System.out.println("error: function declaration");
+			System.out.println("error: function declaration");
 		Next();//for (
 		if (tt.getType()==TokenType.openparenToken)
 		{	Next();
@@ -163,6 +164,8 @@ public class Parser{
 	public int stat_seq()
 	{
 		int res=0;
+		while(tt.getType() != TokenType.)
+		{
 		res = statement();
 		return res;
 	}
@@ -170,27 +173,27 @@ public class Parser{
 	public int statement()
 	{
 		int res=0;
-		if(tt.getType() == TokenType.letToken)
+		if(tt.getType() == TokenType.letToken)	//let 
 		{
 			res = assignment();
 			Next();
 		}
-		if(tt.getType() == TokenType.callToken)
+		if(tt.getType() == TokenType.callToken)	//call
 		{
 			res = funcCall();
 			Next();
 		}
-		if(tt.getType() == TokenType.ifToken)
+		if(tt.getType() == TokenType.ifToken)	//if
 		{
 			res=ifStatement();
 			Next();
 		}
-		if(tt.getType() == TokenType.whileToken)
+		if(tt.getType() == TokenType.whileToken)	//while
 		{
 			res=whileStatement();
 			Next();
 		}
-		if(tt.getType() == TokenType.returnToken)
+		if(tt.getType() == TokenType.returnToken)	//return
 		{
 			res = E();
 		}
