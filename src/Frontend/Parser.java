@@ -15,7 +15,7 @@ public class Parser{
 	private HashMap<String,ArrayList<Result>> Function_param;
 	public char sym;
 	public int index=0;
-	
+	public BasicBlock currentblock;
 
 	public Parser(String filename){
 		scanner = new Scanner(filename);
@@ -46,12 +46,14 @@ public class Parser{
 		if(tt.getType() != TokenType.mainToken || tt.getType() == TokenType.errorToken)	//if main is not the first token,error
 			error("Syntax error : Missing 'main'");
 		else									//after parsing main
-		{
+		{	
+			currentblock = new BasicBlock(); // main block
+			
 			while(tt.getType()!= TokenType.periodToken)	//"." at the end
 			{
 				Next();
 				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
-					var_decl();
+					var_decl(currentblock);
 			
 				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken)	//if its a function declaration
 					func_decl();
@@ -59,7 +61,7 @@ public class Parser{
 				{
 					
 					Next();
-					stat_seq();							//statSequence
+					stat_seq(currentblock);							//statSequence
 					if(tt.getType() != TokenType.endToken) //"}"
 					{
 						Token.checkToken("");
@@ -77,7 +79,7 @@ public class Parser{
 		return res;	
 	}
 	
-	public void var_decl()    //TODO: take care of scope
+	public void var_decl(BasicBlock currentblock)    //TODO: take care of scope
 	{
 		if(tt.getType() == TokenType.varToken)
 		{
@@ -165,47 +167,47 @@ public class Parser{
 		}
 		Next();
 		if(tt.getType() == TokenType.varToken){
-			var_decl();
+			var_decl(currentblock);
 		}
-		stat_seq();
+		stat_seq(currentblock);
 
 	}
 	public void formal_Param(String function_name,ArrayList<Result> param_list){
 		Function_param.put(function_name, param_list);
 	}
 	
-	public Result stat_seq()
+	public Result stat_seq(BasicBlock currentblock)
 	{
 		Result res=new Result();
 		while(tt.getType() != TokenType.endToken)	//"}"
 		{
-			res = statement();
+			res = statement(currentblock);
 		}
 		return res;
 	}
 	
-	public Result statement()
+	public Result statement(BasicBlock currentblock)
 	{
 		Result res=new Result();
 		
 		if(tt.getType() == TokenType.letToken)	//let 
 		{
-			res = assignment();
+			res = assignment(currentblock);
 			Next();
 		}
 		if(tt.getType() == TokenType.callToken)	//call
 		{
-			res = funcCall();
+			res = funcCall(currentblock);
 			Next();
 		}
 		if(tt.getType() == TokenType.ifToken)	//if
 		{
-			res=ifStatement();
+			res=ifStatement(currentblock);
 			Next();
 		}
 		if(tt.getType() == TokenType.whileToken)	//while
 		{
-			res=whileStatement();
+			res=whileStatement(currentblock);
 			Next();
 		}
 		if(tt.getType() == TokenType.returnToken)	//return
@@ -217,7 +219,7 @@ public class Parser{
 		return res;
 	}
 	
-	public Result assignment()		//"let"
+	public Result assignment(BasicBlock currentblock)		//"let"
 	{
 		//int res=0;
 		int index=0;
@@ -266,7 +268,7 @@ public class Parser{
 		return x;
 	}
 	
-	public Result funcCall()
+	public Result funcCall(BasicBlock currentblock)
 	{
 		Result res=new Result();
 		//ToDo
@@ -277,7 +279,7 @@ public class Parser{
 		return (tt.getType()==TokenType.eqlToken ||tt.getType()==TokenType.neqToken ||tt.getType()==TokenType.lssToken ||tt.getType()==TokenType.geqToken || tt.getType()==TokenType.leqToken ||tt.getType()==TokenType.gtrToken);	
 	}
 	
-	public Result ifStatement()
+	public Result ifStatement(BasicBlock currentblock)
 	{
 		Result res=new Result();
 		Next();
@@ -311,7 +313,7 @@ public class Parser{
 		return res;
 	}
 	
-	public Result whileStatement()
+	public Result whileStatement(BasicBlock currentblock)
 	{
 		Result res=new Result();
 		Next();
