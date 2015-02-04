@@ -280,7 +280,41 @@ public class Parser{
 	public Result ifStatement()
 	{
 		Result res=new Result();
-		
+		Next();
+		ArrayList<Result> operands=new ArrayList<Result>();
+
+		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+
+			int var_inst_id1=String2Id(tt.getCharacters());
+
+			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+
+			operands.add(oper1);
+
+			Next();
+
+			Result cond = new Result(Type.condition,tt.getType());
+
+			Next();
+
+			if(tt.getType()==TokenType.number){
+
+				Result oper2= new Result(Type.number,tt.getValue());
+				operands.add(oper2);
+			}
+			else if(tt.getType()==TokenType.ident){
+
+				int var_inst_id2=String2Id(tt.getCharacters());
+
+				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+
+				operands.add(oper2);
+
+			}
+			// add to instruction for branch command (cond, operands)
+		}
+		else
+			System.out.println("variable in if not assigned yet");
 		return res;
 	}
 	
@@ -288,6 +322,41 @@ public class Parser{
 	{
 		Result res=new Result();
 		//ToDo
+		Next();
+
+		ArrayList<Result> operands=new ArrayList<Result>();
+
+		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+			int var_inst_id1=String2Id(tt.getCharacters());
+			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+			operands.add(oper1);
+
+			Next();
+
+			Result cond = new Result(Type.condition,tt.getType());
+
+			Next();
+			if(tt.getType()==TokenType.number){
+
+				Result oper2= new Result(Type.number,tt.getValue());
+
+				operands.add(oper2);
+
+			}
+
+			else if(tt.getType()==TokenType.ident){
+
+				int var_inst_id2=String2Id(tt.getCharacters());
+
+				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+
+				operands.add(oper2);
+
+			}
+			// add to instruction for branch command (cond, operands)
+		}
+		else
+			System.out.println("variable in if not assigned yet");
 		return res;
 	}
 	

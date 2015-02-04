@@ -28,6 +28,39 @@ public class Result {
 	
 	Result(){}
 	
+	Result(Type kind,TokenType ss)
+	{
+		if(kind==Type.condition){
+
+			this.kind= kind;
+
+			if (ss==TokenType.neqToken)
+
+				condition=Cond_Type.bne;
+
+			else if (ss==TokenType.eqlToken)
+
+				condition=Cond_Type.beq;
+
+			else if (ss==TokenType.leqToken)
+
+				condition=Cond_Type.ble;
+
+			else if (ss==TokenType.lssToken)
+
+				condition=Cond_Type.blt;
+
+			else if (ss==TokenType.geqToken)
+
+				condition=Cond_Type.bge;
+
+			else if (ss==TokenType.gtrToken)
+
+				condition=Cond_Type.bgt;
+
+		}
+
+	}
 	Result(Type kind,String s)
 	{
 		this.kind = kind;
