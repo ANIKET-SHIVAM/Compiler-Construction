@@ -3,7 +3,7 @@ package Frontend;
 public class Result {
 	public enum Type{
 		variable,
-		number,
+		constant,
 		register,
 		condition,
 		arr,
@@ -27,6 +27,24 @@ public class Result {
 	private Instruction ins;	//for instruction pointer
 	
 	Result(){}
+	Result(Type kind,TokenType ss)
+	{
+		if(kind==Type.condition){
+			this.kind= kind;
+			if (ss==TokenType.neqToken)
+				condition=Cond_Type.bne;
+			else if (ss==TokenType.eqlToken)
+				condition=Cond_Type.beq;
+			else if (ss==TokenType.leqToken)
+				condition=Cond_Type.ble;
+			else if (ss==TokenType.lssToken)
+				condition=Cond_Type.blt;
+			else if (ss==TokenType.geqToken)
+				condition=Cond_Type.bge;
+			else if (ss==TokenType.gtrToken)
+				condition=Cond_Type.bgt;
+		}
+	}
 	
 	Result(Type kind,String s)
 	{
@@ -52,7 +70,7 @@ public class Result {
 			this.kind=kind;
 			this.index=value;
 		}
-		else if(kind==Type.number){
+		else if(kind==Type.constant){
 			this.kind=kind;
 			this.value=value;
 		}
@@ -86,7 +104,7 @@ public class Result {
 		if(this.kind==Type.variable){
 			val=this.index;
 		}
-		else if(kind==Type.number){
+		else if(kind==Type.constant){
 			val=this.value;
 		}
 		else if(kind==Type.register){

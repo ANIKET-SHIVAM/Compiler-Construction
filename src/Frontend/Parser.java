@@ -251,7 +251,7 @@ public class Parser{
 					Instruction i = new Instruction("move",x, Result_cache.get(var));
 					insts.add(i);				//add instruction to instruction list
 					Sym_table.put(index,i);
-					if(x.getType() ==Type.number)
+					if(x.getType() ==Type.constant)
 					{
 						System.out.println(insts.indexOf(i)+":"+"move #"+ x.getValue() + " " + var);
 					}
@@ -280,6 +280,33 @@ public class Parser{
 	public Result ifStatement()
 	{
 		Result res=new Result();
+		Next();
+		ArrayList<Result> operands=new ArrayList<Result>();
+	
+		
+		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+			int var_inst_id1=String2Id(tt.getCharacters());
+			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+			operands.add(oper1);
+			
+			Next();
+			Result cond = new Result(Type.condition,tt.getType());
+			
+			Next();
+			if(tt.getType()==TokenType.number){
+				Result oper2= new Result(Type.constant,tt.getValue());
+				operands.add(oper2);
+			}
+			else if(tt.getType()==TokenType.ident){
+				int var_inst_id2=String2Id(tt.getCharacters());
+				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+				operands.add(oper2);
+			}
+			
+			// add to instruction for branch command (cond, operands)
+		}
+		else
+			System.out.println("variable in if not assigned yet");
 		
 		return res;
 	}
@@ -287,7 +314,34 @@ public class Parser{
 	public Result whileStatement()
 	{
 		Result res=new Result();
-		//ToDo
+		Next();
+		ArrayList<Result> operands=new ArrayList<Result>();
+	
+		
+		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+			int var_inst_id1=String2Id(tt.getCharacters());
+			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+			operands.add(oper1);
+			
+			Next();
+			Result cond = new Result(Type.condition,tt.getType());
+			
+			Next();
+			if(tt.getType()==TokenType.number){
+				Result oper2= new Result(Type.constant,tt.getValue());
+				operands.add(oper2);
+			}
+			else if(tt.getType()==TokenType.ident){
+				int var_inst_id2=String2Id(tt.getCharacters());
+				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+				operands.add(oper2);
+			}
+			
+			// add to instruction for branch command (cond, operands)
+		}
+		else
+			System.out.println("variable in if not assigned yet");
+		
 		return res;
 	}
 	
@@ -326,16 +380,16 @@ public class Parser{
 				Instruction i = new Instruction("mul",res,res1);
 				insts.add(i);
 				final_res = new Result(Type.instruction,i);
-				if(res.getType() == Type.number)
+				if(res.getType() == Type.constant)
 				{
-					if(res1.getType() == Type.number)	//"3/2"
+					if(res1.getType() == Type.constant)	//"3/2"
 						System.out.println(insts.indexOf(i)+":" +"mul #"+res.getValue()+" "+ res1.getValue());
 					else	//"3/x"
 						System.out.println(insts.indexOf(i)+":"+"mul #"+res.getValue()+" "+insts.indexOf(res1.getInstruction()));
 				}
 				else
 				{
-					if(res1.getType() == Type.number)	//"x/2"
+					if(res1.getType() == Type.constant)	//"x/2"
 						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
 					else	//"y/x"
 						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
@@ -345,16 +399,16 @@ public class Parser{
 			{
 				Instruction i = new Instruction("div",res,res1);
 				insts.add(i);
-				if(res.getType() == Type.number)
+				if(res.getType() == Type.constant)
 				{
-					if(res1.getType() == Type.number)	//"3/2"
+					if(res1.getType() == Type.constant)	//"3/2"
 						System.out.println(insts.indexOf(i)+":"+"div #"+res.getValue()+" "+ res1.getValue());
 					else	//"3/x"
 						System.out.println(insts.indexOf(i)+":"+"div #"+res.getValue()+" "+insts.indexOf(res1.getInstruction()));
 				}
 				else
 				{
-					if(res1.getType() == Type.number)	//"x/2"
+					if(res1.getType() == Type.constant)	//"x/2"
 						System.out.println(insts.indexOf(i)+":"+"div ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
 					else	//"y/x"
 						System.out.println(insts.indexOf(i)+":"+"div ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
@@ -413,7 +467,7 @@ public class Parser{
 		Result res;
 		String sym;
 		sym = tt.getCharacters();
-		res = new Result(Type.number,Integer.parseInt(sym));
+		res = new Result(Type.constant,Integer.parseInt(sym));
 		
 		return res;
 	}																																																																																																																			
