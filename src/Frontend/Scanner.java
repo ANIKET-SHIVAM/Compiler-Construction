@@ -42,10 +42,12 @@ public class Scanner {
 				if(inputSym == '/'){
 				Comment();
 				}
-		NoUseCh();
+
+				if(inputSym == 'm')
+					return check_main();
+				NoUseCh();
 		
-		if(inputSym == 'm')
-			return check_main();
+		
 		
 		if(inputSym >='0' && inputSym<= '9') {
 			return isNumber();}
@@ -54,13 +56,17 @@ public class Scanner {
 			return isIdentOrKeyword();
 			}
 		
-		
+		if(inputSym == '/'){
+			Comment();
+			}
 		
 		switch(inputSym){
 		case '*':
 			Next();
 			return Token.checkToken("*");
 			//break;
+		/*case '/':
+			return(Comment());*/
 		case '+':
 			Next();return Token.checkToken("+");
 			//break;
@@ -106,8 +112,9 @@ public class Scanner {
 	
 	public Token isNumber(){
 		int number=0;int i=0;
-		int digit=Character.getNumericValue(inputSym);
+		int digit=0;
 		while(inputSym>='0' && inputSym<='9'){
+		digit = Character.getNumericValue(inputSym);
 		number=10*number + digit;
 		Next();i++;
 		}
@@ -135,8 +142,10 @@ public class Scanner {
 		
 		tt=Token.checkToken(str);
 		if(tt.getType() == TokenType.ident)
-		//{
-			var_cache.put(str, ++id);
+		{
+			if(!var_cache.containsKey(str))
+				var_cache.put(str, ++id);
+		}
 			return tt;
 		//}
 		}
@@ -172,7 +181,9 @@ public class Scanner {
 		}
 		if(i>3)
 			return Token.checkToken("");//error
-		else
+		else{
+			Next();
 			return Token.checkToken("main");
+		}
 	}
 }

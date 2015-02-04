@@ -40,7 +40,7 @@ public class Parser{
 	public int compute()
 	{
 		int res=-1;
-		System.out.println("inside copute");
+		//System.out.println("inside copute");
 		if(tt.getType() == TokenType.commentToken) //if first line is a comment
 		Next();
 		if(tt.getType() != TokenType.mainToken || tt.getType() == TokenType.errorToken)	//if main is not the first token,error
@@ -317,11 +317,13 @@ public class Parser{
 		Result res1 = new Result();
 		Result final_res;
 		final_res = res = F();
+		Token tmp;
 		while(tt.getType() == TokenType.timesToken || tt.getType()== TokenType.divToken)
 		{	
+			tmp=tt;
 			Next();
 			res1 = F();
-			if(tt.getType() == TokenType.timesToken)
+			if(tmp.getType() == TokenType.timesToken)
 			{
 				Instruction i = new Instruction("mul",res,res1);
 				insts.add(i);
@@ -331,7 +333,7 @@ public class Parser{
 					if(res1.getType() == Type.number)	//"3/2"
 						System.out.println(insts.indexOf(i)+":" +"mul #"+res.getValue()+" "+ res1.getValue());
 					else	//"3/x"
-						System.out.println(insts.indexOf(i)+":"+"mul #"+res.getValue()+" "+insts.indexOf(res1.getInstruction()));
+						System.out.println(insts.indexOf(i)+":"+"mul #"+res.getValue()+" ("+insts.indexOf(res1.getInstruction())+")");
 				}
 				else
 				{
@@ -341,7 +343,7 @@ public class Parser{
 						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
 				}
 			}
-			else if (tt.getType() == TokenType.divToken)
+			else if (tmp.getType() == TokenType.divToken)
 			{
 				Instruction i = new Instruction("div",res,res1);
 				insts.add(i);
@@ -414,7 +416,7 @@ public class Parser{
 		String sym;
 		sym = tt.getCharacters();
 		res = new Result(Type.number,Integer.parseInt(sym));
-		
+		//res = new Result(Type.number,sym);
 		return res;
 	}																																																																																																																			
 }
