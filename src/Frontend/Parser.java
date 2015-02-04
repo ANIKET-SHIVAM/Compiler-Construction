@@ -40,7 +40,7 @@ public class Parser{
 	public int compute()
 	{
 		int res=-1;
-		
+		System.out.println("inside copute");
 		if(tt.getType() == TokenType.commentToken) //if first line is a comment
 		Next();
 		if(tt.getType() != TokenType.mainToken || tt.getType() == TokenType.errorToken)	//if main is not the first token,error
@@ -57,8 +57,9 @@ public class Parser{
 					func_decl();
 				if(tt.getType() == TokenType.beginToken) //"{"
 				{
+					
 					Next();
-					res = stat_seq();							//statSequence
+					stat_seq();							//statSequence
 					if(tt.getType() != TokenType.endToken) //"}"
 					{
 						Token.checkToken("");
@@ -173,10 +174,10 @@ public class Parser{
 		Function_param.put(function_name, param_list);
 	}
 	
-	public int stat_seq()
+	public Result stat_seq()
 	{
-		int res=0;
-		while(tt.getType() != TokenType.endToken)
+		Result res=new Result();
+		while(tt.getType() != TokenType.endToken)	//"}"
 		{
 			res = statement();
 		}
@@ -185,7 +186,8 @@ public class Parser{
 	
 	public Result statement()
 	{
-		Result res;
+		Result res=new Result();
+		
 		if(tt.getType() == TokenType.letToken)	//let 
 		{
 			res = assignment();
@@ -210,15 +212,17 @@ public class Parser{
 		{
 			res = E();
 		}
+		if(tt.getType() == TokenType.semiToken)	//";"
+			Next();
 		return res;
 	}
 	
-	public int assignment()		//"let"
+	public Result assignment()		//"let"
 	{
-		int res=0;
+		//int res=0;
 		int index=0;
 		String var;
-		Result x;
+		Result x = new Result();
 		Next();
 		if(tt.getType() == TokenType.ident)				//if its a var
 		{
@@ -249,22 +253,22 @@ public class Parser{
 					Sym_table.put(index,i);
 					if(x.getType() ==Type.number)
 					{
-						System.out.println("move "+ x.getValue() + " " + var);
+						System.out.println(insts.indexOf(i)+":"+"move #"+ x.getValue() + " " + var);
 					}
 					else if(x.getType() == Type.instruction)
 					{
-						System.out.println("move ("+insts.indexOf(i)+") "+ var);
+						System.out.println(insts.indexOf(i)+":"+"move ("+insts.indexOf(x.getInstruction())+") "+ var);
 					}
 				//}
 			}
 		}
 		
-		return res;
+		return x;
 	}
 	
-	public int funcCall()
+	public Result funcCall()
 	{
-		int res=0;
+		Result res=new Result();
 		//ToDo
 		
 		return res;
@@ -273,16 +277,16 @@ public class Parser{
 		return (tt.getType()==TokenType.eqlToken ||tt.getType()==TokenType.neqToken ||tt.getType()==TokenType.lssToken ||tt.getType()==TokenType.geqToken || tt.getType()==TokenType.leqToken ||tt.getType()==TokenType.gtrToken);	
 	}
 	
-	public int ifStatement()
+	public Result ifStatement()
 	{
-		int res=0;
+		Result res=new Result();
 		
 		return res;
 	}
 	
-	public int whileStatement()
+	public Result whileStatement()
 	{
-		int res=0;
+		Result res=new Result();
 		//ToDo
 		return res;
 	}
@@ -296,11 +300,11 @@ public class Parser{
 		{
 				if( tt.getType() == TokenType.plusToken){
 				Next();
-				res += T();
+				res = T();
 			}
 			else if (tt.getType() == TokenType.minusToken){	
 				Next();
-				res -= T();
+				res = T();
 			}
 			
 		}
@@ -310,23 +314,56 @@ public class Parser{
 	//1+2*3-4
 	Result T(){
 		Result res;
-		
-		res=F();
+		Result res1 = new Result();
+		Result final_res;
+		final_res = res = F();
 		while(tt.getType() == TokenType.timesToken || tt.getType()== TokenType.divToken)
 		{	
+			Next();
+			res1 = F();
 			if(tt.getType() == TokenType.timesToken)
 			{
-				Next();
-				res *= F();
+				Instruction i = new Instruction("mul",res,res1);
+				insts.add(i);
+				final_res = new Result(Type.instruction,i);
+				if(res.getType() == Type.number)
+				{
+					if(res1.getType() == Type.number)	//"3/2"
+						System.out.println(insts.indexOf(i)+":" +"mul #"+res.getValue()+" "+ res1.getValue());
+					else	//"3/x"
+						System.out.println(insts.indexOf(i)+":"+"mul #"+res.getValue()+" "+insts.indexOf(res1.getInstruction()));
+				}
+				else
+				{
+					if(res1.getType() == Type.number)	//"x/2"
+						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
+					else	//"y/x"
+						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
+				}
 			}
 			else if (tt.getType() == TokenType.divToken)
 			{
-				Next();
-				res /= F();
+				Instruction i = new Instruction("div",res,res1);
+				insts.add(i);
+				if(res.getType() == Type.number)
+				{
+					if(res1.getType() == Type.number)	//"3/2"
+						System.out.println(insts.indexOf(i)+":"+"div #"+res.getValue()+" "+ res1.getValue());
+					else	//"3/x"
+						System.out.println(insts.indexOf(i)+":"+"div #"+res.getValue()+" "+insts.indexOf(res1.getInstruction()));
+				}
+				else
+				{
+					if(res1.getType() == Type.number)	//"x/2"
+						System.out.println(insts.indexOf(i)+":"+"div ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
+					else	//"y/x"
+						System.out.println(insts.indexOf(i)+":"+"div ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
+				}
+				
 			}
 
 		}	
-		return res;
+		return final_res;
 	}
 	
 	void error(String s){
@@ -334,16 +371,35 @@ public class Parser{
 	}
 	
 	Result F(){
-		Result res;
-		
+		Result res=new Result();
+		int var_id=0;
 		if(tt.getType() != TokenType.number)
 		{
-			Next();
-			res=E();
-			if(tt.getType() == TokenType.closebracketToken)
+			if(tt.getType() == TokenType.openbracketToken) //"("
+			{
 				Next();
+				res=E();
+				if(tt.getType() == TokenType.closebracketToken)
+					Next();
+				else
+					error("Syntax error : Missing ')'");
+			}
+			else if(tt.getType() == TokenType.ident)//if its a var
+			{
+				var_id = String2Id(tt.getCharacters());
+				if(Sym_table.containsKey(var_id))
+				{
+					Result res1;
+					res1 = new Result(Type.instruction,Sym_table.get(var_id));
+					res = res1;
+					Next();
+				}
+			}
 			else
-				error("Syntax error : Missing ')'");
+			{
+				res = E();
+				Next();
+			}
 		}
 		else
 		{
@@ -360,8 +416,7 @@ public class Parser{
 		res = new Result(Type.number,Integer.parseInt(sym));
 		
 		return res;
-	}
-																																																																																																																				
+	}																																																																																																																			
 }
 
 

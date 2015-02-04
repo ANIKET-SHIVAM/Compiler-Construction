@@ -136,7 +136,7 @@ public class Token {
 				token = new Token(TokenType.number, characters, 60);
 				else if(characters.matches("([a-zA-Z])(a-zA-Z0-9)*")==true){
 				token = new Token(TokenType.ident, characters, 61);
-				Scanner.ident.add(characters);
+				//Scanner.ident.add(characters);
 				}
 				else
 				token = new Token(TokenType.errorToken, characters, 0);

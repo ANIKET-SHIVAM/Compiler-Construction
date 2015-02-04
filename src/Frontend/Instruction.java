@@ -6,6 +6,7 @@ public class Instruction {
 	private String operator;
 	private ArrayList<Result> operands=new ArrayList<Result>();
 	
+	Instruction(){}
 	
 	Instruction(String instoperator){
 		//if (instoperator=="end"||instoperator=="read"||instoperator=="writeNL"){

@@ -1,6 +1,8 @@
 package Frontend;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import Frontend.Token;
 
 public class Scanner {
@@ -8,8 +10,9 @@ public class Scanner {
 	//public int getSym(){return int a;};
 	private FileReader fr;
 	//public int number;
-	public int id;
+	public static int id;
 	public static ArrayList<String> ident;
+	public HashMap<String,Integer> var_cache;
 	
 	private void Next(){
 		this.inputSym=this.fr.getSym();
@@ -20,10 +23,12 @@ public class Scanner {
 	public Scanner(String filename){
 		try {
 			this.fr=new FileReader(filename);
+			var_cache= new HashMap<String,Integer>();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		this.inputSym= fr.getSym();
+		id=0;
 	}
 	public Token getToken(){
 		//Token token=null;
@@ -33,6 +38,10 @@ public class Scanner {
 		//if(inputSym=='|'){
 			return Token.checkToken("|");
 		}
+		//if((Comment())!=null) {
+				if(inputSym == '/'){
+				Comment();
+				}
 		NoUseCh();
 		
 		if(inputSym == 'm')
@@ -41,13 +50,11 @@ public class Scanner {
 		if(inputSym >='0' && inputSym<= '9') {
 			return isNumber();}
 	
-		if((isIdentOrKeyword())!=null) {
-			return isIdentOrKeyword();}
+		if((inputSym >= 'a' || inputSym >='A') && (inputSym <= 'z' || inputSym <='Z')) {
+			return isIdentOrKeyword();
+			}
 		
-		//if((Comment())!=null) {
-		if(inputSym == '/'){
-		Comment();
-		}
+		
 		
 		switch(inputSym){
 		case '*':
@@ -118,16 +125,22 @@ public class Scanner {
 	
 	public Token isIdentOrKeyword(){
 		StringBuffer strbfr=new StringBuffer();
-		if(Character.isLetter(inputSym)){
+		Token tt;
+		//if(Character.isLetter(inputSym)){
 		while (Character.isLetterOrDigit(inputSym)){
-		strbfr.append(inputSym);Next();
+			strbfr.append(inputSym);
+			Next();
 		}
 		String str = strbfr.toString();
-		return Token.checkToken(str);
+		
+		tt=Token.checkToken(str);
+		if(tt.getType() == TokenType.ident)
+		//{
+			var_cache.put(str, ++id);
+			return tt;
+		//}
 		}
-		else
-		return null;
-		}
+		//}
 	
 	public Token Comment(){
 		if (inputSym=='#'){
@@ -140,6 +153,7 @@ public class Scanner {
 			if(inputSym=='/'){
 				while (inputSym!='\n'){
 					Next();}
+				Next();
 			}
 			else {
 				Prev();

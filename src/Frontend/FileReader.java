@@ -17,7 +17,7 @@ public class FileReader {
             String line;
     		while ((line = br.readLine()) != null){
     			stringBuffer.append(line);
-    			stringBuffer.append("\0");
+    			stringBuffer.append("\n");
     		}
     		fr.close();
     		System.out.println("Contents of file:");

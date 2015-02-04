@@ -24,6 +24,7 @@ public class Result {
 	private int value; //for constant
 	private int index;//for variable
 	private int[] arr;//for array
+	private Instruction ins;	//for instruction pointer
 	
 	Result(){}
 	
@@ -31,6 +32,12 @@ public class Result {
 	{
 		this.kind = kind;
 		this.name = s;
+	}
+	
+	Result(Type kind,Instruction i)
+	{
+		this.kind = kind;
+		this.ins = i;
 	}
 	
 	Result(Type kind,String ss,int val)
@@ -69,6 +76,11 @@ public class Result {
 	public Type getType(){
 		return this.kind;
 	}
+	public Instruction getInstruction()
+	{
+		return this.ins;
+	}
+	
 	public int getValue(){
 		int val=9999;//garbage for initializing
 		if(this.kind==Type.variable){
