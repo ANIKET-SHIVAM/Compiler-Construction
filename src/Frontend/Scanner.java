@@ -1,5 +1,7 @@
 package Frontend;
 import java.io.*;
+import java.util.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -75,8 +77,19 @@ public class Scanner {
 			return Token.checkToken("-");
 			//break;
 		case '=':
-			Next();if(inputSym=='='){Next();return Token.checkToken("==");}
-					else {System.out.println("Syntax Error");return null;}
+			Next();
+			if(inputSym=='=')
+			{
+				//Next();
+				return Token.checkToken("==");
+			}
+			else 
+			{
+				NoUseCh();
+				
+//				System.out.println("Syntax Error");
+				return Token.checkToken(Character.toString(inputSym));
+			}
 		case '!':
 			Next();if(inputSym=='='){Next();return Token.checkToken("!=");}
 					else {System.out.println("Syntax Error");return null;}
@@ -143,7 +156,7 @@ public class Scanner {
 		tt=Token.checkToken(str);
 		if(tt.getType() == TokenType.ident)
 		{
-			if(!var_cache.containsKey(str))
+			if(!var_cache.containsKey(str))	//entry for variable is not present then put var in cache
 				var_cache.put(str, ++id);
 		}
 			return tt;

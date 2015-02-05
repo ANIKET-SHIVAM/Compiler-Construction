@@ -9,19 +9,21 @@ import Frontend.Result.Type;
 public class Parser{
 	Token tt;
 	private Scanner scanner;
-	private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
-	private HashMap<String,Result> Result_cache;
-	private ArrayList<Instruction> insts;
+	//private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
+	private HashMap<String,Result> Result_cache;	//for storing Results
+	private ArrayList<Instruction> insts;			//list for instructions
+	private HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
 	private HashMap<String,ArrayList<Result>> Function_param;
 	public char sym;
 	public int index=0;
 	public BasicBlock currentblock;
 
 	public Parser(String filename){
-		scanner = new Scanner(filename);
-		Result_cache = new HashMap<String,Result>();
-		insts=new ArrayList<Instruction>();
-		Sym_table = new HashMap<Integer,Instruction>();
+		scanner = new Scanner(filename);				//initialize scanner
+		Result_cache = new HashMap<String,Result>();	//initialize result_cache
+		insts=new ArrayList<Instruction>();				//initialize instruction list
+		//Sym_table = new HashMap<Integer,Instruction>();	//initialize symbol table
+		Sym_table = new HashMap<Integer,Stack<Instruction>>();		//initialize per variable stack	
 		tt = scanner.getToken();
 	}
 	
@@ -45,7 +47,7 @@ public class Parser{
 		Next();
 		if(tt.getType() != TokenType.mainToken || tt.getType() == TokenType.errorToken)	//if main is not the first token,error
 			error("Syntax error : Missing 'main'");
-		else									//after parsing main
+		else								 //after parsing main
 		{
 			currentblock = new BasicBlock(); // main block
 			
@@ -172,6 +174,7 @@ public class Parser{
 		stat_seq(currentblock);
 
 	}
+	
 	public void formal_Param(String function_name,ArrayList<Result> param_list){
 		Function_param.put(function_name, param_list);
 	}
@@ -252,7 +255,18 @@ public class Parser{
 				//{
 					Instruction i = new Instruction("move",x, Result_cache.get(var));
 					insts.add(i);				//add instruction to instruction list
-					Sym_table.put(index,i);
+					
+					if(!Sym_table.containsKey(index))	//if sym_table is empty
+					{
+						Stack<Instruction> ss = new Stack<Instruction>();
+						ss.push(i);
+						Sym_table.put(index, ss);
+					}
+					else										//if the entry is present
+					{
+						Sym_table.get(index).push(i);	//push new value on stack
+					}
+					//Sym_table.put(index,i);		//map instruction to variable index 
 					if(x.getType() ==Type.number)
 					{
 						System.out.println(insts.indexOf(i)+":"+"move #"+ x.getValue() + " " + var);
@@ -281,42 +295,121 @@ public class Parser{
 	
 	public Result ifStatement(BasicBlock currentblock)
 	{
+		int if_count=1;
 		Result res=new Result();
-		Next();
-		ArrayList<Result> operands=new ArrayList<Result>();
+		Stack if_stack = new Stack();
 
-		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+		while(if_count != 0)
+		{
+			if(tt.getType() == TokenType.ifToken)		//nested if
+			{
+				if_count++;
+				Next();
 
-			int var_inst_id1=String2Id(tt.getCharacters());
+				Result op1 = E();
 
-			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+				if(isrelop()) {
+					Result cond = new Result(Type.condition,tt.getType());
+					Next();
+					Result op2 = E();
+					Instruction i = new Instruction("cmp",op1,op2);
+					insts.add(i);
+					Result ins_res = new Result(Type.instruction,i);
 
-			operands.add(oper1);
-
-			Next();
-
-			Result cond = new Result(Type.condition,tt.getType());
-
-			Next();
-
-			if(tt.getType()==TokenType.number){
-
-				Result oper2= new Result(Type.number,tt.getValue());
-				operands.add(oper2);
+					if(op1.getType() == Type.instruction)	//first operand is a pointer to a instruction.
+					{
+						if(op2.getType() == Type.instruction)	//second operand is also pointer to instruction
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
+						}
+						else	//second operand is a number
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") #" + op2.getValue());
+						}
+					}
+					else	//first operand is a number
+					{
+						if(op2.getType() == Type.instruction)
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() + " (" + insts.indexOf(op2.getInstruction()) + ")");
+						}
+						else
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() +" #" + op2.getValue());
+						}
+					}
+					String ss = cond.getCondition().name();
+					Result fix_res = new Result();
+					switch(ss)
+					{
+					case "bge":
+					case "ble":
+					case "beq":
+					case "bne":		
+					case "bgt":
+					case "blt":
+						Instruction ii = new Instruction(ss,ins_res,fix_res);//to be fixed to location of jump
+						if_stack.push(ii);
+					default:
+						break;
+					}
+				}
+				else{
+					error("Syntax error: Missing condition after 'if'");
+					return res;
+				}
+				if(tt.getType() == TokenType.thenToken)	//"then"
+				{
+					Next();
+					Result rr = stat_seq(currentblock);
+				}
 			}
-			else if(tt.getType()==TokenType.ident){
-
-				int var_inst_id2=String2Id(tt.getCharacters());
-
-				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
-
-				operands.add(oper2);
-
+			Next();
+			if(tt.getType() == TokenType.elseToken)	//else
+			{
+				Next();
+				Result else_res = stat_seq(currentblock);
+				Next();
 			}
+			if(tt.getType() == TokenType.fiToken)	//fi
+			{
+				if_count--;
+				Next();
+			}
+			//}
+			/*if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
+
+				int var_inst_id1=String2Id(tt.getCharacters());
+
+				Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+
+				operands.add(oper1);
+
+				Next();
+
+				Result cond = new Result(Type.condition,tt.getType());
+
+				Next();
+
+				if(tt.getType()==TokenType.number){	//e.g. if y==2
+
+					Result oper2= new Result(Type.number,tt.getValue());
+					operands.add(oper2);
+				}
+				else if(tt.getType()==TokenType.ident){	//e.g. if y==x
+
+					int var_inst_id2=String2Id(tt.getCharacters());
+
+					Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+
+					operands.add(oper2);
+				}
 			// add to instruction for branch command (cond, operands)
+			}
+			else
+				System.out.println("variable in if not assigned yet");
+			}*/
 		}
-		else
-			System.out.println("variable in if not assigned yet");
 		return res;
 	}
 	
@@ -330,7 +423,9 @@ public class Parser{
 
 		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
 			int var_inst_id1=String2Id(tt.getCharacters());
-			Result oper1= new Result(Type.instruction,Sym_table.get(var_inst_id1));
+			Instruction i = Sym_table.get(var_inst_id1).pop();
+			Result oper1= new Result(Type.instruction,i);
+			Sym_table.get(var_inst_id1).push(i);
 			operands.add(oper1);
 
 			Next();
@@ -349,10 +444,11 @@ public class Parser{
 			else if(tt.getType()==TokenType.ident){
 
 				int var_inst_id2=String2Id(tt.getCharacters());
-
-				Result oper2= new Result(Type.instruction,Sym_table.get(var_inst_id2));
+				Instruction i2 = Sym_table.get(var_inst_id2).pop();
+				Result oper2= new Result(Type.instruction,i2);
 
 				operands.add(oper2);
+				Sym_table.get(var_inst_id1).push(i2);
 
 			}
 			// add to instruction for branch command (cond, operands)
@@ -366,20 +462,40 @@ public class Parser{
 	public Result E(){
 		//int res=0;
 		Result res;
-		res = T();
+		Result final_res;
+		final_res = res = T();
+		Result res1 = new Result();
+		String oper;
 		while(tt.getType() == TokenType.plusToken || tt.getType()==TokenType.minusToken)
 		{
-				if( tt.getType() == TokenType.plusToken){
-				Next();
-				res = T();
-			}
-			else if (tt.getType() == TokenType.minusToken){	
-				Next();
-				res = T();
-			}
+			if( tt.getType() == TokenType.plusToken)
+				oper = new String("add");
+		
+			else //if (tt.getType() == TokenType.minusToken){
+				oper = new String("sub");
 			
+			Next();
+			res1 = T();
+			
+			Instruction i = new Instruction(oper,res,res1);
+			insts.add(i);
+			final_res = new Result(Type.instruction,i);
+			if(res.getType() == Type.number)
+			{
+				if(res1.getType() == Type.number)	//"3+2"
+					System.out.println(insts.indexOf(i)+":" +oper+" #"+res.getValue()+" "+ res1.getValue());
+				else	//"3+x"
+					System.out.println(insts.indexOf(i)+":"+oper+" #"+res.getValue()+" ("+insts.indexOf(res1.getInstruction())+")");
+			}
+			else
+			{
+				if(res1.getType() == Type.number)	//"x+2"
+					System.out.println(insts.indexOf(i)+":"+oper+" ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
+				else	//"y+x"
+					System.out.println(insts.indexOf(i)+":"+oper+" ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
+			}
 		}
-		return res;
+		return final_res;
 	}
 	
 	//1+2*3-4
@@ -392,30 +508,35 @@ public class Parser{
 		while(tt.getType() == TokenType.timesToken || tt.getType()== TokenType.divToken)
 		{	
 			tmp=tt;
+			String oper;
 			Next();
 			res1 = F();
-			if(tmp.getType() == TokenType.timesToken)
-			{
-				Instruction i = new Instruction("mul",res,res1);
+			if(tmp.getType() == TokenType.timesToken)	
+				oper = "mul";
+			else
+				oper = "div";
+			
+				Instruction i = new Instruction(oper,res,res1);
 				insts.add(i);
 				final_res = new Result(Type.instruction,i);
 				if(res.getType() == Type.number)
 				{
 					if(res1.getType() == Type.number)	//"3/2"
-						System.out.println(insts.indexOf(i)+":" +"mul #"+res.getValue()+" "+ res1.getValue());
+						System.out.println(insts.indexOf(i)+":" +oper+" #"+res.getValue()+" "+ res1.getValue());
 					else	//"3/x"
-						System.out.println(insts.indexOf(i)+":"+"mul #"+res.getValue()+" ("+insts.indexOf(res1.getInstruction())+")");
+						System.out.println(insts.indexOf(i)+":"+oper+" #"+res.getValue()+" ("+insts.indexOf(res1.getInstruction())+")");
 				}
 				else
 				{
 					if(res1.getType() == Type.number)	//"x/2"
-						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
+						System.out.println(insts.indexOf(i)+":"+oper+" ("+insts.indexOf(res.getInstruction())+") "+ res1.getValue());
 					else	//"y/x"
-						System.out.println(insts.indexOf(i)+":"+"mul ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
+						System.out.println(insts.indexOf(i)+":"+oper+" ("+insts.indexOf(res.getInstruction())+")"+" ("+insts.indexOf(res1.getInstruction())+")");
 				}
-			}
-			else if (tmp.getType() == TokenType.divToken)
+			
+		/*	else //if (tmp.getType() == TokenType.divToken)
 			{
+				oper = "div";
 				Instruction i = new Instruction("div",res,res1);
 				insts.add(i);
 				if(res.getType() == Type.number)
@@ -434,7 +555,7 @@ public class Parser{
 				}
 				
 			}
-
+*/
 		}	
 		return final_res;
 	}
@@ -463,8 +584,11 @@ public class Parser{
 				if(Sym_table.containsKey(var_id))
 				{
 					Result res1;
-					res1 = new Result(Type.instruction,Sym_table.get(var_id));
+					Stack<Instruction> s = Sym_table.get(var_id);
+					
+					res1 = 	new Result(Type.instruction,(Instruction)s.pop());
 					res = res1;
+					s.push(res1.getInstruction());
 					Next();
 				}
 			}

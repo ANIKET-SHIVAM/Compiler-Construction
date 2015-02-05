@@ -20,7 +20,7 @@ public class Result {
 	private String name;
 	private int regno;//for register
 	private Cond_Type condition;
-	private int fixup_location;
+	private Instruction fixup_location;
 	private int value; //for constant
 	private int index;//for variable
 	private int[] arr;//for array
@@ -34,33 +34,32 @@ public class Result {
 
 			this.kind= kind;
 
-			if (ss==TokenType.neqToken)
-
-				condition=Cond_Type.bne;
-
-			else if (ss==TokenType.eqlToken)
+			if (ss==TokenType.neqToken)			//"!="
 
 				condition=Cond_Type.beq;
 
-			else if (ss==TokenType.leqToken)
+			else if (ss==TokenType.eqlToken)	//"=="
 
-				condition=Cond_Type.ble;
+				condition=Cond_Type.bne;
 
-			else if (ss==TokenType.lssToken)
-
-				condition=Cond_Type.blt;
-
-			else if (ss==TokenType.geqToken)
-
-				condition=Cond_Type.bge;
-
-			else if (ss==TokenType.gtrToken)
+			else if (ss==TokenType.leqToken)	//"<="
 
 				condition=Cond_Type.bgt;
 
-		}
+			else if (ss==TokenType.lssToken)	//"<"
 
+				condition=Cond_Type.bge;
+
+			else if (ss==TokenType.geqToken)	//">="
+
+				condition=Cond_Type.blt;
+
+			else if (ss==TokenType.gtrToken)	//">"
+
+				condition=Cond_Type.ble;
+		}
 	}
+	
 	Result(Type kind,String s)
 	{
 		this.kind = kind;
@@ -100,7 +99,7 @@ public class Result {
 		}
 	}
 	
-	Result(Cond_Type kind,int value){
+	Result(Cond_Type kind,Instruction value){
 		this.kind= Type.condition;
 		this.condition=kind;
 		this.fixup_location=value;
@@ -112,6 +111,11 @@ public class Result {
 	public Instruction getInstruction()
 	{
 		return this.ins;
+	}
+	
+	public void update_fixup(Instruction i)
+	{
+		this.fixup_location = i;
 	}
 	
 	public int getValue(){
@@ -130,7 +134,7 @@ public class Result {
 	public Cond_Type getCondition(){
 		return this.condition;
 	}
-	public int getFixupLocation(){
+	public Instruction getFixupLocation(){
 		return this.fixup_location;
 	}
 	public String getName(){
