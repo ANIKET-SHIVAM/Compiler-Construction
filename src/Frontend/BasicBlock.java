@@ -2,12 +2,13 @@ package Frontend;
 //import java.util.ArrayList;
 
 public class BasicBlock {
-	private enum Type{
+	public enum BlockType{
 		main,iftrue,ifelse,join,whileblock,doblock,follow
 	}
+	public static int block_id;
 	public static BasicBlock mainblock;
 	private int blockno;
-	private Type kind;
+	private BlockType kind;
 	private BasicBlock nextblock;	// for if,while and do
 	private BasicBlock ifelseblock;	// for if
 	private BasicBlock joinblock;   // for if
@@ -20,39 +21,42 @@ public class BasicBlock {
 	public int start_instruction_index;
 	public int end_instruction_index;
 	
+	public Instruction start_Instr;	//starting instruction
+	public Instruction end_Instr;	//ending instruction
 	
 	BasicBlock(){
-		this.kind=Type.main;
+		this.kind=BlockType.main;
+		this.block_id = 0;
 	}
 	
-	BasicBlock(Type kind){
+	BasicBlock(BlockType kind){
 		this.kind=kind;
 	}
 	
 	public BasicBlock createIfTrue(){
 		
-		BasicBlock iftrue=new BasicBlock(Type.iftrue);
+		BasicBlock iftrue=new BasicBlock(BlockType.iftrue);
 		this.nextblock=iftrue;
 		iftrue.prevblock=this;
 		return iftrue;
 	}
 	
-	public BasicBlock createIfElse(){
-		BasicBlock ifelse=new BasicBlock(Type.ifelse);
+	public BasicBlock createElse(){
+		BasicBlock ifelse=new BasicBlock(BlockType.ifelse);
 		this.ifelseblock=ifelse;
 		ifelse.prevblock=this;
 		return ifelse;
 	}
 	
 	public BasicBlock createWhile(){
-		BasicBlock whileblock=new BasicBlock(Type.whileblock);
+		BasicBlock whileblock=new BasicBlock(BlockType.whileblock);
 		this.nextblock=whileblock;
 		whileblock.prevblock=this;
 		return whileblock;
 	}
 	
 	public BasicBlock createdo(){
-		BasicBlock doblock=new BasicBlock(Type.doblock);
+		BasicBlock doblock=new BasicBlock(BlockType.doblock);
 		this.nextblock=doblock;
 		doblock.prevblock=this;
 		doblock.nextblock=this;
@@ -61,21 +65,21 @@ public class BasicBlock {
 	}
 	
 	public BasicBlock createfollow(){
-		BasicBlock follow=new BasicBlock(Type.follow);
+		BasicBlock follow=new BasicBlock(BlockType.follow);
 		this.followblock=follow;
 		follow.prevblock=this;
 		return follow;
 	}
 	
 	public BasicBlock createjoin(){		//only if will do this
-		BasicBlock join=new BasicBlock(Type.join);
+		BasicBlock join=new BasicBlock(BlockType.join);
 		this.joinblock=join;
 		join.prevblock=this;
 		return join;
 	}
 	
 	public void setjoin(){		//only else and main(when no else is there) can do this
-		if (this.kind==Type.ifelse){
+		if (this.kind==BlockType.ifelse){
 			this.joinblock=this.prevblock.nextblock.joinblock;	
 			this.prevblock.nextblock.joinblock.prevblock2=this;	
 		}
@@ -91,35 +95,35 @@ public class BasicBlock {
 	public void setEndInstructionIndex(int index){
 		end_instruction_index=index;
 	}
-	public Type getType(){
-		return kind;
+	public BlockType getType(){
+		return this.kind;
 	}
 	public int getblockno(){
-		return blockno;
+		return this.blockno;
 	}
 	public BasicBlock getprevblock(){
-		return prevblock;
+		return this.prevblock;
 	}
 	public BasicBlock getprevblock2(){
-		return prevblock2;
+		return this.prevblock2;
 	}
 	public BasicBlock getnextblock(){
-		return nextblock;
+		return this.nextblock;
 	}
 	public BasicBlock getifelseblock(){
-		return ifelseblock;
+		return this.ifelseblock;
 	}
 	public BasicBlock getjoinblock(){
-		return joinblock;
+		return this.joinblock;
 	}
 	public BasicBlock getfollowblock(){
-		return followblock;
+		return this.followblock;
 	}
 	public int getStartInstructionIndex(){
-		return start_instruction_index;
+		return this.start_instruction_index;
 	}
 	public int getEndInstructionIndex(){
-		return end_instruction_index;
+		return this.end_instruction_index;
 	}
 	
 
