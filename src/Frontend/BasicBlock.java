@@ -1,5 +1,5 @@
 package Frontend;
-//import java.util.ArrayList;
+import java.util.ArrayList;
 
 public class BasicBlock {
 	public enum BlockType{
@@ -24,13 +24,19 @@ public class BasicBlock {
 	public Instruction start_Instr;	//starting instruction
 	public Instruction end_Instr;	//ending instruction
 	
+	public ArrayList<Instruction> inst_list;
+
 	BasicBlock(){
+		inst_list = new ArrayList<Instruction>();
 		this.kind=BlockType.main;
 		this.block_id = 0;
+		this.blockno = block_id;
 	}
 	
 	BasicBlock(BlockType kind){
-		this.kind=kind;
+		inst_list = new ArrayList<Instruction>();
+		this.kind	=kind;
+		this.blockno = block_id;
 	}
 	
 	public BasicBlock createIfTrue(){
@@ -70,7 +76,7 @@ public class BasicBlock {
 		follow.prevblock=this;
 		return follow;
 	}
-	
+		
 	public BasicBlock createjoin(){		//only if will do this
 		BasicBlock join=new BasicBlock(BlockType.join);
 		this.joinblock=join;
@@ -78,15 +84,16 @@ public class BasicBlock {
 		return join;
 	}
 	
-	public void setjoin(){		//only else and main(when no else is there) can do this
-		if (this.kind==BlockType.ifelse){
-			this.joinblock=this.prevblock.nextblock.joinblock;	
-			this.prevblock.nextblock.joinblock.prevblock2=this;	
-		}
+	public void setjoin(BasicBlock phi_block){		//only else and main(when no else is there) can do this
+	//	if (this.kind==BlockType.ifelse){
+			this.joinblock = phi_block;
+			//this.joinblock=this.prevblock.nextblock.joinblock;	
+			this.joinblock.prevblock2=this;	
+		/*}
 		else{
 			this.joinblock=this.nextblock.joinblock;	
 			this.nextblock.joinblock.prevblock2=this;
-		}
+		}*/
 	}
 	
 	public void setStartInstructionIndex(int index){

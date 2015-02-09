@@ -5,9 +5,13 @@ var x, y;
     let x <- 51; 
     let y <- 2 * x;
     if y > x then
-    	let x <- x + 20;
+    	if y < 100 then
+    		let x <- x + 20;
+    	else
+    		let x <- x + 30;
+    	fi;
     else
-    	let x <- x + 30;
+    	let x <- x + 40;	
     fi;
     //call OutputNum(y)
 }.

@@ -41,7 +41,18 @@ public class Parser{
 		return res;
 	}
 	
-	public int compute()
+	public String IdtoString(int index)
+	{
+		//String o = new String();
+		for (String o : scanner.var_cache.keySet()) {
+		      if (scanner.var_cache.get(o).equals(index)) {
+		        return o;
+		      }
+		}
+		return "";
+	}
+	
+	public BasicBlock compute()
 	{
 		int res=-1;
 		if(tt.getType() == TokenType.commentToken) //if first line is a comment
@@ -81,7 +92,7 @@ public class Parser{
 			}*/
 		}
 			
-		return res;	
+		return currentblock;	
 	}
 	
 	public void var_decl(BasicBlock currentblock)    //TODO: take care of scope
@@ -194,6 +205,7 @@ public class Parser{
 	
 	public Result statement(BasicBlock currentblock)
 	{
+		BasicBlock bb;
 		Result res=new Result();
 		if(tt.getType() == TokenType.beginToken) //"{"
 			Next();
@@ -209,7 +221,7 @@ public class Parser{
 		}
 		if(tt.getType() == TokenType.ifToken)	//if
 		{
-			res=ifStatement(currentblock);
+			bb=ifStatement(currentblock);
 			Next();
 		}
 		if(tt.getType() == TokenType.whileToken)	//while
@@ -258,6 +270,7 @@ public class Parser{
 				//if(x.getType() == Type.number)			//e.g. let x <- 51;
 				//{
 					Instruction i = new Instruction("move",x, Result_cache.get(var));
+					currentblock.inst_list.add(i);
 					insts.add(i);				//add instruction to instruction list
 					i.basicblock = currentblock;
 					i.block_id = BasicBlock.block_id;
@@ -271,7 +284,7 @@ public class Parser{
 						Instruction fix_loc = res.getFixupLocation();
 						fix_loc = i;
 						System.out.println("Fixup loc for 'if' is :"+insts.indexOf(x.getInstruction()));
-						if_stack.push(ii);
+						//if_stack.push(ii);
 						
 					}
 					if(!Sym_table.containsKey(index))	//if sym_table is empty
@@ -288,11 +301,11 @@ public class Parser{
 						
 					if(x.getType() ==Type.number)
 					{
-						System.out.println(insts.indexOf(i)+":"+"move #"+ x.getValue() + " " + var);
+						System.out.println(insts.indexOf(i)+":"+"move #"+ x.getValue() + " " + var+"_"+insts.indexOf(i));
 					}
 					else if(x.getType() == Type.instruction)
 					{
-						System.out.println(insts.indexOf(i)+":"+"move ("+insts.indexOf(x.getInstruction())+") "+ var);
+						System.out.println(insts.indexOf(i)+":"+"move ("+insts.indexOf(x.getInstruction())+") "+ var+"_"+insts.indexOf(i));
 					}
 				//}
 			}
@@ -313,19 +326,19 @@ public class Parser{
 		return (tt.getType()==TokenType.eqlToken ||tt.getType()==TokenType.neqToken ||tt.getType()==TokenType.lssToken ||tt.getType()==TokenType.geqToken || tt.getType()==TokenType.leqToken ||tt.getType()==TokenType.gtrToken);	
 	}
 	
-	public Result ifStatement(BasicBlock currentblock)
+	public BasicBlock ifStatement(BasicBlock currentblock)
 	{
 		int if_count=1;
+		int else_flag=0;
+		BasicBlock if_block,else_block,phi_block;
+		BasicBlock nested_if_block = currentblock;
 		Result res=new Result();
 		
-
-		while(if_count != 0)
-		{
-			if(tt.getType() == TokenType.ifToken)		//nested if
-			{
+		//if(tt.getType() == TokenType.ifToken)		//nested if
+			//{
 				if(if_count != 1)
 					if_count++;
-				BasicBlock if_block = currentblock.createIfTrue();
+				nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
 				
 				
 				Next();
@@ -338,6 +351,7 @@ public class Parser{
 					Result op2 = E(currentblock);
 					Instruction i = new Instruction("cmp",op1,op2);
 					insts.add(i);
+					currentblock.inst_list.add(i);
 					i.basicblock = currentblock;
 					i.block_id = BasicBlock.block_id;
 					Result ins_res = new Result(Type.instruction,i);
@@ -364,8 +378,7 @@ public class Parser{
 							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() +" #" + op2.getValue());
 						}
 					}
-					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
-					BasicBlock.block_id++;
+					
 					String ss = cond.getCondition().name();
 					Result fix_res = new Result();
 					switch(ss)
@@ -380,6 +393,7 @@ public class Parser{
 						currentblock.end_Instr = ii;
 						ii.basicblock = currentblock;
 						ii.block_id = BasicBlock.block_id;
+						currentblock.inst_list.add(i);
 						insts.add(ii);
 						if_stack.push(ii);
 						
@@ -391,34 +405,74 @@ public class Parser{
 				}
 				else{
 					error("Syntax error: Missing condition after 'if'");
-					return res;
+					return phi_block;
 				}
 				if(tt.getType() == TokenType.thenToken)	//"then"
 				{
+					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+					BasicBlock.block_id++;
 					Next();
-					Result rr = stat_seq(if_block);
+					if(tt.getType() == TokenType.ifToken)
+					{	
+						nested_if_block=ifStatement(if_block);
+						if(tt.getType() == TokenType.semiToken)
+							Next();
+						//Next();
+					}
+					else
+					{
+						Result rr = stat_seq(if_block);
+					}
 				}
-			}
-			//Next();
+			//while(!if_stack.isEmpty()){
 			if(tt.getType() == TokenType.elseToken)	//else
 			{
-				BasicBlock else_block = currentblock.createElse();
+				else_flag=1;
+				else_block = currentblock.createElse();
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
 				Next();
-				//fixup_flag=1;
 				Result else_res = stat_seq(else_block);
-				//Next();
 			}
+			if(else_flag==0)
+				Next();
+			//}
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
-				if_count--;
+				String var;
+				int i=1;
+				phi_block = nested_if_block.createjoin();
+				if(else_flag==1)
+					else_block.setjoin(phi_block);
+				else
+					currentblock.setjoin(phi_block);
+				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
+				BasicBlock.block_id++;
+				for(i=1;i<Sym_table.size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
+				{
+					if(Sym_table.get(i).size()>1)
+					{
+							var = IdtoString(i);//Todo
+							Instruction i1 = Sym_table.get(i).pop();
+							Instruction i2 = Sym_table.get(i).pop();
+							Result oper1= new Result(Type.instruction,i1);
+							Result oper2= new Result(Type.instruction,i2);
+							Instruction ii = new Instruction("phi",var,oper1,oper2);
+							ii.basicblock=phi_block;
+							insts.add(ii);
+							phi_block.inst_list.add(ii);
+							Sym_table.get(i).push(ii);
+							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
+					}
+				
+				}
+				BasicBlock.block_id++;	
 				Next();
+				else_flag=0;
 			}
-			//}
 
-		}
-		return res;
+		//}
+		return phi_block;
 	}
 	
 	public Result whileStatement(BasicBlock currentblock)
@@ -487,6 +541,7 @@ public class Parser{
 			
 			Instruction i = new Instruction(oper,res,res1);
 			insts.add(i);
+			currentblock.inst_list.add(i);
 			i.basicblock = currentblock;
 			i.block_id = BasicBlock.block_id;
 			final_res = new Result(Type.instruction,i);
@@ -528,6 +583,7 @@ public class Parser{
 			
 				Instruction i = new Instruction(oper,res,res1);
 				insts.add(i);
+				currentblock.inst_list.add(i);
 				i.basicblock = currentblock;
 				i.block_id= BasicBlock.block_id;
 				final_res = new Result(Type.instruction,i);

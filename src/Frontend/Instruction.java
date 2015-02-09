@@ -3,6 +3,7 @@ import java.util.ArrayList;
 
 public class Instruction {
 	private int type;   //0-zero operands,1->one operands,2->two operands,3->phi instruction
+	private String var;
 	private String operator;
 	private ArrayList<Result> operands=new ArrayList<Result>();
 	public BasicBlock basicblock;
@@ -34,6 +35,14 @@ public class Instruction {
 			this.operands.add(res1);
 			this.operands.add(res2);
 		}
+	Instruction(String instoperator,String var,Result res1,Result res2)
+	{
+		this.type=3;
+		this.operator=instoperator;
+		this.var = var;
+		this.operands.add(res1);
+		this.operands.add(res2);
+	}
 	Instruction(String instoperator,ArrayList<Result> instoperands){
 		//else if(instoperator=="phi"){
 			this.type=3;
