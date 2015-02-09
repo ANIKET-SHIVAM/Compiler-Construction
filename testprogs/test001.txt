@@ -6,8 +6,7 @@ var x, y;
     let y <- 2 * x;
     if y > x then
     	let x <- x + 20;
-    else
-    	let x <- x + 30;
+    	let x<-x+10;
     fi;
     //call OutputNum(y)
 }.
