@@ -69,7 +69,6 @@ public class Parser{
 				Next();
 				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
 					var_decl(currentblock);
-				
 				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken)	//if its a function declaration
 					func_decl(currentblock);
 				if(tt.getType() == TokenType.beginToken) //"{"
@@ -326,14 +325,20 @@ public class Parser{
 		return (tt.getType()==TokenType.eqlToken ||tt.getType()==TokenType.neqToken ||tt.getType()==TokenType.lssToken ||tt.getType()==TokenType.geqToken || tt.getType()==TokenType.leqToken ||tt.getType()==TokenType.gtrToken);	
 	}
 	
+
 	public BasicBlock ifStatement(BasicBlock currentblock)
+
 	{
 		int if_count=1;
 		int else_flag=0;
 		BasicBlock if_block,else_block,phi_block;
 		BasicBlock nested_if_block = currentblock;
 		Result res=new Result();
+		Next();
+		ArrayList<Result> operands=new ArrayList<Result>();
+	
 		
+				
 		//if(tt.getType() == TokenType.ifToken)		//nested if
 			//{
 				if(if_count != 1)
@@ -477,46 +482,108 @@ public class Parser{
 	
 	public Result whileStatement(BasicBlock currentblock)
 	{
+		int while_count=1;
 		Result res=new Result();
-		//ToDo
-		Next();
+		
 
-		ArrayList<Result> operands=new ArrayList<Result>();
+		while(while_count != 0)
+		{
+			if(tt.getType() == TokenType.whileToken)		//nested while
+			{
+				if(while_count != 1)
+					while_count++;
+				BasicBlock while_block = currentblock.createWhile();
+				currentblock=currentblock.getnextblock();			// while block for conditions and phi inst
+			//	System.out.println("created while block");
+				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+				BasicBlock.block_id++;
+				
+				Next();
 
-		if (tt.getType()==TokenType.ident && tt.getCharacters()!=null){
-			int var_inst_id1=String2Id(tt.getCharacters());
-			Instruction i = Sym_table.get(var_inst_id1).peek();
-			Result oper1= new Result(Type.instruction,i);
-			//Sym_table.get(var_inst_id1).push(i);
-			operands.add(oper1);
+				Result op1 = E(currentblock);
 
-			Next();
-
-			Result cond = new Result(Type.condition,tt.getType());
-
-			Next();
-			if(tt.getType()==TokenType.number){
-
-				Result oper2= new Result(Type.number,tt.getValue());
-
-				operands.add(oper2);
-
+				if(isrelop()) {
+					Result cond = new Result(Type.condition,tt.getType());
+					Next();
+					Result op2 = E(currentblock);
+					Instruction i = new Instruction("cmp",op1,op2);
+					insts.add(i);
+					i.basicblock = currentblock;
+					i.block_id = BasicBlock.block_id;
+					Result ins_res = new Result(Type.instruction,i);
+					
+					if(op1.getType() == Type.instruction)	//first operand is a pointer to a instruction.
+					{
+						if(op2.getType() == Type.instruction)	//second operand is also pointer to instruction
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
+						}
+						else	//second operand is a number
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") #" + op2.getValue());
+						}
+					}
+					else	//first operand is a number
+					{
+						if(op2.getType() == Type.instruction)
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() + " (" + insts.indexOf(op2.getInstruction()) + ")");
+						}
+						else
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() +" #" + op2.getValue());
+						}
+					}
+					String ss = cond.getCondition().name();
+					Result fix_res = new Result();
+					switch(ss)
+					{
+					case "bge":
+					case "ble":
+					case "beq":
+					case "bne":		
+					case "bgt":
+					case "blt":
+						Instruction ii = new Instruction(ss,ins_res,fix_res);//to be fixed to location of jump
+						currentblock.end_Instr = ii;
+						ii.basicblock = currentblock;
+						ii.block_id = BasicBlock.block_id;
+						insts.add(ii);
+						
+						System.out.println(insts.indexOf(ii)+":"+ss+" ("+insts.indexOf(ins_res.getInstruction())+") 0");
+						break;
+					default:
+						break;
+					}
+				}
+				else{
+					error("Syntax error: Missing condition after 'while'");
+					return res;
+				}
+				if(tt.getType() == TokenType.doToken)	//"do"
+				{	
+					BasicBlock do_block = currentblock.createdo();
+					Next();
+					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+					BasicBlock.block_id++;
+					while(tt.getType() != TokenType.odToken){
+					Result rr = stat_seq(do_block);}
+				}
+				else 
+					System.out.println("no do token after while");
 			}
-
-			else if(tt.getType()==TokenType.ident){
-
-				int var_inst_id2=String2Id(tt.getCharacters());
-				Instruction i2 = Sym_table.get(var_inst_id2).peek();
-				Result oper2= new Result(Type.instruction,i2);
-
-				operands.add(oper2);
-				//Sym_table.get(var_inst_id1).push(i2);
-
+			//Next();
+			
+			
+			if(tt.getType() == TokenType.odToken)	//od
+			{	
+				//TODO: join block
+				while_count--;
+				Next();
 			}
-			// add to instruction for branch command (cond, operands)
+			//}
+
 		}
-		else
-			System.out.println("variable in if not assigned yet");
 		return res;
 	}
 	
@@ -589,6 +656,7 @@ public class Parser{
 				final_res = new Result(Type.instruction,i);
 				if(res.getType() == Type.number)
 				{
+
 					if(res1.getType() == Type.number)	//"3/2"
 						System.out.println(insts.indexOf(i)+":" +oper+" #"+res.getValue()+" "+ res1.getValue());
 					else	//"3/x"
@@ -663,8 +731,10 @@ public class Parser{
 		Result res;
 		String sym;
 		sym = tt.getCharacters();
+
 		res = new Result(Type.number,Integer.parseInt(sym));
 		//res = new Result(Type.number,sym);
+
 		return res;
 	}																																																																																																																			
 }

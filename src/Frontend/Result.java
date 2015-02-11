@@ -27,7 +27,7 @@ public class Result {
 	private Instruction ins;	//for instruction pointer
 	
 	Result(){}
-	
+
 	Result(Type kind,TokenType ss)
 	{
 		if(kind==Type.condition){
