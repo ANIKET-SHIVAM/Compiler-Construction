@@ -132,6 +132,16 @@ public class BasicBlock {
 	public int getEndInstructionIndex(){
 		return this.end_instruction_index;
 	}
+	public void printInstructions(){
+		/*Instruction insts;
+		ArrayList<Result> operands=insts.getOperands();
+		if(operands.size()==2){
+			Result op1=operands.get(0);
+			Result op2=operands.get(1);
+			//System.out.println(insts.indexOf(i)+":"+ inst_list.getOperator() + "(" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
+		}  */
+		
+	}
 	
 
 }

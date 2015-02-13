@@ -1,1 +1,12 @@
-1+2*4-7/5
+//Simple parsing test
+main 
+var x, y;
+{
+    let x <- 51; 
+    let y <- 2 * x;
+    while x < y do
+    let x <- x + 20;
+    let x <- x+y;
+    od;
+    let y <- 10; 
+}.
