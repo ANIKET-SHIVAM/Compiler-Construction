@@ -12,7 +12,7 @@ public class Parser{
 	private Scanner scanner;
 	//private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
 	private HashMap<String,Result> Result_cache;	//for storing Results
-	private ArrayList<Instruction> insts;			//list for instructions
+	public static ArrayList<Instruction> insts;			//list for instructions
 	private HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
 	private HashMap<String,ArrayList<Result>> Function_param;
 	public Stack<Instruction> if_stack = new Stack<Instruction>();
@@ -62,6 +62,7 @@ public class Parser{
 		else								 //after parsing main
 		{
 			currentblock = new BasicBlock(); // main block
+			BasicBlock.mainblock=currentblock;
 			System.out.println("Basic Block: "+ BasicBlock.block_id);
 			BasicBlock.block_id++;
 			while(tt.getType()!= TokenType.periodToken)	//"." at the end

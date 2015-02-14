@@ -1,6 +1,8 @@
 package Frontend;
 import java.util.ArrayList;
 
+import Frontend.Result.Type;
+
 public class BasicBlock {
 	public enum BlockType{
 		main,iftrue,ifelse,join,whileblock,doblock,follow
@@ -14,8 +16,6 @@ public class BasicBlock {
 	private BasicBlock joinblock;   // for if
 	private BasicBlock prevblock;
 	private BasicBlock prevblock2;// for whileblock and joinblock only
-//	private BasicBlock whileblock;	//for while
-//	private BasicBlock doblock;		//for while
 	private BasicBlock followblock;		//for while
 	
 	public int start_instruction_index;
@@ -65,7 +65,7 @@ public class BasicBlock {
 		BasicBlock doblock=new BasicBlock(BlockType.doblock);
 		this.nextblock=doblock;
 		doblock.prevblock=this;
-		doblock.nextblock=this;
+	//	doblock.nextblock=this;
 		this.prevblock2=doblock;
 		return doblock;
 	}
@@ -132,15 +132,46 @@ public class BasicBlock {
 	public int getEndInstructionIndex(){
 		return this.end_instruction_index;
 	}
-	public void printInstructions(){
-		/*Instruction insts;
-		ArrayList<Result> operands=insts.getOperands();
-		if(operands.size()==2){
-			Result op1=operands.get(0);
-			Result op2=operands.get(1);
-			//System.out.println(insts.indexOf(i)+":"+ inst_list.getOperator() + "(" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
-		}  */
-		
+	public ArrayList<String> printInstructions(){
+		ArrayList<String> bb_insts=new ArrayList<>();
+		for(Instruction inst:inst_list){
+			int index = Parser.insts.indexOf(inst);
+			String oper1;String oper2;
+			StringBuilder instruction_print= new StringBuilder(index).append(":").append(inst.getOperator());
+			ArrayList<Result> operands=inst.getOperands();
+			if(operands.size()==2){
+				Result op1=operands.get(0);
+				if(op1.getType()==Type.number)
+					oper1= new StringBuilder("#").append(op1.getValue()).toString();
+				else if(op1.getType()==Type.variable)
+					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
+				else
+					oper1="error";
+			
+				Result op2=operands.get(1);
+				if(op2.getType()==Type.number)
+					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
+				else if(op2.getType()==Type.variable)
+					oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+				else
+					oper2="error";
+				
+				instruction_print.append(oper1).append(oper2);
+			}
+			else if (operands.size()==1){
+				Result op1=operands.get(0);
+				if(op1.getType()==Type.number)
+					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
+				else if(op1.getType()==Type.variable)
+					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
+				else
+					oper1="error";
+				
+				instruction_print.append(oper1);
+			}
+			  bb_insts.add(instruction_print.toString());
+		}
+		return bb_insts;
 	}
 	
 
