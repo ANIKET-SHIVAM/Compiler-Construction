@@ -1,10 +1,10 @@
 package TestRuns;
 import Frontend.*;
-import Graph.CFG;
+//import Graph.CFG;
 
 public class ParserRun {
 		public static void main(String []args){
-			String filename = "testprogs/test001.txt";
+			String filename = "testprogs/arithemetic.txt";
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");

@@ -66,7 +66,7 @@ public class BasicBlock {
 		this.nextblock=doblock;
 		doblock.prevblock=this;
 	//	doblock.nextblock=this;
-		this.prevblock2=doblock;
+		//this.prevblock2=doblock;
 		return doblock;
 	}
 	
