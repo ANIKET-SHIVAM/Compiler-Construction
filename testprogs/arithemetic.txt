@@ -8,5 +8,4 @@ var x, y;
     let x <- x + 20;
     let x <- x+y;
     od;
-    let y <- 10; 
 }.

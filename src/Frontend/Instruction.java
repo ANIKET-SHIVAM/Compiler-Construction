@@ -56,6 +56,9 @@ public class Instruction {
 	public int getType(){
 		return this.type;
 	}
+	public int getbb(){
+		return this.block_id;
+	}
 	public String getOperator(){
 		return this.operator;
 	}

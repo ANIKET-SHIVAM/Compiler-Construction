@@ -7,12 +7,16 @@ var x, y;
     if y > x then
     	if y < 100 then
    		let x <- x + 20;
+   		let y <- y + x;
    	else
    		let x <- x + 30;
     	fi;
     else
     	let x <- x + 40;	
     fi;
+    if y > x then
+    	let x <- x + 10;
+   	fi; 	
     let x <- x+5;
     //call OutputNum(y)
 }.

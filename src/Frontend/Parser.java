@@ -214,7 +214,7 @@ public class Parser{
 		if(tt.getType() == TokenType.beginToken) //"{"
 			Next();
 		if(tt.getType() == TokenType.letToken)	//let 
-		{
+		{System.out.println("asdasdasd"+currentblock.getblockno());
 			res = assignment(currentblock);
 			Next();
 		}
@@ -471,7 +471,7 @@ public class Parser{
 					currentblock.setjoin(phi_block);
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
-				for(i=1;i<Sym_table.size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
+				for(i=1;i<=Sym_table.size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
 				{
 					if(Sym_table.get(i).size()>1)
 					{
@@ -495,6 +495,7 @@ public class Parser{
 			}
 
 		//}
+			//currentblock=phi_block;
 		return phi_block;
 	}
 	

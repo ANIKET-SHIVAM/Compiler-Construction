@@ -7,7 +7,7 @@ import java.io.*;
 
 public class CFG {
 	
-	Stack<BasicBlock> blocks;
+	Stack<BasicBlock> blocks= new Stack<BasicBlock>();
     private PrintWriter printer;
     
     public CFG(String name){
@@ -40,7 +40,7 @@ public class CFG {
         		blocks.push(bb.getifelseblock());
         	if(bb.getfollowblock()!=null)
         		blocks.push(bb.getfollowblock());
-        	if(bb.getjoinblock()!=null)
+        	if(bb.getjoinblock()!=null && bb.getType()!=BasicBlock.BlockType.ifelse)
         		blocks.push(bb.getjoinblock());
         } 	
         printer.println("}");
