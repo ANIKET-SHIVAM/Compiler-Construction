@@ -33,6 +33,8 @@ public class CFG {
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
         	if(bb.getprevblock2()!=null)
         		printEdge(bb.getprevblock2().getblockno(),bb.getblockno());
+        	if(bb.getType()==BasicBlock.BlockType.doblock)
+        		printEdge(bb.getblockno(),bb.getprevblock().getblockno());
         	
         	if(bb.getnextblock()!=null)
         		blocks.push(bb.getnextblock());

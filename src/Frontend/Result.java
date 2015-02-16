@@ -131,11 +131,20 @@ public class Result {
 		}		
 		return val;
 	}
+	
+	public void setInstruction(Instruction i)
+	{
+		this.ins = i;
+	}
 	public Cond_Type getCondition(){
 		return this.condition;
 	}
 	public Instruction getFixupLocation(){
 		return this.fixup_location;
+	}
+	
+	public void setFixupLocation(Instruction fixthis){
+		 this.fixup_location = fixthis;
 	}
 	public String getName(){
 		return this.name;

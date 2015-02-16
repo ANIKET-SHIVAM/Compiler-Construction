@@ -282,24 +282,23 @@ public class Parser{
 					Instruction ii;
 					
 					//Fixup jump location of if
-					if(currentblock.getType() == BlockType.follow || currentblock.getType() == BlockType.ifelse)	//if we are in "else" block
-					{	
-						if(currentblock.getType() == BlockType.ifelse)
-							ii = if_stack.pop();
-						else 
-							ii = while_stack.pop();
-						int len = ii.getOperands().size() - 1;	//index of last operand
-						Result res = ii.getOperands().get(len);
-						Instruction fix_loc = res.getFixupLocation();
-						fix_loc = i;
-						if(currentblock.getType() == BlockType.ifelse)
-						{
-							if(x.getType() != Type.number)
-								System.out.println("Fixup loc for 'if' is :"+insts.indexOf(x.getInstruction()));
-							else
-								System.out.println("Fixup loc for 'if' is :"+insts.indexOf(i));
-						}
-						else
+				//	if(currentblock.getType() == BlockType.ifelse)	//if we are in "else" block
+					//{	
+						//ii = if_stack.pop();
+						//else 
+							//ii = while_stack.pop();
+						//int len = ii.getOperands().size() - 1;	//index of last operand
+						//Result res = ii.getOperands().get(len);
+						//Instruction fix_loc = res.getFixupLocation();
+						//fix_loc = i;
+						//if(currentblock.getType() == BlockType.ifelse)
+						//{
+						//	if(x.getType() != Type.number)
+								//System.out.println("Fixup loc for 'if' is :"+insts.indexOf(x.getInstruction()));
+							//else
+								//System.out.println("Fixup loc for 'if' is :"+insts.indexOf(i));
+						//}
+					/*	else
 						{
 							if(x.getType() == Type.number)
 								System.out.println("Fixup loc for 'while' is :"+insts.indexOf(i));
@@ -307,8 +306,8 @@ public class Parser{
 								System.out.println("Fixup loc for 'while' is :"+insts.indexOf(x.getInstruction()));
 							//if_stack.push(ii);
 						}
-						
-					}
+						*/
+					//}
 					if(!Sym_table.containsKey(index))	//if sym_table is empty
 					{
 						Stack<Instruction> ss = new Stack<Instruction>();
@@ -455,13 +454,39 @@ public class Parser{
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
 				Next();
+				
+				//Fixup of ifcondition jump location
+				/*Instruction	my_fix = if_stack.pop();
+				int len = my_fix.getOperands().size() - 1;	//index of last operand
+				Result res1 = my_fix.getOperands().get(len);
+				//Instruction fix_loc = res.getFixupLocation();
+				Instruction fix_loc = insts.get(insts.size());
+				res1.setFixupLocation(fix_loc);
+				res1.setInstruction(fix_loc);*/
+				
 				while(tt.getType() != TokenType.fiToken){
 					Result else_res = stat_seq(else_block);
 				}	
+				Instruction	my_fix = if_stack.pop();
+				int len = my_fix.getOperands().size() - 1;	//index of last operand
+				Result res2 = my_fix.getOperands().get(len);
+				
+				//Instruction fix_loc = res.getFixupLocation();
+				Instruction fix_loc = else_block.inst_list.get(0);
+				//res2.setFixupLocation(fix_loc);
+				res2.setInstruction(fix_loc);
 			}
-			if(else_flag==0)
-				Next();
+			if(else_flag==0){
 			
+				/*Instruction	my_fix = while_stack.pop();
+				int len = my_fix.getOperands().size() - 1;	//index of last operand
+				Result res1 = my_fix.getOperands().get(len);
+				//Instruction fix_loc = res.getFixupLocation();
+				Instruction fix_loc = insts.get(insts.size());
+				res1.setFixupLocation(fix_loc);
+				res1.setInstruction(fix_loc);*/
+				Next();
+			}
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
 				String var;
@@ -490,6 +515,17 @@ public class Parser{
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 					}
 				
+				}
+				if(else_flag==0)
+				{
+					Instruction	my_fix = if_stack.pop();
+					int len = my_fix.getOperands().size() - 1;	//index of last operand
+					Result res2 = my_fix.getOperands().get(len);
+					
+					//Instruction fix_loc = res.getFixupLocation();
+					Instruction fix_loc = phi_block.inst_list.get(0);
+					//res2.setFixupLocation(fix_loc);
+					res2.setInstruction(fix_loc);
 				}
 				BasicBlock.block_id++;	
 				Next();
@@ -559,7 +595,7 @@ public class Parser{
 						}
 					}
 					String ss = cond.getCondition().name();
-					Result fix_res = new Result();
+					Result fix_res = new Result(Type.instruction,i);
 					switch(ss)
 					{
 					case "bge":
@@ -570,6 +606,7 @@ public class Parser{
 					case "blt":
 						Instruction ii = new Instruction(ss,ins_res,fix_res);//to be fixed to location of jump
 						currentblock.end_Instr = ii;
+						currentblock.inst_list.add(ii);
 						ii.basicblock = currentblock;
 						ii.block_id = BasicBlock.block_id;
 						insts.add(ii);
@@ -595,7 +632,7 @@ public class Parser{
 						Result rr = stat_seq(do_block);
 					}
 					int phi_counter=0;
-					for(counter=1;counter<Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
+					for(counter=1;counter<=Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{
 						if(Sym_table.get(counter).size()>1)
 						{
@@ -623,6 +660,7 @@ public class Parser{
 					Instruction branch_inst = new Instruction("bra",jump_res);
 					branch_inst.basicblock = currentblock;
 					branch_inst.block_id = BasicBlock.block_id;
+					do_block.inst_list.add(branch_inst);
 					insts.add(branch_inst);
 				}
 				else 
@@ -635,9 +673,22 @@ public class Parser{
 				currentblock=follow_block;		// while block for conditions and phi inst
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
+				
+				
+				
 				while_count--;
 				Next();
 				stat_seq(follow_block);
+				
+				Instruction	my_fix = while_stack.pop();
+				int len = my_fix.getOperands().size() - 1;	//index of last operand
+				Result res2 = my_fix.getOperands().get(len);
+				
+				//Instruction fix_loc = res.getFixupLocation();
+				Instruction fix_loc = follow_block.inst_list.get(0);
+				//res2.setFixupLocation(fix_loc);
+				res2.setInstruction(fix_loc);
+				
 				
 			}
 			

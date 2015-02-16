@@ -14,9 +14,6 @@ var x, y;
     else
     	let x <- x + 40;	
     fi;
-    if y > x then
-    	let x <- x + 10;
-   	fi; 	
-    let x <- x+5;
+  
     //call OutputNum(y)
 }.
