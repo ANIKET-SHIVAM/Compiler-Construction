@@ -214,7 +214,7 @@ public class Parser{
 		if(tt.getType() == TokenType.beginToken) //"{"
 			Next();
 		if(tt.getType() == TokenType.letToken)	//let 
-		{System.out.println("asdasdasd"+currentblock.getblockno());
+		{
 			res = assignment(currentblock);
 			Next();
 		}
@@ -226,6 +226,8 @@ public class Parser{
 		if(tt.getType() == TokenType.ifToken)	//if
 		{
 			bb=ifStatement(currentblock);
+			currentblock=bb;
+			System.out.println("xxxxxxxxxxxxxxxxx"+currentblock.getblockno());
 			Next();
 		}
 		if(tt.getType() == TokenType.whileToken)	//while
@@ -400,7 +402,7 @@ public class Parser{
 					}
 					
 					String ss = cond.getCondition().name();
-					Result fix_res = new Result();
+					Result fix_res = new Result(Type.instruction,i);// i just given to initialize, fixup will replace this
 					switch(ss)
 					{
 					case "bge":
@@ -413,7 +415,7 @@ public class Parser{
 						currentblock.end_Instr = ii;
 						ii.basicblock = currentblock;
 						ii.block_id = BasicBlock.block_id;
-						currentblock.inst_list.add(i);
+						currentblock.inst_list.add(ii);
 						insts.add(ii);
 						if_stack.push(ii);
 						
