@@ -508,14 +508,13 @@ public class Parser{
 
 		while(while_count != 0)
 		{
-			BasicBlock while_block = currentblock.createWhile();
-			BasicBlock follow_block = currentblock.createfollow();
-			currentblock=currentblock.getnextblock();			// while block for conditions and phi inst
 			if(tt.getType() == TokenType.whileToken)		//nested while
 			{
 				if(while_count != 1)
 					while_count++;
 				
+				BasicBlock while_block = currentblock.createWhile();
+				currentblock=currentblock.getnextblock();			// while block for conditions and phi inst
 			//	System.out.println("created while block");
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
@@ -630,7 +629,10 @@ public class Parser{
 			
 			if(tt.getType() == TokenType.odToken)	//od
 			{	
-				//TODO: join block
+				BasicBlock follow_block = currentblock.createfollow();
+				currentblock=follow_block;		// while block for conditions and phi inst
+				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+				BasicBlock.block_id++;
 				while_count--;
 				Next();
 				stat_seq(follow_block);
