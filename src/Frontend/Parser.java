@@ -471,17 +471,11 @@ public class Parser{
 				//res2.setFixupLocation(fix_loc);
 				res2.setInstruction(fix_loc);
 			}
-			if(else_flag==0){
-			
-				/*Instruction	my_fix = while_stack.pop();
-				int len = my_fix.getOperands().size() - 1;	//index of last operand
-				Result res1 = my_fix.getOperands().get(len);
-				//Instruction fix_loc = res.getFixupLocation();
-				Instruction fix_loc = insts.get(insts.size());
-				res1.setFixupLocation(fix_loc);
-				res1.setInstruction(fix_loc);*/
+			//if(else_flag==0){
+				//Next();
+			//}
+			if(tt.getType()== TokenType.semiToken)
 				Next();
-			}
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
 				String var;
@@ -522,7 +516,7 @@ public class Parser{
 					//res2.setFixupLocation(fix_loc);
 					res2.setInstruction(fix_loc);
 				}
-				BasicBlock.block_id++;	
+				//BasicBlock.block_id++;	
 				Next();
 				else_flag=0;
 			}
