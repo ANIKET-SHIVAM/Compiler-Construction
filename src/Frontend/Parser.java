@@ -82,8 +82,9 @@ public class Parser{
 						currentblock=stat_seq(currentblock);							//statSequence
 					}
 					Instruction end=new Instruction("end");
+					if(insts.get(insts.size()-1).getOperator()!="end"){
 					insts.add(end);
-					currentblock.inst_list.add(end);
+					currentblock.inst_list.add(end);}
 					if(tt.getType() != TokenType.endToken) //"}"
 					{
 						Token.checkToken("");
@@ -207,36 +208,39 @@ public class Parser{
 	public BasicBlock statement(BasicBlock currentblock)
 	{
 		BasicBlock bb=null;
-		if(tt.getType() == TokenType.semiToken)	//";"
+		if(tt.getType() == TokenType.semiToken){	//";"
 			Next();
-		if(tt.getType() == TokenType.beginToken) //"{"
+			bb=currentblock;}
+		else if(tt.getType() == TokenType.beginToken){ //"{"
 			Next();
-		if(tt.getType() == TokenType.letToken)	//let 
+			bb=currentblock;}
+		else if(tt.getType() == TokenType.letToken)	//let 
 		{
 			assignment(currentblock);
-			bb=currentblock;
 			Next();
+			bb=currentblock;
 		}
-		if(tt.getType() == TokenType.callToken)	//call
+		else if(tt.getType() == TokenType.callToken)	//call
 		{
 			bb = funcCall(currentblock);
 			Next();
 		}
-		if(tt.getType() == TokenType.ifToken)	//if
+		else if(tt.getType() == TokenType.ifToken)	//if
 		{	
 			bb=ifStatement(currentblock);
 			Next();
 		}
-		if(tt.getType() == TokenType.whileToken)	//while
+		else if(tt.getType() == TokenType.whileToken)	//while
 		{
 			bb=whileStatement(currentblock);
 			//Next();
 		}
-		if(tt.getType() == TokenType.returnToken)	//return
+		else if(tt.getType() == TokenType.returnToken)	//return
 		{
 			E(currentblock);
 			bb=currentblock;
 		}
+		else bb=currentblock;
 		return bb;
 	}
 	
@@ -666,7 +670,16 @@ public class Parser{
 				Instruction	my_fix = while_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
 				Result res2 = my_fix.getOperands().get(len);
-				Instruction fix_loc = follow_block.inst_list.get(0);
+				Instruction fix_loc;
+				if(!follow_block.inst_list.isEmpty())
+					fix_loc = follow_block.inst_list.get(0);
+				else{
+					Instruction end=new Instruction("end");
+					insts.add(end);
+					follow_block.inst_list.add(end);
+					fix_loc = follow_block.inst_list.get(0);
+				}
+					
 				res2.setInstruction(fix_loc);
 			
 			}

@@ -12,5 +12,4 @@ var x, y;
   		 fi;
 		let x<- x+40;
 	od;
-  	let x<- x+50;
 }.
