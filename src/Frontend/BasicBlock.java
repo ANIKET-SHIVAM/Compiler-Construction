@@ -139,6 +139,7 @@ public class BasicBlock {
 			String oper1;String oper2;
 			StringBuilder instruction_print= new StringBuilder(Integer.toString(Parser.insts.indexOf(inst))).append(":").append(inst.getOperator());
 			ArrayList<Result> operands=inst.getOperands();
+			if (operands!= null){
 			if(operands.size()==2){
 				Result op1=operands.get(0);
 				if(op1.getType()==Type.number)
@@ -173,53 +174,11 @@ public class BasicBlock {
 				
 				instruction_print.append(oper1);
 			}
+			}	
 			  bb_insts.add(instruction_print.toString());
 		}
 		return bb_insts;
 	}
-	
-	
-	/*public ArrayList<String> printInstructions(){
-		ArrayList<String> bb_insts=new ArrayList<>();
-		for(Instruction inst:inst_list){
-			int index = Parser.insts.indexOf(inst);
-			String oper1;String oper2;
-			StringBuilder instruction_print= new StringBuilder(index).append(":").append(inst.getOperator());
-			ArrayList<Result> operands=inst.getOperands();
-			if(operands.size()==2){
-				Result op1=operands.get(0);
-				if(op1.getType()==Type.number)
-					oper1= new StringBuilder("#").append(op1.getValue()).toString();
-				else if(op1.getType()==Type.variable)
-					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
-				else
-					oper1="error";
-			
-				Result op2=operands.get(1);
-				if(op2.getType()==Type.number)
-					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
-				else if(op2.getType()==Type.variable)
-					oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
-				else
-					oper2="error";
-				
-				instruction_print.append(oper1).append(oper2);
-			}
-			else if (operands.size()==1){
-				Result op1=operands.get(0);
-				if(op1.getType()==Type.number)
-					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
-				else if(op1.getType()==Type.variable)
-					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
-				else
-					oper1="error";
-				
-				instruction_print.append(oper1);
-			}
-			  bb_insts.add(instruction_print.toString());
-		}
-		return bb_insts;
-	}
-	*/
+
 
 }

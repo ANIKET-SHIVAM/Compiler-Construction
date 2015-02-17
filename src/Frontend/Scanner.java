@@ -33,23 +33,19 @@ public class Scanner {
 		id=0;
 	}
 	public Token getToken(){
-		//Token token=null;
-		//char ch;String characters=null;
 		if(inputSym == '\0')
-		{	//return Token;
-		//if(inputSym=='|'){
+		{	
 			return Token.checkToken("|");
 		}
-		//if((Comment())!=null) {
-				if(inputSym == '/'){
-				Comment();
-				}
-
-				if(inputSym == 'm')
-					return check_main();
-				NoUseCh();
 		
+		NoUseCh();
 		
+		if(inputSym ==  '/'){
+			return Comment();
+		}
+	
+		if(inputSym == 'm')
+			return check_main();
 		
 		if(inputSym >='0' && inputSym<= '9') {
 			return isNumber();}
@@ -58,17 +54,22 @@ public class Scanner {
 			return isIdentOrKeyword();
 			}
 		
-		if(inputSym == '/'){
-			Comment();
-			}
-		
 		switch(inputSym){
 		case '*':
 			Next();
 			return Token.checkToken("*");
 			//break;
 		/*case '/':
-			return(Comment());*/
+			Next();
+			if(inputSym == '/'){
+				System.out.println("ASDasdasd");
+				Comment();
+			}
+			else {
+				Prev();
+				return Token.checkToken("/");
+			}
+			//return(Comment());*/
 		case '+':
 			Next();return Token.checkToken("+");
 			//break;
@@ -79,15 +80,12 @@ public class Scanner {
 		case '=':
 			Next();
 			if(inputSym=='=')
-			{
-				//Next();
+			{   Next();
 				return Token.checkToken("==");
 			}
 			else 
 			{
 				NoUseCh();
-				
-//				System.out.println("Syntax Error");
 				return Token.checkToken(Character.toString(inputSym));
 			}
 		case '!':
@@ -119,7 +117,7 @@ public class Scanner {
 		case '}':
 			Next();return Token.checkToken("}");
 		}
-		System.out.println("Syntax Error");return null;
+		System.out.println("Syntax Error"+ inputSym);return null;
 	}
 	
 	
@@ -175,7 +173,7 @@ public class Scanner {
 			if(inputSym=='/'){
 				while (inputSym!='\n'){
 					Next();}
-				Next();
+				Next();NoUseCh();
 			}
 			else {
 				Prev();

@@ -33,6 +33,8 @@ public class Parser{
 	void Next()
 	{
 		tt = scanner.getToken();
+		if(tt.getType()==TokenType.commentToken)
+			Next();
 	}
 
 	public int String2Id(String s){
@@ -79,6 +81,9 @@ public class Parser{
 					while(tt.getType() != TokenType.endToken){
 						currentblock=stat_seq(currentblock);							//statSequence
 					}
+					Instruction end=new Instruction("end");
+					insts.add(end);
+					currentblock.inst_list.add(end);
 					if(tt.getType() != TokenType.endToken) //"}"
 					{
 						Token.checkToken("");
