@@ -7,7 +7,7 @@ import java.io.*;
 
 public class CFG {
 	
-	Stack<BasicBlock> blocks= new Stack<BasicBlock>();
+	Queue<BasicBlock> blocks= new LinkedList<BasicBlock>();
     private PrintWriter printer;
     
     public CFG(String name){
@@ -24,9 +24,9 @@ public class CFG {
         printer.println("layoutalgorithm: dfs");
         printer.println("manhattan_edges: yes");
         printer.println("smanhattan_edges: yes");
-        blocks.push(bb);
+        blocks.add(bb);
         while(!blocks.isEmpty()){
-        	bb=blocks.pop();
+        	bb=blocks.remove();
         	printBlock(bb);
         	
         	if(bb.getprevblock()!=null)
@@ -37,13 +37,13 @@ public class CFG {
         		printEdge(bb.getblockno(),bb.getprevblock().getblockno());
         	
         	if(bb.getnextblock()!=null)
-        		blocks.push(bb.getnextblock());
+        		blocks.add(bb.getnextblock());
         	if(bb.getifelseblock()!=null)
-        		blocks.push(bb.getifelseblock());
+        		blocks.add(bb.getifelseblock());
         	if(bb.getfollowblock()!=null)
-        		blocks.push(bb.getfollowblock());
+        		blocks.add(bb.getfollowblock());
         	if(bb.getjoinblock()!=null && bb.getType()!=BasicBlock.BlockType.ifelse)
-        		blocks.push(bb.getjoinblock());
+        		blocks.add(bb.getjoinblock());
         } 	
         printer.println("}");
         printer.close();
