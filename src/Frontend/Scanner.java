@@ -40,7 +40,7 @@ public class Scanner {
 		
 		NoUseCh();
 		
-		if(inputSym ==  '/'){
+		if(inputSym ==  '/'||inputSym ==  '#'){
 			return Comment();
 		}
 	

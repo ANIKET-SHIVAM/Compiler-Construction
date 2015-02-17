@@ -33,8 +33,10 @@ public class CFG {
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
         	if(bb.getprevblock2()!=null)
         		printEdge(bb.getprevblock2().getblockno(),bb.getblockno());
-        	if(bb.getType()==BasicBlock.BlockType.doblock)
-        		printEdge(bb.getblockno(),bb.getprevblock().getblockno());
+        	//if(bb.getType()==BasicBlock.BlockType.doblock && bb.checkdotowhile())
+        	//	printEdge(bb.getblockno(),bb.getprevblock().getblockno());
+        	if(bb.checkdotowhile())
+        		printEdge(bb.getblockno(),bb.getdotowhile().getblockno());
         	
         	if(bb.getnextblock()!=null)
         		blocks.add(bb.getnextblock());
@@ -42,7 +44,7 @@ public class CFG {
         		blocks.add(bb.getifelseblock());
         	if(bb.getfollowblock()!=null)
         		blocks.add(bb.getfollowblock());
-        	if(bb.getjoinblock()!=null && bb.getType()==BasicBlock.BlockType.iftrue)
+        	if(bb.getjoinblock()!=null && (bb.getType()==BasicBlock.BlockType.iftrue ||bb.getType()==BasicBlock.BlockType.follow))
         		blocks.add(bb.getjoinblock());
         } 	
         printer.println("}");

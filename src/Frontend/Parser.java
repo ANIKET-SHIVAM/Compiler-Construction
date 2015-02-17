@@ -347,11 +347,9 @@ public class Parser{
 	{
 		int if_count=1;
 		int else_flag=0;
-		BasicBlock if_block,else_block,phi_block,bb;
+		BasicBlock if_block,else_block,phi_block,bb=null;
 		BasicBlock nested_if_block = currentblock;
 		
-		//if(tt.getType() == TokenType.ifToken)		//nested if
-			//{
 				if(if_count != 1)
 					if_count++;
 				nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
@@ -439,6 +437,7 @@ public class Parser{
 					{	while((tt.getType() != TokenType.elseToken)&&(tt.getType() != TokenType.fiToken)){
 							bb = stat_seq(if_block);
 						}
+
 					}
 				}
 			//while(!if_stack.isEmpty()){
@@ -450,17 +449,8 @@ public class Parser{
 				BasicBlock.block_id++;
 				Next();
 				
-				//Fixup of ifcondition jump location
-				/*Instruction	my_fix = if_stack.pop();
-				int len = my_fix.getOperands().size() - 1;	//index of last operand
-				Result res1 = my_fix.getOperands().get(len);
-				//Instruction fix_loc = res.getFixupLocation();
-				Instruction fix_loc = insts.get(insts.size());
-				res1.setFixupLocation(fix_loc);
-				res1.setInstruction(fix_loc);*/
-				
 				while(tt.getType() != TokenType.fiToken){
-					bb = stat_seq(else_block);
+				else_block = stat_seq(else_block);
 				}	
 				Instruction	my_fix = if_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
@@ -471,16 +461,14 @@ public class Parser{
 				//res2.setFixupLocation(fix_loc);
 				res2.setInstruction(fix_loc);
 			}
-			//if(else_flag==0){
-				//Next();
-			//}
+			
 			if(tt.getType()== TokenType.semiToken)
 				Next();
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
 				String var;
 				int i=1;
-				phi_block = nested_if_block.createjoin();
+				phi_block = bb.createjoin();
 				if(else_flag==1)
 					else_block.setjoin(phi_block);
 				else
@@ -520,15 +508,15 @@ public class Parser{
 				Next();
 				else_flag=0;
 			}
-			
 		return phi_block;
+		
 	}
 	
 	public BasicBlock whileStatement(BasicBlock currentblock)
 	{
 		int while_count=1;
 		int counter=0;
-		BasicBlock bb;
+		BasicBlock bb=null;
 
 		while(while_count != 0)
 		{
@@ -536,12 +524,20 @@ public class Parser{
 			{
 				if(while_count != 1)
 					while_count++;
+				BasicBlock while_block;
+				if(currentblock.inst_list.size()!=0){
+					while_block = currentblock.createWhile();
+					currentblock=currentblock.getnextblock();
+					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+					BasicBlock.block_id++;}		// while block for conditions and phi inst
+				else{
+					currentblock.changeType(BasicBlock.BlockType.whileblock);
+					while_block = currentblock;
+					}
 				
-				BasicBlock while_block = currentblock.createWhile();
-				currentblock=currentblock.getnextblock();			// while block for conditions and phi inst
 			//	System.out.println("created while block");
-				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
-				BasicBlock.block_id++;
+				
+				
 				
 				Next();
 
@@ -614,9 +610,11 @@ public class Parser{
 					Next();
 					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 					BasicBlock.block_id++;
+					bb=do_block;
 					while(tt.getType() != TokenType.odToken){
-						bb = stat_seq(do_block);
+						bb = stat_seq(bb);
 					}
+					bb.setdotowhile(while_block);
 					int phi_counter=0;
 					for(counter=1;counter<=Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{
@@ -644,9 +642,10 @@ public class Parser{
 					Instruction jump_ins = while_block.inst_list.get(0);
 					Result jump_res = new Result(Type.instruction,jump_ins);
 					Instruction branch_inst = new Instruction("bra",jump_res);
-					branch_inst.basicblock = currentblock;
+					//System.out.println(bb.getType().toString());
+					branch_inst.basicblock = bb;
 					branch_inst.block_id = BasicBlock.block_id;
-					do_block.inst_list.add(branch_inst);
+					bb.inst_list.add(branch_inst);
 					insts.add(branch_inst);
 				}
 				else 
@@ -659,27 +658,20 @@ public class Parser{
 				currentblock=follow_block;		// while block for conditions and phi inst
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
-				
-				
-				
+			
 				while_count--;
 				Next();
-				stat_seq(follow_block);
+				follow_block=stat_seq(follow_block);
 				
 				Instruction	my_fix = while_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
 				Result res2 = my_fix.getOperands().get(len);
-				
-				//Instruction fix_loc = res.getFixupLocation();
 				Instruction fix_loc = follow_block.inst_list.get(0);
-				//res2.setFixupLocation(fix_loc);
 				res2.setInstruction(fix_loc);
-				
-				
+			
 			}
 			
 		}
-		currentblock=currentblock.getfollowblock();
 		System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 		BasicBlock.block_id++;
 		return currentblock;

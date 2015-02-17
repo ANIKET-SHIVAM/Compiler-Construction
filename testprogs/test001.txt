@@ -4,14 +4,13 @@ var x, y;
 {
     let x <- 51; 
     let y <- 2 * x;
-    if y == x then
-   		let x <- x/20;
-//		let y <- y + x;
-   	else
-   		let x <- x + 30;
-    fi;
-    if y <= 100 then
-    	let x <- x + 40;
-    fi;
-  
+    while y==x do
+   		if y == x then
+			let y <- 20 + x;
+   		else
+   			let x <- x + 30;
+  		 fi;
+		let x<- x+40;
+	od;
+  	let x<- x+50;
 }.

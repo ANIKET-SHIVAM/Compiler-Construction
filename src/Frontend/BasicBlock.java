@@ -15,8 +15,9 @@ public class BasicBlock {
 	private BasicBlock ifelseblock;	// for if
 	private BasicBlock joinblock;   // for if
 	private BasicBlock prevblock;
-	private BasicBlock prevblock2;// for whileblock and joinblock only
+	private BasicBlock prevblock2;// for joinblock only
 	private BasicBlock followblock;		//for while
+	private BasicBlock dotowhileblock;
 	
 	public int start_instruction_index;
 	public int end_instruction_index;
@@ -95,7 +96,20 @@ public class BasicBlock {
 			this.nextblock.joinblock.prevblock2=this;
 		}*/
 	}
-	
+	public void setdotowhile(BasicBlock while_block){	
+		this.dotowhileblock=while_block;
+	}
+	public boolean checkdotowhile(){
+		boolean b;
+		if(this.dotowhileblock!=null)
+			b=true;
+		else
+			b=false;
+		return b;
+	}
+	public BasicBlock getdotowhile(){	
+		return this.dotowhileblock;
+	}
 	public void setStartInstructionIndex(int index){
 		start_instruction_index=index;
 	}
@@ -107,6 +121,9 @@ public class BasicBlock {
 	}
 	public int getblockno(){
 		return this.blockno;
+	}
+	public void changeType(BlockType bbtype){
+		this.kind=bbtype;
 	}
 	public BasicBlock getprevblock(){
 		return this.prevblock;
