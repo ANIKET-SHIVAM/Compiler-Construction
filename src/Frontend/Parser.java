@@ -484,7 +484,14 @@ public class Parser{
 				System.out.println(iftruebb.getType().toString()+"true");
 				System.out.println(elsebb.getType().toString()+"else");
 				int i=1;
-				phi_block = iftruebb.createjoin();
+				if(iftruebb.inst_list.get(0).getOperator()=="end"&&iftruebb.inst_list.size()==1){
+					phi_block=iftruebb;
+					iftruebb.changeType(BasicBlock.BlockType.join);
+					iftruebb.inst_list.remove(0);
+				}			
+				else	
+					phi_block = iftruebb.createjoin();
+				
 				if(else_flag==1)
 					elsebb.setjoin(phi_block);
 				else
