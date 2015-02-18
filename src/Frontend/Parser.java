@@ -484,13 +484,14 @@ public class Parser{
 				System.out.println(iftruebb.getType().toString()+"true");
 				System.out.println(elsebb.getType().toString()+"else");
 				int i=1;
+				System.out.println(iftruebb.inst_list.get(0).getOperator());
 				if(iftruebb.inst_list.get(0).getOperator()=="end"&&iftruebb.inst_list.size()==1){
 					phi_block=iftruebb;
-					iftruebb.changeType(BasicBlock.BlockType.join);
-					iftruebb.inst_list.remove(0);
+					phi_block.changeType(BasicBlock.BlockType.join);
+					phi_block.inst_list.remove(0);
 				}			
 				else	
-					phi_block = iftruebb.createjoin();
+				{phi_block = iftruebb.createjoin();}
 				
 				if(else_flag==1)
 					elsebb.setjoin(phi_block);
@@ -685,8 +686,8 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				while(tt.getType() != TokenType.elseToken)
-					follow_block=stat_seq(follow_block);
+				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken){
+					follow_block=stat_seq(follow_block);}
 				
 				Instruction	my_fix = while_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
@@ -702,7 +703,7 @@ public class Parser{
 				}
 					
 				res2.setInstruction(fix_loc);
-			
+			currentblock=follow_block;
 			}
 			
 		}
