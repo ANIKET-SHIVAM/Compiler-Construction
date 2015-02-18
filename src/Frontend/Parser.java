@@ -207,7 +207,7 @@ public class Parser{
 	
 	public BasicBlock statement(BasicBlock currentblock)
 	{
-		BasicBlock bb=null;
+		BasicBlock bb;
 		if(tt.getType() == TokenType.semiToken){	//";"
 			Next();
 			bb=currentblock;}
@@ -215,8 +215,7 @@ public class Parser{
 			Next();
 			bb=currentblock;}
 		else if(tt.getType() == TokenType.letToken)	//let 
-		{
-			assignment(currentblock);
+		{	assignment(currentblock);
 			Next();
 			bb=currentblock;
 		}
@@ -351,7 +350,7 @@ public class Parser{
 	{
 		int if_count=1;
 		int else_flag=0;
-		BasicBlock if_block,else_block,phi_block,bb=null;
+		BasicBlock if_block,else_block,phi_block,iftruebb=null,elsebb=null;
 		BasicBlock nested_if_block = currentblock;
 		
 				if(if_count != 1)
@@ -430,51 +429,64 @@ public class Parser{
 					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 					BasicBlock.block_id++;
 					Next();
-					if(tt.getType() == TokenType.ifToken)
+					if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 					{	
-						nested_if_block=ifStatement(if_block);
+						iftruebb=stat_seq(if_block);
 						if(tt.getType() == TokenType.semiToken)
 							Next();
 						//Next();
 					}
 					else
 					{	while((tt.getType() != TokenType.elseToken)&&(tt.getType() != TokenType.fiToken)){
-							bb = stat_seq(if_block);
+							iftruebb = stat_seq(if_block);
 						}
 
 					}
 				}
 			//while(!if_stack.isEmpty()){
+				System.out.println(tt.getCharacters());
 			if(tt.getType() == TokenType.elseToken)	//else
 			{
 				else_flag=1;
+				System.out.println("asdasdasd"+currentblock.getType().toString());
 				else_block = currentblock.createElse();
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
 				Next();
 				
-				while(tt.getType() != TokenType.fiToken){
-				else_block = stat_seq(else_block);
-				}	
+				if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
+				{	
+					elsebb=stat_seq(else_block);
+					if(tt.getType() == TokenType.semiToken)
+						Next();
+					//Next();
+				}
+				else
+				{	while((tt.getType() != TokenType.fiToken)){
+					elsebb = stat_seq(else_block);
+					}
+
+				}
 				Instruction	my_fix = if_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
 				Result res2 = my_fix.getOperands().get(len);
 				
 				//Instruction fix_loc = res.getFixupLocation();
-				Instruction fix_loc = else_block.inst_list.get(0);
+				Instruction fix_loc = elsebb.inst_list.get(0);
 				//res2.setFixupLocation(fix_loc);
 				res2.setInstruction(fix_loc);
 			}
-			
 			if(tt.getType()== TokenType.semiToken)
 				Next();
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
 				String var;
+				System.out.println(iftruebb.getType().toString()+"true");
+				System.out.println(elsebb.getType().toString()+"else");
 				int i=1;
-				phi_block = bb.createjoin();
+				phi_block = iftruebb.createjoin();
 				if(else_flag==1)
-					else_block.setjoin(phi_block);
+					elsebb.setjoin(phi_block);
 				else
 					currentblock.setjoin(phi_block);
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
@@ -520,7 +532,7 @@ public class Parser{
 	{
 		int while_count=1;
 		int counter=0;
-		BasicBlock bb=null;
+		BasicBlock dobb=null;
 
 		while(while_count != 0)
 		{
@@ -606,7 +618,7 @@ public class Parser{
 				}
 				else{
 					error("Syntax error: Missing condition after 'while'");
-					return bb=currentblock;
+					return dobb=currentblock;
 				}
 				if(tt.getType() == TokenType.doToken)	//"do"
 				{	
@@ -614,22 +626,23 @@ public class Parser{
 					Next();
 					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 					BasicBlock.block_id++;
-					bb=do_block;
+					dobb=do_block;
 					while(tt.getType() != TokenType.odToken){
-						bb = stat_seq(bb);
+						dobb = stat_seq(dobb);
 					}
-					bb.setdotowhile(while_block);
+					dobb.setdotowhile(while_block);
 					int phi_counter=0;
 					for(counter=1;counter<=Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
-					{
+					{	
 						if(Sym_table.get(counter).size()>1)
 						{
 								String var = IdtoString(counter);//Todo
 								
 								Instruction i1 = Sym_table.get(counter).peek();
 								int top = Sym_table.get(counter).size()-2;			//second element from top
-								while(Sym_table.get(counter).elementAt(top).block_id >= i1.block_id)
+								while(Sym_table.get(counter).elementAt(top).block_id >= i1.block_id){
 									top--;
+									}
 								Instruction i2 = Sym_table.get(counter).elementAt(top);
 								Result oper1= new Result(Type.instruction,i1);
 								Result oper2= new Result(Type.instruction,i2);
@@ -647,9 +660,9 @@ public class Parser{
 					Result jump_res = new Result(Type.instruction,jump_ins);
 					Instruction branch_inst = new Instruction("bra",jump_res);
 					//System.out.println(bb.getType().toString());
-					branch_inst.basicblock = bb;
+					branch_inst.basicblock = dobb;
 					branch_inst.block_id = BasicBlock.block_id;
-					bb.inst_list.add(branch_inst);
+					dobb.inst_list.add(branch_inst);
 					insts.add(branch_inst);
 				}
 				else 
@@ -665,7 +678,8 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				follow_block=stat_seq(follow_block);
+				while(tt.getType() != TokenType.elseToken)
+					follow_block=stat_seq(follow_block);
 				
 				Instruction	my_fix = while_stack.pop();
 				int len = my_fix.getOperands().size() - 1;	//index of last operand
@@ -685,8 +699,9 @@ public class Parser{
 			}
 			
 		}
-		System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
-		BasicBlock.block_id++;
+	/*	System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
+		BasicBlock.block_id++;*/
+
 		return currentblock;
 }
 	
