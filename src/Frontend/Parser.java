@@ -481,8 +481,6 @@ public class Parser{
 			if(tt.getType() == TokenType.fiToken)	//fi
 			{
 				String var;
-				System.out.println(iftruebb.getType().toString()+"true");
-				System.out.println(elsebb.getType().toString()+"else");
 				int i=1;
 				System.out.println(iftruebb.inst_list.get(0).getOperator());
 				if(iftruebb.inst_list.get(0).getOperator()=="end"&&iftruebb.inst_list.size()==1){
