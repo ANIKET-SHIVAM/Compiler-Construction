@@ -1,6 +1,6 @@
 package TestRuns;
 import Frontend.*;
-import Graph.CFG;
+import Graph.*;
 
 public class ParserRun {
 		public static void main(String []args){
@@ -10,5 +10,6 @@ public class ParserRun {
 			System.out.println("\n!!! Parsed successfully !!!");
 			CFG graph=new CFG("test001");
 			graph.printCFG();
+			DominatorTree domtree=new DominatorTree();
 		}		
 }
