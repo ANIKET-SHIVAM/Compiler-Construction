@@ -5,7 +5,7 @@ import Frontend.*;
 
 
 public class DominatorTree {
-	public static HashMap<Integer,LinkedList<Integer>> Dominator= new  HashMap<Integer,LinkedList<Integer>>();
+	private static HashMap<Integer,LinkedList<Integer>> Dominator= new  HashMap<Integer,LinkedList<Integer>>();
 	private BasicBlock main;
 	
 	public DominatorTree(){
@@ -69,6 +69,9 @@ public class DominatorTree {
 			createDT(bb.getjoinblock(),bb);
 		if(bb.getfollowblock()!= null)
 			createDT(bb.getfollowblock(),bb);
+	}
+	public static LinkedList<Integer> getDominators(int blockno){
+		return Dominator.get(blockno);
 	}
 
 }
