@@ -44,7 +44,7 @@ public class CFG {
         		blocks.add(bb.getifelseblock());
         	if(bb.getfollowblock()!=null)
         		blocks.add(bb.getfollowblock());
-        	if(bb.getjoinblock()!=null && (bb.getType()==BasicBlock.BlockType.iftrue ||bb.getType()==BasicBlock.BlockType.follow))
+        	if(bb.getjoinblock()!=null && (bb.getType()==BasicBlock.BlockType.iftrue ||bb.getType()==BasicBlock.BlockType.follow||(bb.getType()==BasicBlock.BlockType.join&&bb.getjoinblock().getprevblock2()!=bb)))
         		blocks.add(bb.getjoinblock());
         } 	
         printer.println("}");

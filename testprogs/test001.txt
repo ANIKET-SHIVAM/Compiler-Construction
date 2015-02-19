@@ -3,15 +3,14 @@ main
 var x, y;
 {
     let x <- 51; 
-    let y <- 2 * x;
-   	while y == x do
-			let y <- 20 + x;	
+    let y <- 2 * x;	
    		 if y==x then
+   		 let x <- x + 90;
+   		 else
+   		 if y < x then
   			let x <- x + 90;
-  		else	
-			let y <- x + 40;
+  			else
+			let x <- x + 40;
+			fi;
   		fi;
-  		let x <- x + 30;
-  	od;
-  	let x <- x + 50;
 }.

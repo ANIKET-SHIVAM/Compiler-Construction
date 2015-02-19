@@ -643,7 +643,6 @@ public class Parser{
 						if(Sym_table.get(counter).size()>1)
 						{
 								String var = IdtoString(counter);//Todo
-								
 								Instruction i1 = Sym_table.get(counter).peek();
 								int top = Sym_table.get(counter).size()-2;			//second element from top
 								while(Sym_table.get(counter).elementAt(top).block_id >= i1.block_id && top>0){
