@@ -1,4 +1,5 @@
 package Frontend;
+import java.util.ArrayList;
 
 public class Result {
 	public enum Type{
@@ -16,17 +17,18 @@ public class Result {
 		bne,beq,ble,blt,bge,bgt
 	}
 	
-	private Type kind;
-	private String name;
+	private Type kind=null;
+	private String name=null;
 	private int regno;//for register
-	private Cond_Type condition;
-	private Instruction fixup_location;
+	private Cond_Type condition=null;
+	private Instruction fixup_location=null;
 	private int value; //for constant
 	private int index;//for variable
-	private int[] arr;//for array
-	private Instruction ins;	//for instruction pointer
+	private int baseaddr; //for array
+	private ArrayList<Integer> arrsize=new ArrayList<Integer>();//for array
+	private Instruction ins=null;	//for instruction pointer
 	
-	Result(){}
+	public Result(){}
 	
 	Result(Type kind,TokenType ss)
 	{
@@ -60,26 +62,27 @@ public class Result {
 		}
 	}
 	
-	Result(Type kind,String s)
+	Result(Type kind,String s)		//for variable
 	{
 		this.kind = kind;
 		this.name = s;
 	}
 	
-	Result(Type kind,Instruction i)
+	public Result(Type kind,Instruction i)
 	{
 		this.kind = kind;
 		this.ins = i;
 	}
 	
-	Result(Type kind,String ss,int val)
+	Result(Type kind,String ss,ArrayList<Integer> size)
 	{
 		this.kind = kind;
 		this.name = ss;
-		this.arr = new int[val];
+		this.arrsize = size;
+		this.baseaddr=0;
 	}
 	
-	Result(Type kind,int value){
+	public Result(Type kind,int value){
 		if(kind==Type.variable){
 			this.kind=kind;
 			this.index=value;
@@ -92,11 +95,7 @@ public class Result {
 			this.kind=kind;
 			this.value=regno;
 		}
-		else if(kind == Type.arr)
-		{
-			this.kind = kind;
-			
-		}
+		
 	}
 	
 	Result(Cond_Type kind,Instruction value){
@@ -148,5 +147,8 @@ public class Result {
 	}
 	public String getName(){
 		return this.name;
+	}
+	public ArrayList<Integer> getArraySize(){
+		return this.arrsize;
 	}
 }

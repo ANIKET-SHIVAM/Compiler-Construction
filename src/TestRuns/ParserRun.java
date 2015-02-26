@@ -1,6 +1,7 @@
 package TestRuns;
 import Frontend.*;
 import Graph.*;
+import Optimizations.*;
 
 public class ParserRun {
 		public static void main(String []args){
@@ -8,8 +9,13 @@ public class ParserRun {
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
+			DominatorTree domtree=new DominatorTree();
 			CFG graph=new CFG("test001");
 			graph.printCFG();
-			DominatorTree domtree=new DominatorTree();
+			CP.doCP();
+			CSE.doCSE();
+			CFG graph1=new CFG("test001wo");
+			graph1.printCFG();
+			System.out.println("\n!!! Done successfully !!!");
 		}		
 }
