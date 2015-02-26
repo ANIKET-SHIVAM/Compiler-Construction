@@ -5,7 +5,7 @@ public class Token {
 	private String characters;
 	private int value;
 
-	private Token (TokenType tt, String characters, int value){
+	public Token (TokenType tt, String characters, int value){
 		this.type=tt;
 		this.characters=characters;
 		this.value=value;
@@ -138,8 +138,8 @@ public class Token {
 				token = new Token(TokenType.ident, characters, 61);
 				//Scanner.ident.add(characters);
 				}
-				else
-				token = new Token(TokenType.errorToken, characters, 0);
+				else{
+				token = new Token(TokenType.errorToken, characters, 0);}
 				}
 			break;
 		}

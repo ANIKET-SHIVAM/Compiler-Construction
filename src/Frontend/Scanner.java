@@ -2,9 +2,6 @@ package Frontend;
 import java.io.*;
 import java.util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import Frontend.Token;
 
 public class Scanner {
@@ -14,7 +11,7 @@ public class Scanner {
 	//public int number;
 	public static int id;
 	public static ArrayList<String> ident;
-	public HashMap<String,Integer> var_cache;
+	public static HashMap<String,Integer> var_cache;
 	
 	private void Next(){
 		this.inputSym=this.fr.getSym();
@@ -50,10 +47,10 @@ public class Scanner {
 		if(inputSym >='0' && inputSym<= '9') {
 			return isNumber();}
 	
-		if((inputSym >= 'a' || inputSym >='A') && (inputSym <= 'z' || inputSym <='Z')) {
+		if((inputSym >= 'A' && inputSym <='Z') || (inputSym >= 'a' && inputSym <='z')) {
 			return isIdentOrKeyword();
 			}
-		
+
 		switch(inputSym){
 		case '*':
 			Next();
@@ -150,7 +147,7 @@ public class Scanner {
 			Next();
 		}
 		String str = strbfr.toString();
-		
+
 		tt=Token.checkToken(str);
 		if(tt.getType() == TokenType.ident)
 		{
@@ -158,9 +155,9 @@ public class Scanner {
 				var_cache.put(str, ++id);
 		}
 			return tt;
-		//}
+		
 		}
-		//}
+		
 	
 	public Token Comment(){
 		if (inputSym=='#'){

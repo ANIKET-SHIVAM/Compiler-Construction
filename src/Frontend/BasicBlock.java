@@ -1,5 +1,5 @@
 package Frontend;
-import java.util.ArrayList;
+import java.util.*;
 
 import Frontend.Result.Type;
 
@@ -9,6 +9,7 @@ public class BasicBlock {
 	}
 	public static int block_id;
 	public static BasicBlock mainblock;
+	public static HashMap<Integer,BasicBlock>basicblocks=new HashMap<Integer,BasicBlock>();
 	private int blockno;
 	private BlockType kind;
 	private BasicBlock nextblock;	// for if,while and do
@@ -31,13 +32,15 @@ public class BasicBlock {
 		inst_list = new ArrayList<Instruction>();
 		this.kind=BlockType.main;
 		this.block_id = 0;
-		this.blockno = block_id;
+		this.blockno = 0;
+		basicblocks.put(block_id, this);
 	}
 	
 	BasicBlock(BlockType kind){
 		inst_list = new ArrayList<Instruction>();
 		this.kind	=kind;
 		this.blockno = block_id;
+		basicblocks.put(block_id, this);
 	}
 	
 	public BasicBlock createIfTrue(){
@@ -45,6 +48,7 @@ public class BasicBlock {
 		BasicBlock iftrue=new BasicBlock(BlockType.iftrue);
 		this.nextblock=iftrue;
 		iftrue.prevblock=this;
+		basicblocks.put(block_id, iftrue);
 		return iftrue;
 	}
 	
@@ -52,6 +56,7 @@ public class BasicBlock {
 		BasicBlock ifelse=new BasicBlock(BlockType.ifelse);
 		this.ifelseblock=ifelse;
 		ifelse.prevblock=this;
+		basicblocks.put(block_id, ifelse);
 		return ifelse;
 	}
 	
@@ -59,6 +64,7 @@ public class BasicBlock {
 		BasicBlock whileblock=new BasicBlock(BlockType.whileblock);
 		this.nextblock=whileblock;
 		whileblock.prevblock=this;
+		basicblocks.put(block_id, whileblock);
 		return whileblock;
 	}
 	
@@ -66,6 +72,7 @@ public class BasicBlock {
 		BasicBlock doblock=new BasicBlock(BlockType.doblock);
 		this.nextblock=doblock;
 		doblock.prevblock=this;
+		basicblocks.put(block_id, doblock);
 	//	doblock.nextblock=this;
 		//this.prevblock2=doblock;
 		return doblock;
@@ -75,6 +82,7 @@ public class BasicBlock {
 		BasicBlock follow=new BasicBlock(BlockType.follow);
 		this.followblock=follow;
 		follow.prevblock=this;
+		basicblocks.put(block_id, follow);
 		return follow;
 	}
 		
@@ -82,6 +90,7 @@ public class BasicBlock {
 		BasicBlock join=new BasicBlock(BlockType.join);
 		this.joinblock=join;
 		join.prevblock=this;
+		basicblocks.put(block_id, join);
 		return join;
 	}
 	
@@ -143,11 +152,17 @@ public class BasicBlock {
 	public BasicBlock getfollowblock(){
 		return this.followblock;
 	}
+	public void setfollowblocknull(){
+		this.followblock=null;
+	}
 	public int getStartInstructionIndex(){
 		return this.start_instruction_index;
 	}
 	public int getEndInstructionIndex(){
 		return this.end_instruction_index;
+	}
+	public static void decblockid(){
+		block_id--;
 	}
 	
 	public ArrayList<String> printInstructions(){
@@ -160,10 +175,12 @@ public class BasicBlock {
 			if(operands.size()==2){
 				Result op1=operands.get(0);
 				if(op1.getType()==Type.number)
-					oper1= new StringBuilder("#").append(op1.getValue()).toString();
+					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
 				else if(op1.getType()==Type.instruction)
 					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
 				else if (op1.getType()==Type.variable)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
+				else if(op1.getType()==Type.arr)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
 					oper1="error"+op1.getType().toString();
@@ -175,10 +192,17 @@ public class BasicBlock {
 					oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 				else if (op2.getType()==Type.variable)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
+				else if(op2.getType()==Type.arr)
+					oper2= new StringBuilder(" ").append(op2.getName()).toString();
 				else
 					oper2="error"+op2.getType().toString();
 				
-				instruction_print.append(oper1).append(oper2);
+				if(inst.getOperator()=="phi"){
+					String phivar=inst.getPhiVar();
+					instruction_print.append(" ").append(phivar).append(oper1).append(oper2);
+				}
+				else
+					instruction_print.append(oper1).append(oper2);
 			}
 			else if (operands.size()==1){
 				Result op1=operands.get(0);

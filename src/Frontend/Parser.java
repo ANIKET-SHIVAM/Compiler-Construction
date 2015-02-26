@@ -37,18 +37,18 @@ public class Parser{
 			Next();
 	}
 
-	public int String2Id(String s){
+	public static int String2Id(String s){
 	
 		int res=0;
-		res = scanner.var_cache.get(s);
+		res = Scanner.var_cache.get(s);
 		return res;
 	}
 	
-	public String IdtoString(int index)
+	public static String IdtoString(int index)
 	{
 		//String o = new String();
-		for (String o : scanner.var_cache.keySet()) {
-		      if (scanner.var_cache.get(o).equals(index)) {
+		for (String o : Scanner.var_cache.keySet()) {
+		      if (Scanner.var_cache.get(o).equals(index)) {
 		        return o;
 		      }
 		}
@@ -123,9 +123,9 @@ public class Parser{
 		{
 			int num=0;
 			String s1 = new String();
-			
+			ArrayList<Integer> size=new ArrayList<Integer>();
 			while(tt.getType() != TokenType.semiToken)
-			{
+			{					
 				Next();
 				while(tt.getType() != TokenType.ident)
 				{
@@ -134,7 +134,8 @@ public class Parser{
 						Next();
 						if(tt.getType() == TokenType.number)	//array [ 4
 						{
-							num+=tt.getValue();					//num = 4
+							num=tt.getValue();					//num = 4
+							size.add(num);
 						}
 						
 						Next();
@@ -144,19 +145,22 @@ public class Parser{
 							error("Syntax error : Missing ']' in array declaration");
 							return;
 						}
-							
+						Next();	
 					}
-					Next();
+					
 				}
 				if(tt.getType() == TokenType.ident)
 				{
 					s1 = tt.getCharacters();
-					Result x = new Result(Type.arr,s1,num);
+					Result x = new Result(Type.arr,s1,size);
 					Result_cache.put(s1,x);
 				}
 				Next();
 			}
-			 
+			 if(Result_cache.get("FP")==null) {
+				 Result FP = new Result(Type.variable,"FP");
+				 Result_cache.put("FP",FP);
+			 }
 		}
 			
 	}
@@ -245,6 +249,7 @@ public class Parser{
 	
 	public Result assignment(BasicBlock currentblock)		//"let"
 	{
+		boolean arrflag=false;
 		int index=0;
 		String var;
 		Result x = new Result();
@@ -254,59 +259,67 @@ public class Parser{
 			var = tt.getCharacters();
 			index = String2Id(tt.getCharacters());
 			Next();
-			if(tt.getType() == TokenType.openbracketToken)	//"["
-			{
-				x = E(currentblock);
-				Next();
-			
-				if(tt.getType()!= TokenType.closebracketToken)	//"]"
-				{
-					error("Syntax error: ']' missing");
-				}
-				else
+			if(tt.getType() == TokenType.openbracketToken)	//"["	//for array
+			{	arrflag=true;
+				int indexrelloc=0;
+				Result arr=Result_cache.get(var);
+				ArrayList<Integer> arrsize=arr.getArraySize();
+				ArrayList<Integer> arrindex= new ArrayList<Integer> ();
+				while(tt.getType()!=TokenType.becomesToken){
+				//	x = E(currentblock);
 					Next();
+					arrindex.add(Integer.parseInt(tt.getCharacters()));
+					Next();
+					if(tt.getType()!= TokenType.closebracketToken)	//"]"
+					{
+						error("Syntax error: ']' missing");
+					}
+					else
+						Next();
+				}
+				for(int i=0;i<arrsize.size()-1;i++){
+					indexrelloc+=arrsize.get(i)*arrindex.get(i);
+				}
+				indexrelloc+=arrindex.get(arrindex.size()-1);
+				Result arrrelloc = new Result(Type.number,indexrelloc);
+				Result intsize = new Result(Type.number,4);
+				Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
+				currentblock.inst_list.add(arrmulins);
+				insts.add(arrmulins);				//add instruction to instruction list
+				arrmulins.basicblock = currentblock; 
+				arrmulins.block_id = BasicBlock.block_id;
+				
+				Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
+				currentblock.inst_list.add(arraddfpins);
+				insts.add(arraddfpins);				//add instruction to instruction list
+				arraddfpins.basicblock = currentblock;
+				arraddfpins.block_id = BasicBlock.block_id;
+				
+				Result addares1=new Result(Type.instruction,arrmulins);
+				Result addares2=new Result(Type.instruction,arraddfpins);
+				Instruction arradda = new Instruction("adda",addares1,addares2);
+				currentblock.inst_list.add(arradda);
+				insts.add(arradda);				//add instruction to instruction list
+				arradda.basicblock = currentblock;
+				arradda.block_id = BasicBlock.block_id;
+				
+				
+				
 			}
 			if(tt.getType() == TokenType.becomesToken) //"<-"
 			{
 				Next();
 				
 				x = E(currentblock);
-				//if(x.getType() == Type.number)			//e.g. let x <- 51;
-				//{
+							//e.g. let x <- 51;
 					Instruction i = new Instruction("move",x, Result_cache.get(var));
 					currentblock.inst_list.add(i);
 					insts.add(i);				//add instruction to instruction list
 					i.basicblock = currentblock;
 					i.block_id = BasicBlock.block_id;
-					Instruction ii;
 					
-					//Fixup jump location of if
-				//	if(currentblock.getType() == BlockType.ifelse)	//if we are in "else" block
-					//{	
-						//ii = if_stack.pop();
-						//else 
-							//ii = while_stack.pop();
-						//int len = ii.getOperands().size() - 1;	//index of last operand
-						//Result res = ii.getOperands().get(len);
-						//Instruction fix_loc = res.getFixupLocation();
-						//fix_loc = i;
-						//if(currentblock.getType() == BlockType.ifelse)
-						//{
-						//	if(x.getType() != Type.number)
-								//System.out.println("Fixup loc for 'if' is :"+insts.indexOf(x.getInstruction()));
-							//else
-								//System.out.println("Fixup loc for 'if' is :"+insts.indexOf(i));
-						//}
-					/*	else
-						{
-							if(x.getType() == Type.number)
-								System.out.println("Fixup loc for 'while' is :"+insts.indexOf(i));
-							else
-								System.out.println("Fixup loc for 'while' is :"+insts.indexOf(x.getInstruction()));
-							//if_stack.push(ii);
-						}
-						*/
-					//}
+					
+					if(arrflag==false){
 					if(!Sym_table.containsKey(index))	//if sym_table is empty
 					{
 						Stack<Instruction> ss = new Stack<Instruction>();
@@ -327,7 +340,16 @@ public class Parser{
 					{
 						System.out.println(insts.indexOf(i)+":"+"move ("+insts.indexOf(x.getInstruction())+") "+ var+"_"+insts.indexOf(i));
 					}
-				//}
+					}
+					else{
+						Result arrstore1=new Result(Type.instruction,i);
+						Instruction arrstore = new Instruction("store",arrstore1);
+						currentblock.inst_list.add(arrstore);
+						insts.add(arrstore);				//add instruction to instruction list
+						arrstore.basicblock = currentblock;
+						arrstore.block_id = BasicBlock.block_id;
+					}
+				
 			}
 		}
 		
@@ -448,7 +470,6 @@ public class Parser{
 			if(tt.getType() == TokenType.elseToken)	//else
 			{
 				else_flag=1;
-				System.out.println("asdasdasd"+currentblock.getType().toString());
 				else_block = currentblock.createElse();
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
@@ -472,7 +493,7 @@ public class Parser{
 				Result res2 = my_fix.getOperands().get(len);
 				
 				//Instruction fix_loc = res.getFixupLocation();
-				Instruction fix_loc = elsebb.inst_list.get(0);
+				Instruction fix_loc = currentblock.getifelseblock().inst_list.get(0);
 				//res2.setFixupLocation(fix_loc);
 				res2.setInstruction(fix_loc);
 			}
@@ -482,7 +503,14 @@ public class Parser{
 			{
 				String var;
 				int i=1;
-				System.out.println(iftruebb.inst_list.get(0).getOperator());
+				
+				if(else_flag==1){
+					if(elsebb.inst_list.get(0).getOperator()=="end"&&elsebb.inst_list.size()==1){
+						BasicBlock.decblockid();
+						elsebb=elsebb.getprevblock();
+						elsebb.setfollowblocknull();
+					}
+				}
 				if(iftruebb.inst_list.get(0).getOperator()=="end"&&iftruebb.inst_list.size()==1){
 					phi_block=iftruebb;
 					phi_block.changeType(BasicBlock.BlockType.join);
@@ -491,8 +519,10 @@ public class Parser{
 				else	
 				{phi_block = iftruebb.createjoin();}
 				
-				if(else_flag==1)
+				
+				if(else_flag==1){
 					elsebb.setjoin(phi_block);
+				}	
 				else
 					currentblock.setjoin(phi_block);
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
@@ -512,7 +542,8 @@ public class Parser{
 							phi_block.inst_list.add(ii);
 							Sym_table.get(i).push(ii);
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
-					}
+							
+						}
 				
 				}
 				if(else_flag==0)
@@ -683,7 +714,7 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken){
+				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken){
 					follow_block=stat_seq(follow_block);}
 				
 				Instruction	my_fix = while_stack.pop();
@@ -728,7 +759,6 @@ public class Parser{
 			
 			Next();
 			res1 = T(currentblock);
-			
 			Instruction i = new Instruction(oper,res,res1);
 			insts.add(i);
 			currentblock.inst_list.add(i);
@@ -805,41 +835,101 @@ public class Parser{
 		int var_id=0;
 		if(tt.getType() != TokenType.number)
 		{
-			if(tt.getType() == TokenType.openbracketToken) //"("
+			if(tt.getType() == TokenType.openparenToken) //"("
 			{
 				Next();
 				res=E(currentblock);
-				if(tt.getType() == TokenType.closebracketToken)
+				if(tt.getType() == TokenType.closeparenToken)
 					Next();
 				else
 					error("Syntax error : Missing ')'");
 			}
 			else if(tt.getType() == TokenType.ident)//if its a var
 			{
-				var_id = String2Id(tt.getCharacters());
-				if(Sym_table.containsKey(var_id))
-				{
-					Result res1;
-					Stack<Instruction> s = Sym_table.get(var_id);	//stack for the variable
-					if(currentblock.getType() != BlockType.ifelse)
-					res1 = 	new Result(Type.instruction,(Instruction)s.peek());
-					else											//if its in else block
-					{
-						int top = s.size()-1;
-						while(top >0 && currentblock.getprevblock().getblockno() <= s.get(top).basicblock.getprevblock().block_id)
-							top--;
-						res1 = new Result(Type.instruction,(Instruction)s.get(top));
-					}
-					res = res1;
-					//s.push(res1.getInstruction());
+				if(Result_cache.get(tt.getCharacters()).getType()==Type.arr){
+					String var = tt.getCharacters();
+					index = String2Id(tt.getCharacters());
 					Next();
-				}
+						int indexrelloc=0;
+						Result arr=Result_cache.get(var);
+						ArrayList<Integer> arrsize=arr.getArraySize();
+						ArrayList<Integer> arrindex= new ArrayList<Integer> ();
+						for(int i=0;i<arr.getArraySize().size();i++){
+							Next();
+							arrindex.add(Integer.parseInt(tt.getCharacters()));
+							Next();
+							if(tt.getType()!= TokenType.closebracketToken)	//"]"
+							{
+								error("Syntax error: ']' missing");
+							}
+							else
+								Next();
+						}
+					
+						for(int i=0;i<arrsize.size()-1;i++){
+							indexrelloc+=arrsize.get(i)*arrindex.get(i);
+						}
+						indexrelloc+=arrindex.get(arrsize.size()-1);
+						Result arrrelloc = new Result(Type.number,indexrelloc);
+						Result intsize = new Result(Type.number,4);
+						Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
+						currentblock.inst_list.add(arrmulins);
+						insts.add(arrmulins);				//add instruction to instruction list
+						arrmulins.basicblock = currentblock; 
+						arrmulins.block_id = BasicBlock.block_id;
+						
+						Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
+						currentblock.inst_list.add(arraddfpins);
+						insts.add(arraddfpins);				//add instruction to instruction list
+						arraddfpins.basicblock = currentblock;
+						arraddfpins.block_id = BasicBlock.block_id;
+						
+						Result addares1=new Result(Type.instruction,arrmulins);
+						Result addares2=new Result(Type.instruction,arraddfpins);
+						Instruction arradda = new Instruction("adda",addares1,addares2);
+						currentblock.inst_list.add(arradda);
+						insts.add(arradda);				//add instruction to instruction list
+						arradda.basicblock = currentblock;
+						arradda.block_id = BasicBlock.block_id;
+						
+						Result arrload1=new Result(Type.instruction,arradda);
+						Instruction arrload = new Instruction("load",arrload1);
+						currentblock.inst_list.add(arrload);
+						insts.add(arrload);				//add instruction to instruction list
+						arrload.basicblock = currentblock;
+						arrload.block_id = BasicBlock.block_id;
+						res=new Result(Type.instruction,arrload);
+						
+					}
+					else{
+						var_id = String2Id(tt.getCharacters());
+						if(Sym_table.containsKey(var_id))
+						{
+							Result res1;
+							Stack<Instruction> s = Sym_table.get(var_id);	//stack for the variable
+							if(currentblock.getType() != BlockType.ifelse)
+							res1 = 	new Result(Type.instruction,(Instruction)s.peek());
+							else											//if its in else block
+							{
+								int top = s.size()-1;
+								while(top >0 && currentblock.getprevblock().getblockno() <= s.get(top).basicblock.getprevblock().block_id)
+									top--;
+								res1 = new Result(Type.instruction,(Instruction)s.get(top));
+							}
+							res = res1;
+							//s.push(res1.getInstruction());
+							Next();
+						}
+					}
+					
 			}
 			else
 			{
 				res = E(currentblock);
 				Next();
 			}
+			
+		
 		}
 		else
 		{

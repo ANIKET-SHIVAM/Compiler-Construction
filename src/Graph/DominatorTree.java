@@ -1,5 +1,6 @@
 package Graph;
 import java.util.*;
+import java.io.*;
 
 import Frontend.*;
 
@@ -39,14 +40,14 @@ public class DominatorTree {
 				}
 			
 		}
-		for(int i=0;i<=n;i++){
+		/*for(int i=0;i<=n;i++){
 			System.out.print("block"+i+":");
 			LinkedList<Integer>llx=Dominator.get(i);
 			for(int z:llx)
 				System.out.print(z+"   ");
 			System.out.println();
-		}
-		
+		}*/
+		printDT("testDT");
 	}
 	public void createDT(BasicBlock bb,BasicBlock bbdom){
 		if(Dominator.containsKey(bb.getblockno())){
@@ -70,8 +71,46 @@ public class DominatorTree {
 		if(bb.getfollowblock()!= null)
 			createDT(bb.getfollowblock(),bb);
 	}
-	public static LinkedList<Integer> getDominators(int blockno){
-		return Dominator.get(blockno);
+	public static int getDominators(int blockno){
+		if(blockno==0)
+			return 0;
+		else
+		return Dominator.get(blockno).getLast();
+	}
+	public void printDT(String name){
+		  PrintWriter printer;
+		 try{
+	           printer = new PrintWriter(new FileWriter(name+".vcg"));
+	        
+		    printer.println("graph: { title: \"Control Flow Graph\"");
+	        printer.println("layoutalgorithm: dfs");
+	        printer.println("manhattan_edges: yes");
+	        printer.println("smanhattan_edges: yes");
+	        printer.println("node: {");
+	        printer.println("title: \"" + 0 + "\"");
+	        printer.println("label: \"" + 0 + "[");
+	        printer.println("Block #:"+0);
+	        printer.println("]\"");
+	        printer.println("}");
+	        int n=Dominator.size()-1;
+			for(int i=1;i<=n;i++){
+		        printer.println("node: {");
+		        printer.println("title: \"" + i + "\"");
+		        printer.println("label: \"" + i + "[");
+		        printer.println("Block #:"+i);
+		        printer.println("]\"");
+		        printer.println("}");
+		        printer.println("edge: { sourcename: \""+i+"\"");
+		        printer.println("targetname: \""+Dominator.get(i).getLast()+"\"");
+		        printer.println("color: blue");
+		        printer.println("}");
+			}
+			 printer.println("}");
+		     printer.close();
+	        
+		 } catch (IOException ex) {
+	            System.out.println(ex.getMessage());
+	        }
 	}
 
 }
