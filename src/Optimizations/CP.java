@@ -22,9 +22,9 @@ public class CP {
 					operand=inst.getOperands().get(0);
 					copy=true;
 				}
-				else if(inst.getOperator()=="phi"){				//remove useless phi
-					inst.removeUselessPhi();
-				}
+			//	else if(inst.getOperator()=="phi"){				//remove useless phi
+				//	inst.removeUselessPhi();
+				//}
 				
 				
 				if(copy){
@@ -58,7 +58,7 @@ public class CP {
 				
 				
 				for (int laterbb=bbno+1;laterbb<BasicBlock.basicblocks.size();laterbb++){
-					if(DominatorTree.getDominators(laterbb)==bbno){
+					if(DominatorTree.getDominators(laterbb).contains(bbno)){
 						
 						for(int instno=0;instno<BasicBlock.basicblocks.get(laterbb).inst_list.size();instno++){
 							Instruction laterinst=BasicBlock.basicblocks.get(laterbb).inst_list.get(instno);

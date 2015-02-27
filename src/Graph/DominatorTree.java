@@ -71,11 +71,8 @@ public class DominatorTree {
 		if(bb.getfollowblock()!= null)
 			createDT(bb.getfollowblock(),bb);
 	}
-	public static int getDominators(int blockno){
-		if(blockno==0)
-			return 0;
-		else
-		return Dominator.get(blockno).getLast();
+	public static LinkedList<Integer> getDominators(int blockno){
+		return Dominator.get(blockno);
 	}
 	public void printDT(String name){
 		  PrintWriter printer;
