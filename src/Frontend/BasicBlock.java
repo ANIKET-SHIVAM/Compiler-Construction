@@ -183,13 +183,19 @@ public class BasicBlock {
 				else if(op1.getType()==Type.arr)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
-					oper1="error"+op1.getType().toString();
+					oper1="error";
 			
 				Result op2=operands.get(1);
 				if(op2.getType()==Type.number)
 					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
-				else if(op2.getType()==Type.instruction)
-					oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+				else if(op2.getType()==Type.instruction){
+					if(Parser.insts.indexOf(op2.getInstruction())==-1){
+						op2.setInstruction(this.getfollowblock().inst_list.get(0));
+						oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+					}
+					else	
+						oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+				}
 				else if (op2.getType()==Type.variable)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
 				else if(op2.getType()==Type.arr)

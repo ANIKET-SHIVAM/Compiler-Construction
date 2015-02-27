@@ -264,11 +264,11 @@ public class Parser{
 				int indexrelloc=0;
 				Result arr=Result_cache.get(var);
 				ArrayList<Integer> arrsize=arr.getArraySize();
-				ArrayList<Integer> arrindex= new ArrayList<Integer> ();
+				ArrayList<Result> arrindex=new ArrayList<Result>();
 				while(tt.getType()!=TokenType.becomesToken){
-				//	x = E(currentblock);
 					Next();
-					arrindex.add(Integer.parseInt(tt.getCharacters()));
+					x=E(currentblock);
+					arrindex.add(x);
 					Next();
 					if(tt.getType()!= TokenType.closebracketToken)	//"]"
 					{
@@ -278,9 +278,34 @@ public class Parser{
 						Next();
 				}
 				for(int i=0;i<arrsize.size()-1;i++){
-					indexrelloc+=arrsize.get(i)*arrindex.get(i);
+					int j=1,mul=0;
+					while(j<arrsize.size()){
+						mul*=arrsize.get(j);
+						j++;
+					}
+					Result intsize = new Result(Type.number,mul);
+					Instruction arrmulins = new Instruction("mul",arrindex.get(i),intsize);
+					currentblock.inst_list.add(arrmulins);
+					insts.add(arrmulins);				//add instruction to instruction list
+					arrmulins.basicblock = currentblock; 
+					arrmulins.block_id = BasicBlock.block_id;
+					if(i%2-1==0){
+						Result finalindex1 = new Result(Type.instruction,insts.get(insts.size()-2));
+						Result finalindex2 = new Result(Type.instruction,arrmulins);
+						Instruction arrfinalindexins = new Instruction("add",finalindex1,finalindex2);
+						currentblock.inst_list.add(arrfinalindexins);
+						insts.add(arrfinalindexins);				//add instruction to instruction list
+						arrfinalindexins.basicblock = currentblock; 
+						arrfinalindexins.block_id = BasicBlock.block_id;
+					}
 				}
-				indexrelloc+=arrindex.get(arrindex.size()-1);
+				Result finalindex = new Result(Type.instruction,insts.get(insts.size()-1));
+				Instruction arrfinalindexins = new Instruction("add",arrindex.get(arrindex.size()-1),finalindex);
+				currentblock.inst_list.add(arrfinalindexins);
+				insts.add(arrfinalindexins);				//add instruction to instruction list
+				arrfinalindexins.basicblock = currentblock; 
+				arrfinalindexins.block_id = BasicBlock.block_id;
+			
 				Result arrrelloc = new Result(Type.number,indexrelloc);
 				Result intsize = new Result(Type.number,4);
 				Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
@@ -514,6 +539,7 @@ public class Parser{
 				if(iftruebb.inst_list.get(0).getOperator()=="end"&&iftruebb.inst_list.size()==1){
 					phi_block=iftruebb;
 					phi_block.changeType(BasicBlock.BlockType.join);
+					insts.remove(iftruebb.inst_list.get(0));
 					phi_block.inst_list.remove(0);
 				}			
 				else	
@@ -853,10 +879,11 @@ public class Parser{
 						int indexrelloc=0;
 						Result arr=Result_cache.get(var);
 						ArrayList<Integer> arrsize=arr.getArraySize();
-						ArrayList<Integer> arrindex= new ArrayList<Integer> ();
+						ArrayList<Result> arrindex= new ArrayList<Result> ();
 						for(int i=0;i<arr.getArraySize().size();i++){
 							Next();
-							arrindex.add(Integer.parseInt(tt.getCharacters()));
+							Result x=E(currentblock);
+							arrindex.add(x);
 							Next();
 							if(tt.getType()!= TokenType.closebracketToken)	//"]"
 							{
@@ -865,11 +892,36 @@ public class Parser{
 							else
 								Next();
 						}
-					
+					 
 						for(int i=0;i<arrsize.size()-1;i++){
-							indexrelloc+=arrsize.get(i)*arrindex.get(i);
+							int j=1,mul=0;
+							while(j<arrsize.size()){
+								mul*=arrsize.get(j);
+								j++;
+							}
+							Result intsize = new Result(Type.number,mul);
+							Instruction arrmulins = new Instruction("mul",arrindex.get(i),intsize);
+							currentblock.inst_list.add(arrmulins);
+							insts.add(arrmulins);				//add instruction to instruction list
+							arrmulins.basicblock = currentblock; 
+							arrmulins.block_id = BasicBlock.block_id;
+							if(i%2-1==0){
+								Result finalindex1 = new Result(Type.instruction,insts.get(insts.size()-2));
+								Result finalindex2 = new Result(Type.instruction,arrmulins);
+								Instruction arrfinalindexins = new Instruction("add",finalindex1,finalindex2);
+								currentblock.inst_list.add(arrfinalindexins);
+								insts.add(arrfinalindexins);				//add instruction to instruction list
+								arrfinalindexins.basicblock = currentblock; 
+								arrfinalindexins.block_id = BasicBlock.block_id;
+							}
 						}
-						indexrelloc+=arrindex.get(arrsize.size()-1);
+						Result finalindex = new Result(Type.instruction,insts.get(insts.size()-1));
+						Instruction arrfinalindexins = new Instruction("add",arrindex.get(arrindex.size()-1),finalindex);
+						currentblock.inst_list.add(arrfinalindexins);
+						insts.add(arrfinalindexins);				//add instruction to instruction list
+						arrfinalindexins.basicblock = currentblock; 
+						arrfinalindexins.block_id = BasicBlock.block_id;
+						
 						Result arrrelloc = new Result(Type.number,indexrelloc);
 						Result intsize = new Result(Type.number,4);
 						Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
