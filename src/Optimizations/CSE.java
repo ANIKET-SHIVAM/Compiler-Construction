@@ -6,75 +6,98 @@ import Graph.*;
 import java.util.*;
 
 public class CSE {
-	private static ArrayList<Instruction> differentInstList=new ArrayList<Instruction>();
-	private static HashMap<Integer,HashMap<Instruction,Instruction>> sameInstList=new HashMap<Integer,HashMap<Instruction,Instruction>>();
+	
 	public static void doCSE(){
 		makeList();
-		replaceInst();
 	}
-	private static void replaceInst(){
+	private static void replaceInst(HashMap<Instruction,Instruction> replaceInst,ArrayList<Instruction>remove, int no){
 		BasicBlock bb;
-		for(int bbno=0;bbno<BasicBlock.basicblocks.size();bbno++){
-			bb=Frontend.BasicBlock.basicblocks.get(bbno);
-			for(Instruction inst:bb.inst_list){
-				if(sameInstList.containsKey(bbno)){
-					if(sameInstList.get(bbno).containsKey(inst)){
-						Instruction replacewith=sameInstList.get(bbno).get(inst);
-						Result replacement=new Result(Type.instruction,replacewith);
-						for(int instno=bb.inst_list.indexOf(inst)+1;instno<bb.inst_list.size();instno++){
-							Instruction laterinst=bb.inst_list.get(instno);
-							if(laterinst.getOperands().size()==2){
-								if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
-									if(laterinst.getOperands().get(0).getInstruction()==inst)
-										laterinst.getOperands().set(0, replacement);
+		for(int bbno=no+1;bbno<BasicBlock.basicblocks.size();bbno++){
+			if(DominatorTree.getDominators(bbno)==bbno){
+				bb=Frontend.BasicBlock.basicblocks.get(bbno);
+				for(Instruction inst:bb.inst_list){
+					if(inst.getOperands().size()==2){
+						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
+								if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
+									Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
+									Result replacewith=new Result(Type.instruction,replaceinst);
+									inst.getOperands().set(0, replacewith);
 								}	
-								if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
-									if(laterinst.getOperands().get(1).getInstruction()==inst){
-										laterinst.getOperands().set(1, replacement);
-									}
-								}
-							}
+						}	
+						if(inst.getOperands().get(1).getType()==Result.Type.instruction){
+							if(replaceInst.containsKey(inst.getOperands().get(1).getInstruction())){
+								Instruction replaceinst=replaceInst.get(inst.getOperands().get(1).getInstruction());
+								Result replacewith=new Result(Type.instruction,replaceinst);
+								inst.getOperands().set(1, replacewith);
+							}	
+						}	
+							
 						}
-						for (int laterbb=bbno+1;laterbb<BasicBlock.basicblocks.size();laterbb++){
-								for(int instno=0;instno<BasicBlock.basicblocks.get(laterbb).inst_list.size();instno++){
-									Instruction laterinst=bb.inst_list.get(instno);
-									if(laterinst.getOperands().size()==2){
-										if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
-											if(laterinst.getOperands().get(0).getInstruction()==inst)
-												laterinst.getOperands().set(0, replacement);
-										}	
-										if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
-											if(laterinst.getOperands().get(1).getInstruction()==inst){
-												laterinst.getOperands().set(1, replacement);
-											}
-										}
-									}
-								}
-						}		
-
-						bb.inst_list.remove(bb.inst_list.indexOf(inst));
-						Parser.insts.remove(Parser.insts.indexOf(inst));
 					}
 				}
 			}
+		bb=Frontend.BasicBlock.basicblocks.get(no);
+		for(Instruction inst:remove){
+			bb.inst_list.remove(bb.inst_list.indexOf(inst));
+			Parser.insts.remove(Parser.insts.indexOf(inst));
 		}	
 	}
 	
 	private static void makeList(){
 		BasicBlock bb;
 		for(int bbno=0;bbno<BasicBlock.basicblocks.size();bbno++){
+			ArrayList<Instruction> replace=new ArrayList<Instruction>();
+			HashMap<Instruction,Instruction> replaceInstList=new HashMap<Instruction,Instruction>();
+		    HashMap<String,LinkedList<Instruction>> sameInstList=new HashMap<String,LinkedList<Instruction>>();
 			bb=Frontend.BasicBlock.basicblocks.get(bbno);
 			for(Instruction inst:bb.inst_list){
 				if(inst.getOperands().size()==2){
-					for(Instruction listInst:differentInstList){
-						if(matchInstruction(inst,listInst)){
-							HashMap<Instruction,Instruction> insttoinst=new HashMap<Instruction,Instruction>();
-							insttoinst.put(inst, listInst);
-							sameInstList.put(bbno,insttoinst);
-						}	
+					if(sameInstList.containsKey(inst.getOperator())){
+								sameInstList.get(inst.getOperator()).add(inst);		
 					}
+					else
+					{
+						LinkedList<Instruction> ll=new LinkedList<Instruction>(); 
+						ll.add(inst);
+						sameInstList.put(inst.getOperator(), ll);
+					}
+					for(int instno=bb.inst_list.indexOf(inst)+1;instno<bb.inst_list.size();instno++){
+						Instruction laterinst=bb.inst_list.get(instno);
+						if(matchInstruction(laterinst,inst)){
+							replaceInstList.put(laterinst,inst);
+							replace.add(laterinst);
+						}		
+					}
+					replaceInst(replaceInstList,replace,bbno);
+					replaceInstList.clear();	
+					replace.clear();
+				}	
+			}
+			for (int laterbbno=bbno+1;laterbbno<BasicBlock.basicblocks.size();laterbbno++){
+				if(DominatorTree.getDominators(laterbbno)==bbno){		
+					BasicBlock laterbb=Frontend.BasicBlock.basicblocks.get(laterbbno);
+					for(int instno=0;instno<BasicBlock.basicblocks.get(laterbb).inst_list.size();instno++){
+						Instruction laterinst=BasicBlock.basicblocks.get(laterbb).inst_list.get(instno);
+						if(laterinst.getOperands().size()==2){
+							if(sameInstList.containsKey(laterinst.getOperator())){
+								LinkedList<Instruction> ll=new LinkedList<Instruction>(); 
+								ll=sameInstList.get(laterinst.getOperator());
+								for(int i=0;i<ll.size();i++){
+									Instruction in=ll.get(i);
+									if(matchInstruction(laterinst,in)){
+										replaceInstList.put(laterinst,in);
+										replace.add(laterinst);
+									}	
+								}
+							}		
+						}
+					}
+					replaceInst(replaceInstList,replace,laterbbno);
+					replaceInstList.clear();
+					replace.clear();
 				}
 			}
+			
 		}
 	}
 	
