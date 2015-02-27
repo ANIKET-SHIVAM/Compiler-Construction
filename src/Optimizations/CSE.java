@@ -8,42 +8,6 @@ import java.util.*;
 public class CSE {
 	
 	public static void doCSE(){
-		makeList();
-	}
-	private static void replaceInst(HashMap<Instruction,Instruction> replaceInst,ArrayList<Instruction>remove, int no){
-		BasicBlock bb;
-		for(int bbno=no+1;bbno<BasicBlock.basicblocks.size();bbno++){
-			if(DominatorTree.getDominators(bbno)==bbno){
-				bb=Frontend.BasicBlock.basicblocks.get(bbno);
-				for(Instruction inst:bb.inst_list){
-					if(inst.getOperands().size()==2){
-						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
-								if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
-									Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
-									Result replacewith=new Result(Type.instruction,replaceinst);
-									inst.getOperands().set(0, replacewith);
-								}	
-						}	
-						if(inst.getOperands().get(1).getType()==Result.Type.instruction){
-							if(replaceInst.containsKey(inst.getOperands().get(1).getInstruction())){
-								Instruction replaceinst=replaceInst.get(inst.getOperands().get(1).getInstruction());
-								Result replacewith=new Result(Type.instruction,replaceinst);
-								inst.getOperands().set(1, replacewith);
-							}	
-						}	
-							
-						}
-					}
-				}
-			}
-		bb=Frontend.BasicBlock.basicblocks.get(no);
-		for(Instruction inst:remove){
-			bb.inst_list.remove(bb.inst_list.indexOf(inst));
-			Parser.insts.remove(Parser.insts.indexOf(inst));
-		}	
-	}
-	
-	private static void makeList(){
 		BasicBlock bb;
 		for(int bbno=0;bbno<BasicBlock.basicblocks.size();bbno++){
 			ArrayList<Instruction> replace=new ArrayList<Instruction>();
@@ -74,10 +38,10 @@ public class CSE {
 				}	
 			}
 			for (int laterbbno=bbno+1;laterbbno<BasicBlock.basicblocks.size();laterbbno++){
-				if(DominatorTree.getDominators(laterbbno)==bbno){		
+				if(DominatorTree.getDominators(laterbbno).contains(bbno)){		
 					BasicBlock laterbb=Frontend.BasicBlock.basicblocks.get(laterbbno);
-					for(int instno=0;instno<BasicBlock.basicblocks.get(laterbb).inst_list.size();instno++){
-						Instruction laterinst=BasicBlock.basicblocks.get(laterbb).inst_list.get(instno);
+					for(int instno=0;instno<BasicBlock.basicblocks.get(laterbbno).inst_list.size();instno++){
+						Instruction laterinst=BasicBlock.basicblocks.get(laterbbno).inst_list.get(instno);
 						if(laterinst.getOperands().size()==2){
 							if(sameInstList.containsKey(laterinst.getOperator())){
 								LinkedList<Instruction> ll=new LinkedList<Instruction>(); 
@@ -92,6 +56,7 @@ public class CSE {
 							}		
 						}
 					}
+					
 					replaceInst(replaceInstList,replace,laterbbno);
 					replaceInstList.clear();
 					replace.clear();
@@ -100,9 +65,43 @@ public class CSE {
 			
 		}
 	}
+	private static void replaceInst(HashMap<Instruction,Instruction> replaceInst,ArrayList<Instruction>remove, int no){
+		BasicBlock bb;
+		for(int bbno=no+1;bbno<BasicBlock.basicblocks.size();bbno++){
+			if(DominatorTree.getDominators(bbno).contains(no)){
+				bb=Frontend.BasicBlock.basicblocks.get(bbno);
+				for(Instruction inst:bb.inst_list){
+					if(inst.getOperands().size()==2){
+						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
+								if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
+									Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
+									Result replacewith=new Result(Type.instruction,replaceinst);
+									inst.getOperands().set(0, replacewith);
+								}	
+						}	
+						if(inst.getOperands().get(1).getType()==Result.Type.instruction){
+							if(replaceInst.containsKey(inst.getOperands().get(1).getInstruction())){
+								Instruction replaceinst=replaceInst.get(inst.getOperands().get(1).getInstruction());
+								Result replacewith=new Result(Type.instruction,replaceinst);
+								inst.getOperands().set(1, replacewith);
+							}	
+						}	
+							
+						}
+					}
+				}
+			}
+		bb=Frontend.BasicBlock.basicblocks.get(no);
+		for(Instruction inst:remove){
+			bb.inst_list.remove(bb.inst_list.indexOf(inst));
+			Parser.insts.remove(Parser.insts.indexOf(inst));
+		}	
+	}
+	
 	
 	private static boolean matchInstruction(Instruction inst1,Instruction inst2){
-		if (inst1.getOperator()==inst2.getOperator()){	
+		
+		if (inst1.getOperator().equals(inst2.getOperator())){
 		if(inst1.isOperation()==inst2.isOperation()){
 			Result inst1op1=inst1.getOperands().get(0);
 			Result inst1op2=inst1.getOperands().get(1);
