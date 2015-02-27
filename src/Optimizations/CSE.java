@@ -32,11 +32,11 @@ public class CSE {
 							replace.add(laterinst);
 						}		
 					}
-					replaceInst(replaceInstList,replace,bbno);
-					replaceInstList.clear();	
-					replace.clear();
 				}	
 			}
+			replaceInst(replaceInstList,replace,bbno);
+			replaceInstList.clear();	
+			replace.clear();
 			for (int laterbbno=bbno+1;laterbbno<BasicBlock.basicblocks.size();laterbbno++){
 				if(DominatorTree.getDominators(laterbbno).contains(bbno)){		
 					BasicBlock laterbb=Frontend.BasicBlock.basicblocks.get(laterbbno);
