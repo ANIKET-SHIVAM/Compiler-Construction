@@ -114,7 +114,7 @@ public class Instruction {
 			int op1bb=op1.basicblock.getblockno();
 			Instruction op2=operands.get(1).getInstruction();
 			int op2bb=op2.basicblock.getblockno();
-			int dombb=DominatorTree.getDominators(this.basicblock.getblockno());
+			int dombb=DominatorTree.getDominators(this.basicblock.getblockno()).getLast();
 			if((op1bb<=dombb&&op2bb<=dombb))
 				b= true;
 			else if(!(op2bb<=dombb&&op1bb>this.basicblock.getblockno()))
