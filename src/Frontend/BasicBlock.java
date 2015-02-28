@@ -15,9 +15,9 @@ public class BasicBlock {
 	private BasicBlock nextblock;	// for if,while and do
 	private BasicBlock ifelseblock;	// for if
 	private BasicBlock joinblock;   // for if
-	private BasicBlock prevblock;
-	private BasicBlock prevblock2;// for joinblock only
-	private BasicBlock followblock;		//for while
+	private BasicBlock prevblock;	
+	private BasicBlock prevblock2;  // for joinblock only
+	private BasicBlock followblock;	//for while
 	private BasicBlock dotowhileblock;
 	
 	public int start_instruction_index;
@@ -26,8 +26,10 @@ public class BasicBlock {
 	public Instruction start_Instr;	//starting instruction
 	public Instruction end_Instr;	//ending instruction
 	
-	public ArrayList<Instruction> inst_list;
-
+	public ArrayList<Instruction> 	 inst_list;
+	public ArrayList<Integer> out_set;	//live set after end of basic block
+	public ArrayList<Integer> in_set;	//live set before beginning of basic block
+	
 	BasicBlock(){
 		inst_list = new ArrayList<Instruction>();
 		this.kind=BlockType.main;

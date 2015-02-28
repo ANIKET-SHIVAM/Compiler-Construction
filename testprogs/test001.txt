@@ -1,10 +1,16 @@
-//Simple parsing test
-main 
-var i,y,x,a;
+//Basic if statement test
+main
+var a, b;
 {
-	let i<-1;
-	let y<-2;
-	let x<-i+y;
-	let a<-3;
-	let x<-i+y;
+	let a <- 1;
+	let b <- 2;
+	if a > b then
+		let a <- a + 1;
+	else
+		let b <- b + 1;
+	fi;
+	
+	if a < b then
+		let a <- a - 1;
+	fi;
 }.
