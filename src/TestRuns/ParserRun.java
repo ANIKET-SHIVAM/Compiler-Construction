@@ -18,6 +18,8 @@ public class ParserRun {
 			RA.doLivenessAnalysis();
 			CFG graph1=new CFG("test001wo");
 			graph1.printCFG();
+			IG graph2 = new IG("test001_IG");
+			graph2.printIG();
 			System.out.println("\n!!! Done successfully !!!");
 		}		
 }

@@ -6,7 +6,26 @@ import Frontend.Result.Type;
 
 import java.util.*;
 public class RA {
-	public static HashMap<Integer,ArrayList<Integer>> Live_Set = new HashMap<Integer,ArrayList<Integer>>(); //Set for Liveness Analysis
+	//Set for Liveness Analysis
+	public static HashMap<Integer,ArrayList<Integer>> Live_Set = new HashMap<Integer,ArrayList<Integer>>(); 
+
+	//Matrix(2-D Array) for creating Interference Graph
+	public static int [][]IGMatrix = new int[Parser.insts.size()][Parser.insts.size()];
+	//	public static ArrayList<List<Integer>> IGMatrix = new ArrayList<List<Integer>>();
+	
+	public static void fill_matrix(ArrayList<Integer> set)
+	{
+		int i=0,j=0;
+		
+		for(i=0;i<set.size()-1;i++)
+		{
+			for(j=i+1;j< set.size();j++)
+			{
+					IGMatrix[set.get(i)][set.get(j)] =  1; //IGMatrix[set[i]][set[j]]=1
+			}
+		}
+	}
+	
 	public static void doLivenessAnalysis()
 	{
 		BasicBlock bb;
@@ -25,6 +44,7 @@ public class RA {
 				create_liveset(bb,ii);	//create live set for each instruction in basic block
 			}
 		}
+		
 	}
 	
 	public static ArrayList<Integer> merge_set(ArrayList <Integer>if_set,ArrayList<Integer>else_set)
@@ -99,6 +119,9 @@ public class RA {
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
 		
 		Live_Set.put(inst_index, set);	//add set corresponding to instruction
+
+		fill_matrix(set);	//fill matrix for IG creation
+		
 		System.out.print(inst_index+":- ");
 		for(int i=0;i<set.size();i++)
 			System.out.print(set.get(i)+",");

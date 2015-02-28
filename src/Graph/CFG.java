@@ -56,7 +56,7 @@ public class CFG {
     private void printBlock(BasicBlock bb) {
         printer.println("node: {");
         printer.println("title: \"" + bb.getblockno() + "\"");
-        printer.println("label: \"" + bb.getblockno() + "[");
+        	printer.println("label: \"" + bb.getblockno() + "[");
         ArrayList<String> insts=new ArrayList<>();
         insts=bb.printInstructions();
         for(String inst:insts)
