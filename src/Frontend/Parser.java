@@ -14,7 +14,7 @@ public class Parser{
 	private HashMap<String,Result> Result_cache;	//for storing Results
 	public static ArrayList<Instruction> insts;			//list for instructions
 	private HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
-	private HashMap<String,ArrayList<Result>> Function_param;
+	private HashMap<String,Function> Function_list=new HashMap<String,Function>();
 	public Stack<Instruction> if_stack = new Stack<Instruction>();
 	public Stack<Instruction> while_stack = new Stack<Instruction>();
 	public char sym;
@@ -64,20 +64,23 @@ public class Parser{
 			error("Syntax error : Missing 'main'");
 		else								 //after parsing main
 		{
-			currentblock = new BasicBlock(); // main block
-			BasicBlock.mainblock=currentblock;
-			System.out.println("Basic Block: "+ BasicBlock.block_id);
-			BasicBlock.block_id++;
 			while(tt.getType()!= TokenType.periodToken)	//"." at the end
 			{
 				Next();
 				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
-					var_decl(currentblock);
+					var_decl();
 				
-				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken)	//if its a function declaration
-					func_decl(currentblock);
+				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
+					if(tt.getType() == TokenType.funcToken)
+						func_decl(Function.Type.function);
+					else
+						func_decl(Function.Type.procedure);
+				}	
 				if(tt.getType() == TokenType.beginToken) //"{"
-				{
+				{	currentblock = new BasicBlock(); // main block
+					BasicBlock.mainblock=currentblock;
+					System.out.println("Basic Block: "+ BasicBlock.block_id);
+					BasicBlock.block_id++;
 					while(tt.getType() != TokenType.endToken){
 						currentblock=stat_seq(currentblock);							//statSequence
 					}
@@ -102,7 +105,7 @@ public class Parser{
 		return currentblock;	
 	}
 	
-	public void var_decl(BasicBlock currentblock)    //TODO: take care of scope
+	public void var_decl()    //TODO: take care of scope
 	{
 		if(tt.getType() == TokenType.varToken)
 		{
@@ -165,22 +168,23 @@ public class Parser{
 			
 	}
 	
-	public void func_decl(BasicBlock currentblock)
+	public void func_decl(Function.Type type)
 	{	
 		String funcname = null;
 		Next();
 		if(tt.getType() == TokenType.ident)
 		{
 			funcname = tt.getCharacters();
-			Result x = new Result(Type.function,funcname);
-			Result_cache.put(funcname,x); //store function name in hash map
+		//	Result x = new Result(Type.function,funcname);
+		//	Result_cache.put(funcname,x); //store function name in hash map
 		}
 		else
-			System.out.println("error: function declaration");
+			System.out.println("error: function declaration"+tt.getType());
 		Next();//for (
+		ArrayList<Result> param_list = new ArrayList<Result>();
 		if (tt.getType()==TokenType.openparenToken)
 		{	Next();
-			ArrayList<Result> param_list = new ArrayList<Result>();
+			
 			while(tt.getType()!=TokenType.closeparenToken)
 			{	
 				Next();//to skip comma
@@ -190,19 +194,30 @@ public class Parser{
 				Result_cache.put(ss,x); //store function name in hash map
 				Next();
 			}
-			formal_Param(funcname,param_list);
+		}
+		Function func;
+		if(param_list.size()==0){
+			func=new Function(type,funcname);}
+		else{
+			func= new Function(type,funcname,param_list);}
+		BasicBlock funcbb= func.getfirstbb();
+		Function_list.put(funcname, func);
+			
+		Next();
+		if(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
+			var_decl();
 		}
 		Next();
-		if(tt.getType() == TokenType.varToken){
-			var_decl(currentblock);
-		}
-		stat_seq(currentblock);
+		while(tt.getType()!=TokenType.endToken)
+			stat_seq(funcbb);
+		func.setreturninst(insts.get(insts.size()-2)); // for  last inst is end at -1
+		Next();
 
 	}
 	
-	public void formal_Param(String function_name,ArrayList<Result> param_list){
+	/*public void formal_Param(String function_name,ArrayList<Result> param_list){
 		Function_param.put(function_name, param_list);
-	}
+	}*/
 	
 	public BasicBlock stat_seq(BasicBlock currentblock)
 	{

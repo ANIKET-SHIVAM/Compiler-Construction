@@ -150,7 +150,7 @@ public class Scanner {
 
 		tt=Token.checkToken(str);
 		if(tt.getType() == TokenType.ident)
-		{
+		{	
 			if(!var_cache.containsKey(str))	//entry for variable is not present then put var in cache
 				var_cache.put(str, ++id);
 		}

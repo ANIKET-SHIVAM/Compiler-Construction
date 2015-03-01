@@ -132,13 +132,14 @@ public class Token {
 				token = new Token(TokenType.eofToken, characters, 255);
 				break;	
 			default:{
+
 			if(characters.matches("[0-9]+")==true)
 				token = new Token(TokenType.number, characters, 60);
-				else if(characters.matches("([a-zA-Z])(a-zA-Z0-9)*")==true){
+			else if(characters.matches("([a-zA-Z])*(a-zA-Z0-9)*")==true){
 				token = new Token(TokenType.ident, characters, 61);
 				//Scanner.ident.add(characters);
 				}
-				else{
+			else{
 				token = new Token(TokenType.errorToken, characters, 0);}
 				}
 			break;
