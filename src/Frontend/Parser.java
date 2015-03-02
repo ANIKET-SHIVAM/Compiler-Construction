@@ -203,14 +203,15 @@ public class Parser{
 		BasicBlock funcbb= func.getfirstbb();
 		Function_list.put(funcname, func);
 			
-		Next();
+		Next();Next();
+		System.out.println(tt.getType());
 		if(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
 			var_decl();
 		}
 		Next();
 		while(tt.getType()!=TokenType.endToken)
 			stat_seq(funcbb);
-		func.setreturninst(insts.get(insts.size()-2)); // for  last inst is end at -1
+		func.setreturninst(insts.get(insts.size()-1)); // for  last inst is end at -1
 		Next();
 
 	}

@@ -1,6 +1,11 @@
 //Basic if statement test
 main
 var a, b;
+function foo( );
+var i;
+{
+	let i <- 2;
+};
 {
 	let a <- 1;
 	let b <- 2;

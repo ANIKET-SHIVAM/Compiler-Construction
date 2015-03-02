@@ -111,11 +111,9 @@ public class CP {
 			if(phi.getOperator()=="phi"){
 				if(Parser.insts.indexOf(phi.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
 					phi.getOperands().set(0, operand);patchBranchInstruction(inst,phi);
-					System.out.println("asdasdasd"+Parser.insts.indexOf(phi));
 				}
 				else if(Parser.insts.indexOf(phi.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
 					phi.getOperands().set(1, operand);patchBranchInstruction(inst,phi);
-					System.out.println("asdasdasd"+Parser.insts.indexOf(phi));
 				}
 				
 			}
