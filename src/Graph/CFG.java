@@ -24,6 +24,12 @@ public class CFG {
         printer.println("layoutalgorithm: dfs");
         printer.println("manhattan_edges: yes");
         printer.println("smanhattan_edges: yes");
+        
+        if(bb.getblockno()>0){
+        	for(int i=0;i<bb.getblockno();i++){
+        		blocks.add(BasicBlock.getblockbyid(i));
+        	}
+        }
         blocks.add(bb);
         while(!blocks.isEmpty()){
         	bb=blocks.remove();

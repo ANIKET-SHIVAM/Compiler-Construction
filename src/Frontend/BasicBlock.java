@@ -33,8 +33,7 @@ public class BasicBlock {
 	BasicBlock(){
 		inst_list = new ArrayList<Instruction>();
 		this.kind=BlockType.main;
-		this.block_id = 0;
-		this.blockno = 0;
+		this.blockno = block_id;
 		basicblocks.put(block_id, this);
 	}
 	
@@ -153,6 +152,9 @@ public class BasicBlock {
 	}
 	public BasicBlock getfollowblock(){
 		return this.followblock;
+	}
+	public static BasicBlock getblockbyid(int id){
+		return basicblocks.get(id);
 	}
 	public void setfollowblocknull(){
 		this.followblock=null;

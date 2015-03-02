@@ -2,8 +2,10 @@
 main
 var a, b;
 function foo( );
-var i;
+var i,d,c;
 {
+	let c <- 1;
+	let d <- 2;
 	let i <- 2;
 };
 {

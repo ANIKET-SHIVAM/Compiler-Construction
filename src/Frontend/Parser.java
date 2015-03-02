@@ -201,10 +201,10 @@ public class Parser{
 		else{
 			func= new Function(type,funcname,param_list);}
 		BasicBlock funcbb= func.getfirstbb();
+		BasicBlock.block_id++;
 		Function_list.put(funcname, func);
 			
 		Next();Next();
-		System.out.println(tt.getType());
 		if(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
 			var_decl();
 		}
