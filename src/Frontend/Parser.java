@@ -728,6 +728,8 @@ public class Parser{
 					}
 					dobb.setdotowhile(while_block);
 					int phi_counter=0;
+					HashMap<Instruction,Instruction> varsInDo=new HashMap<Instruction,Instruction>();
+					Instruction firstWhileInst=while_block.inst_list.get(0);
 					for(counter=1;counter<=Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{	
 						if(Sym_table.get(counter).size()>1)
@@ -745,10 +747,30 @@ public class Parser{
 								ii.basicblock=while_block;
 								insts.add(ii);
 								while_block.inst_list.add(phi_counter++, ii);
+								varsInDo.put(oper2.getInstruction(), ii);
 								Sym_table.get(counter).push(ii);
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 						}
 					
+					}
+					for(int i=insts.indexOf(firstWhileInst);i<insts.size()-phi_counter;i++){
+						Instruction inst=insts.get(i);
+						if(inst.getOperands().size()==2){
+							Result operator1=inst.getOperands().get(0);
+							Result operator2=inst.getOperands().get(1);
+							if(operator1.getType()==Type.instruction){
+								if(varsInDo.containsKey(operator1.getInstruction())){
+									Result newRes=new Result(Type.instruction,varsInDo.get(operator1.getInstruction()));
+									inst.getOperands().set(0, newRes);
+								}
+							}
+							if(operator2.getType()==Type.instruction){
+								if(varsInDo.containsKey(operator2.getInstruction())){
+									Result newRes=new Result(Type.instruction,varsInDo.get(operator2.getInstruction()));
+									inst.getOperands().set(1, newRes);
+								}
+							}
+						}
 					}
 					
 					Instruction jump_ins = while_block.inst_list.get(0);
