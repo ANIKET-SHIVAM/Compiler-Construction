@@ -91,10 +91,10 @@ public class Scanner {
 		case '<':
 			Next();if(inputSym=='='){Next();return Token.checkToken("<=");}
 					else if(inputSym=='-'){Next();return Token.checkToken("<-");}
-					else {Next();return Token.checkToken("<");}
+					else {return Token.checkToken("<");}
 		case '>':
 			Next();if(inputSym=='='){Next();return Token.checkToken(">=");}
-					else {Next();return Token.checkToken(">");}
+					else {return Token.checkToken(">");}
 		case '.':
 			Next();return Token.checkToken(".");	
 		case ',':

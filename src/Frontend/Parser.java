@@ -81,8 +81,14 @@ public class Parser{
 					BasicBlock.mainblock=currentblock;
 					System.out.println("Basic Block: "+ BasicBlock.block_id);
 					BasicBlock.block_id++;
-					while(tt.getType() != TokenType.endToken){
-						currentblock=stat_seq(currentblock);							//statSequence
+					int errorcheck=0;
+					while(tt.getType() != TokenType.endToken&&tt.getType() != TokenType.periodToken){
+						currentblock=stat_seq(currentblock);	errorcheck++;					//statSequence
+						if(errorcheck>1500)
+							throw new IllegalArgumentException("error:missing semicolon");
+					}
+					if(tt.getType() == TokenType.periodToken){
+						System.out.println("error:missing semicolon");
 					}
 					Instruction end=new Instruction("end");
 					if(insts.get(insts.size()-1).getOperator()!="end"){
@@ -422,7 +428,6 @@ public class Parser{
 				
 				
 				Next();
-
 				Result op1 = E(currentblock);
 
 				if(isrelop()) {
