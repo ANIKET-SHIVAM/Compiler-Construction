@@ -83,6 +83,13 @@ public class RA {
 			else
 				bb.out_set = merge_set(bb.getnextblock().in_set,bb.getjoinblock().in_set);
 		}
+		else if(bb.getType() == BlockType.join)	 
+		{
+			if(bb.getjoinblock() != null)  //phi of nested if
+			{
+				bb.out_set = bb.getjoinblock().in_set;
+			}
+		}
 		
 		if(next_index < bb.inst_list.size())	//its not the last instruction in the block
 		{

@@ -18,10 +18,10 @@ public class ParserRun {
 			CFG graph1=new CFG("test002wo");
 
 			graph1.printCFG();
-		//	RA.doLivenessAnalysis();
+			RA.doLivenessAnalysis();
 			
-			//IG graph2 = new IG("test002_IG");
-		//	graph2.printIG();
+			IG graph2 = new IG("test002_IG");
+			graph2.printIG();
 			System.out.println("\n!!! Done successfully !!!");
 		}		
 }
