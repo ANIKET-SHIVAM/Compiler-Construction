@@ -70,7 +70,7 @@ public class Parser{
 				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
 					var_decl();
 				
-				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
+				while(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
 					if(tt.getType() == TokenType.funcToken)
 						func_decl(Function.Type.function);
 					else

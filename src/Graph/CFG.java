@@ -44,13 +44,13 @@ public class CFG {
         	if(bb.checkdotowhile())
         		printEdge(bb.getblockno(),bb.getdotowhile().getblockno());
         	
-        	if(bb.getnextblock()!=null)
+        	if(bb.getnextblock()!=null&&!blocks.contains(bb.getnextblock()))
         		blocks.add(bb.getnextblock());
-        	if(bb.getifelseblock()!=null)
+        	if(bb.getifelseblock()!=null&&!blocks.contains(bb.getifelseblock()))
         		blocks.add(bb.getifelseblock());
-        	if(bb.getfollowblock()!=null)
+        	if(bb.getfollowblock()!=null&&!blocks.contains(bb.getfollowblock()))
         		blocks.add(bb.getfollowblock());
-        	if(bb.getjoinblock()!=null && (bb.getType()==BasicBlock.BlockType.iftrue ||(bb.getType()==BasicBlock.BlockType.follow&&bb.getjoinblock().getprevblock().getType()!=BasicBlock.BlockType.iftrue)||(bb.getType()==BasicBlock.BlockType.join&&bb.getjoinblock().getprevblock2()!=bb)))
+        	if(bb.getjoinblock()!=null&&!blocks.contains(bb.getjoinblock()))// && (bb.getType()==BasicBlock.BlockType.iftrue ||(bb.getType()==BasicBlock.BlockType.follow&&bb.getjoinblock().getprevblock().getType()!=BasicBlock.BlockType.iftrue)||(bb.getType()==BasicBlock.BlockType.join&&bb.getjoinblock().getprevblock2()!=bb)))
         		blocks.add(bb.getjoinblock());
         } 	
         printer.println("}");

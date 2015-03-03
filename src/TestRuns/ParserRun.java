@@ -15,7 +15,7 @@ public class ParserRun {
 			graph.printCFG();
 			CP.doCP();
 			CSE.doCSE();
-			RA.doLivenessAnalysis();
+		//	RA.doLivenessAnalysis();
 			CFG graph1=new CFG("test001wo");
 			graph1.printCFG();
 			IG graph2 = new IG("test001_IG");
