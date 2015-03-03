@@ -1,5 +1,6 @@
 package Optimizations;
 import Frontend.*;
+import Frontend.BasicBlock.BlockType;
 import Frontend.Result.Type;
 import Graph.*;
 
@@ -30,6 +31,7 @@ public class CSE {
 						if(matchInstruction(laterinst,inst)){
 							replaceInstList.put(laterinst,inst);
 							replace.add(laterinst);
+							
 						}		
 					}
 				}	
@@ -73,11 +75,11 @@ public class CSE {
 				for(Instruction inst:bb.inst_list){
 					if(inst.getOperands().size()==2){
 						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
-								if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
-									Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
-									Result replacewith=new Result(Type.instruction,replaceinst);
-									inst.getOperands().set(0, replacewith);
-								}	
+							if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
+								Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
+								Result replacewith=new Result(Type.instruction,replaceinst);
+								inst.getOperands().set(0, replacewith);
+							}	
 						}	
 						if(inst.getOperands().get(1).getType()==Result.Type.instruction){
 							if(replaceInst.containsKey(inst.getOperands().get(1).getInstruction())){
@@ -93,6 +95,9 @@ public class CSE {
 			}
 		bb=Frontend.BasicBlock.basicblocks.get(no);
 		for(Instruction inst:remove){
+			Instruction replaceinst=replaceInst.get(inst);
+			Result replacewith=new Result(Type.instruction,replaceinst);
+			replaceInPhis(inst,replacewith);
 			bb.inst_list.remove(bb.inst_list.indexOf(inst));
 			Parser.insts.remove(Parser.insts.indexOf(inst));
 		}	
@@ -132,4 +137,32 @@ public class CSE {
 		return false;	
 	}
 	
+	private static void replaceInPhis(Instruction inst, Result operand){
+		for(int i=0;i<Parser.insts.size();i++){
+			Instruction phi=Parser.insts.get(i);
+			if(phi.getOperator()=="phi"){
+				if(Parser.insts.indexOf(phi.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
+					phi.getOperands().set(0, operand);patchBranchInstruction(inst,phi);
+				}
+				else if(Parser.insts.indexOf(phi.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
+					phi.getOperands().set(1, operand);patchBranchInstruction(inst,phi);
+				}
+				
+			}
+		}
+	}
+	private static void patchBranchInstruction(Instruction inst,Instruction patch){
+		for(int i=0;i<Parser.insts.size();i++){
+			Instruction instruction=Parser.insts.get(i);
+			if(instruction.getOperator()=="beq"||instruction.getOperator()=="ble"||instruction.getOperator()=="blt"||
+					instruction.getOperator()=="bne"||instruction.getOperator()=="bge"||instruction.getOperator()=="bgt")
+			{	
+				if(instruction.getOperands().get(1).getInstruction()==inst){
+				Result res=new Result(Type.instruction,patch);
+				instruction.getOperands().set(1, res);
+				
+			}
+			}
+		}
+	}
 }

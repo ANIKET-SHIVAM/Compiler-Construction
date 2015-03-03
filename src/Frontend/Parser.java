@@ -70,7 +70,7 @@ public class Parser{
 				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
 					var_decl();
 				
-				if(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
+				while(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
 					if(tt.getType() == TokenType.funcToken)
 						func_decl(Function.Type.function);
 					else
@@ -81,8 +81,14 @@ public class Parser{
 					BasicBlock.mainblock=currentblock;
 					System.out.println("Basic Block: "+ BasicBlock.block_id);
 					BasicBlock.block_id++;
-					while(tt.getType() != TokenType.endToken){
-						currentblock=stat_seq(currentblock);							//statSequence
+					int errorcheck=0;
+					while(tt.getType() != TokenType.endToken&&tt.getType() != TokenType.periodToken){
+						currentblock=stat_seq(currentblock);	errorcheck++;					//statSequence
+						if(errorcheck>1500)
+							throw new IllegalArgumentException("error:missing semicolon");
+					}
+					if(tt.getType() == TokenType.periodToken){
+						System.out.println("error:missing semicolon");
 					}
 					Instruction end=new Instruction("end");
 					if(insts.get(insts.size()-1).getOperator()!="end"){
@@ -421,7 +427,6 @@ public class Parser{
 				nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
 				
 				Next();
-
 				Result op1 = E(currentblock);
 
 				if(isrelop()) {

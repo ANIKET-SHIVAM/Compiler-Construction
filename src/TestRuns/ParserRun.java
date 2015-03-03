@@ -16,6 +16,7 @@ public class ParserRun {
 			CP.doCP();
 			CSE.doCSE();
 			CFG graph1=new CFG("test002wo");
+
 			graph1.printCFG();
 		//	RA.doLivenessAnalysis();
 			
