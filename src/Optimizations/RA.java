@@ -72,6 +72,10 @@ public class RA {
 		//if-else blocks
 		if(bb.getType() == BlockType.iftrue ||  bb.getType() == BlockType.ifelse)
 			bb.out_set = bb.getjoinblock().in_set;
+		else if (bb.getType() == BlockType.follow)
+		{
+			//TODO
+		}
 		else if(ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt")
 		{
 			if(bb.getifelseblock() != null)

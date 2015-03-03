@@ -1,0 +1,18 @@
+//Basic if statement test
+main
+var a, b;
+{
+	let a <- 1;
+	let b <- 2;
+	if a > b then
+	if a < 10 then
+		let b <- b*2;
+		let a <- a - 1;
+		let b <- b*2;
+	fi;
+	else
+		let b <- b + 1;
+	fi;
+	
+	
+}.

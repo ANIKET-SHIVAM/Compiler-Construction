@@ -420,7 +420,6 @@ public class Parser{
 					if_count++;
 				nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
 				
-				
 				Next();
 
 				Result op1 = E(currentblock);
@@ -575,7 +574,20 @@ public class Parser{
 					{
 							var = IdtoString(i);//Todo
 							Instruction i1 = Sym_table.get(i).pop();
-							Instruction i2 = Sym_table.get(i).pop();
+							Instruction i2;
+							if(else_flag != 0){
+							 i2 = Sym_table.get(i).pop();
+							}
+							else
+							{
+								
+								int top = Sym_table.get(i).size()-1;
+								while(Sym_table.get(i).elementAt(top).block_id >= i1.block_id && top>0){
+									top--;
+								}
+								
+								i2 = Sym_table.get(i).elementAt(top);
+							}
 							Result oper1= new Result(Type.instruction,i1);
 							Result oper2= new Result(Type.instruction,i2);
 							Instruction ii = new Instruction("phi",var,oper1,oper2);
@@ -720,7 +732,7 @@ public class Parser{
 								int top = Sym_table.get(counter).size()-2;			//second element from top
 								while(Sym_table.get(counter).elementAt(top).block_id >= i1.block_id && top>0){
 									top--;
-									}
+								}
 								Instruction i2 = Sym_table.get(counter).elementAt(top);
 								Result oper1= new Result(Type.instruction,i1);
 								Result oper2= new Result(Type.instruction,i2);
