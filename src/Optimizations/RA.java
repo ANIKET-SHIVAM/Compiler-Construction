@@ -32,7 +32,7 @@ public class RA {
 		for(int bbno=BasicBlock.basicblocks.size()-1;bbno>=0;bbno--){
 			bb=BasicBlock.basicblocks.get(bbno);
 			System.out.println("Live Set for BasicBlock:"+ bb.getblockno());
-			int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
+			/*int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
 			for(int index=last_inst;index>=0;index--)
 			{
 				Instruction ii = bb.inst_list.get(index);
@@ -40,9 +40,13 @@ public class RA {
 				{
 					continue;
 				}
-		
-				create_liveset(bb,ii);	//create live set for each instruction in basic block
-			}
+			 	*/		
+				create_liveset(bb);	//create live set for each instruction in basic block
+				if(bb.getType() == BlockType.follow)
+				{
+					bbno = bb.getprevblock().getblockno();
+				}
+			//}
 		}
 		
 	}
@@ -61,8 +65,15 @@ public class RA {
 		return final_set;
 	}
 	
-	public static void create_liveset(BasicBlock bb,Instruction ii)
+	public static void create_liveset(BasicBlock bb)
 	{
+		int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
+		for(int index1=last_inst;index1>=0;index1--){
+			Instruction ii = bb.inst_list.get(index1);
+			if(ii.getOperator() == "end")
+			{
+				continue;
+			}
 		ArrayList<Integer> set = new ArrayList<Integer>();
 		int inst_index = Parser.insts.indexOf(ii);
 		int next_index = bb.inst_list.indexOf(ii) + 1;	//index of next instruction in basic block
@@ -72,11 +83,8 @@ public class RA {
 		//if-else blocks
 		if(bb.getType() == BlockType.iftrue ||  bb.getType() == BlockType.ifelse)
 			bb.out_set = bb.getjoinblock().in_set;
-		else if (bb.getType() == BlockType.follow)
-		{
-			//TODO
-		}
-		else if(ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt")
+		
+		else if(bb.getnextblock()!= null && bb.getnextblock().getType() == BlockType.iftrue && ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt")
 		{
 			if(bb.getifelseblock() != null)
 				bb.out_set = merge_set(bb.getnextblock().in_set,bb.getifelseblock().in_set);
@@ -105,10 +113,12 @@ public class RA {
 			}
 		}
 		else	//its the last instruction in the block
-		{	
-			for(int i=0;i<bb.out_set.size();i++)
-			{
-				set.add(bb.out_set.get(i));		//add elements of set of next instruction to this set
+		{	if(bb.getnextblock() != null){
+			
+				for(int i=0;i<bb.out_set.size();i++)
+				{
+					set.add(bb.out_set.get(i));		//add elements of set of next instruction to this set
+				}
 			}
 		}
 		
@@ -126,9 +136,36 @@ public class RA {
 		if(set.contains(inst_index)) 
 			set.remove(set.indexOf(inst_index));  //current instruction not live at this point,so remove from set
 
-		if(bb.inst_list.indexOf(ii) == 0)
+		if(bb.inst_list.indexOf(ii) == 0){
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
-		
+
+			if(bb.getType() == BlockType.follow)	//if its follow block of while
+			{
+				BasicBlock while_block = bb.getprevblock();
+				BasicBlock do_block = while_block.getnextblock();
+				
+				while_block.out_set = bb.in_set;
+				
+				create_liveset(while_block);	//liveset for while block
+				
+				//check if there is nested while
+				Instruction first_ins = do_block.inst_list.get(0);
+				if(first_ins.getOperator() == "phi")	//nested while
+				{
+					create_liveset(do_block.getfollowblock());
+				}
+				else {	//no nested while
+					create_liveset(do_block);	//liveset for do block
+				 
+					while_block.out_set = merge_set(while_block.out_set,do_block.in_set);
+					create_liveset(while_block);	//second iteration for while block
+				}
+				if(while_block.getprevblock().inst_list.get(0).getOperator() != "phi")
+				{
+					while_block.getprevblock().out_set = while_block.in_set;
+				}
+			}
+		}
 		Live_Set.put(inst_index, set);	//add set corresponding to instruction
 
 		fill_matrix(set);	//fill matrix for IG creation
@@ -137,6 +174,6 @@ public class RA {
 		for(int i=0;i<set.size();i++)
 			System.out.print(set.get(i)+",");
 		System.out.println("\n");
-		
+		}	
 	}
 }

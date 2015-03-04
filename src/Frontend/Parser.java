@@ -725,8 +725,12 @@ public class Parser{
 					System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 					BasicBlock.block_id++;
 					dobb=do_block;
-					while(tt.getType() != TokenType.odToken){
-						dobb = stat_seq(dobb);
+					if(tt.getType() == TokenType.doToken)
+						dobb = whileStatement(dobb);//GG added this..please check
+					else{
+						while(tt.getType() != TokenType.odToken){
+							dobb = stat_seq(dobb);
+						}
 					}
 					dobb.setdotowhile(while_block);
 					int phi_counter=0;
