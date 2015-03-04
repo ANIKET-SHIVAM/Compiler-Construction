@@ -9,6 +9,7 @@ public class CFG {
 	
 	Queue<BasicBlock> blocks= new LinkedList<BasicBlock>();
     private PrintWriter printer;
+    
     public CFG(String name){
         try{
             printer = new PrintWriter(new FileWriter(name + ".vcg"));
@@ -18,7 +19,10 @@ public class CFG {
     }
     
     public void printCFG() {
+    	
     	BasicBlock bb = BasicBlock.mainblock;
+    	int block_length =bb.block_id;
+    	int [] block_done = new int[block_length];
         printer.println("graph: { title: \"Control Flow Graph\"");
         printer.println("layoutalgorithm: dfs");
         printer.println("manhattan_edges: yes");
@@ -32,7 +36,8 @@ public class CFG {
         blocks.add(bb);
         while(!blocks.isEmpty()){
         	bb=blocks.remove();
-        	printBlock(bb);
+        	if(block_done[bb.getblockno()] == 0)
+        	printBlock(bb,block_done);
         	
         	if(bb.getprevblock()!=null)
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
@@ -59,7 +64,8 @@ public class CFG {
     
    
     
-    private void printBlock(BasicBlock bb) {
+    private void printBlock(BasicBlock bb,int [] block_done) {
+    	block_done[bb.getblockno()]=1;
         printer.println("node: {");
         printer.println("title: \"" + bb.getblockno() + "\"");
         	printer.println("label: \"" + bb.getblockno() + "[");

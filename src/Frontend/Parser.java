@@ -424,7 +424,7 @@ public class Parser{
 		
 				if(if_count != 1)
 					if_count++;
-				nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
+				iftruebb=elsebb=nested_if_block=else_block=phi_block=if_block = currentblock.createIfTrue();
 				
 				Next();
 				Result op1 = E(currentblock);
@@ -498,14 +498,15 @@ public class Parser{
 					Next();
 					if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 					{	
-						iftruebb=stat_seq(if_block);
+						iftruebb=ifStatement(if_block);
+						//iftruebb=stat_seq(if_block);
 						if(tt.getType() == TokenType.semiToken)
 							Next();
 						//Next();
 					}
 					else
 					{	while((tt.getType() != TokenType.elseToken)&&(tt.getType() != TokenType.fiToken)){
-							iftruebb = stat_seq(if_block);
+							iftruebb = stat_seq(iftruebb);
 						}
 
 					}
@@ -522,7 +523,8 @@ public class Parser{
 				
 				if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 				{	
-					elsebb=stat_seq(else_block);
+					 elsebb=ifStatement(else_block);
+					//elsebb=stat_seq(else_block);
 					if(tt.getType() == TokenType.semiToken)
 						Next();
 					//Next();

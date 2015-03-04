@@ -7,12 +7,15 @@ var a, b;
 	if a > b then
 	if a < 10 then
 		let b <- b*2;
+		if b > a then
 		let a <- a - 1;
+		fi;
 		let b <- b*2;
 	fi;
 	else
 		let b <- b + 1;
 	fi;
+	
 	
 	
 }.
