@@ -19,6 +19,7 @@ public class BasicBlock {
 	private BasicBlock prevblock2;  // for joinblock only
 	private BasicBlock followblock;	//for while
 	private BasicBlock dotowhileblock;
+	private BasicBlock functionblock;
 	
 	public int start_instruction_index;
 	public int end_instruction_index;
@@ -94,6 +95,14 @@ public class BasicBlock {
 		basicblocks.put(block_id, join);
 		return join;
 	}
+	public BasicBlock createafterfunction(BasicBlock functionbb){		//only if will do this
+		BasicBlock afterfunction=new BasicBlock(this.kind);
+		this.functionblock=functionbb;
+		this.nextblock=afterfunction;
+		afterfunction.prevblock=this;
+		basicblocks.put(block_id, afterfunction);
+		return afterfunction;
+	}
 	
 	public void setjoin(BasicBlock phi_block){		//only else and main(when no else is there) can do this
 	//	if (this.kind==BlockType.ifelse){
@@ -149,6 +158,9 @@ public class BasicBlock {
 	}
 	public BasicBlock getjoinblock(){
 		return this.joinblock;
+	}
+	public BasicBlock getfunctionblock(){
+		return this.functionblock;
 	}
 	public BasicBlock getfollowblock(){
 		return this.followblock;

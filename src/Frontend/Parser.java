@@ -20,6 +20,7 @@ public class Parser{
 	public char sym;
 	public int index=0;
 	public static BasicBlock currentblock;
+	public Function calledfunction;
 
 	public Parser(String filename){
 		scanner = new Scanner(filename);				//initialize scanner
@@ -67,9 +68,9 @@ public class Parser{
 			while(tt.getType()!= TokenType.periodToken)	//"." at the end
 			{
 				Next();
-				if(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
+				while(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
 					var_decl();
-				
+			
 				while(tt.getType() == TokenType.funcToken || tt.getType() == TokenType.procToken){	//if its a function declaration
 					if(tt.getType() == TokenType.funcToken)
 						func_decl(Function.Type.function);
@@ -132,19 +133,20 @@ public class Parser{
 		{
 			int num=0;
 			String s1 = new String();
-			ArrayList<Integer> size=new ArrayList<Integer>();
+			ArrayList<Integer> arrsize=new ArrayList<Integer>();
 			while(tt.getType() != TokenType.semiToken)
 			{					
 				Next();
-				while(tt.getType() != TokenType.ident)
-				{
-					if(tt.getType() == TokenType.openbracketToken)	//array [
-					{
+				while(tt.getType() == TokenType.ident)
+				{	s1=tt.getCharacters();
+					Next();
+					while(tt.getType() == TokenType.openbracketToken)	//array [
+					{	
 						Next();
 						if(tt.getType() == TokenType.number)	//array [ 4
 						{
-							num=tt.getValue();					//num = 4
-							size.add(num);
+							num=Integer.parseInt(tt.getCharacters());					//num = 4
+							arrsize.add(num);
 						}
 						
 						Next();
@@ -156,15 +158,15 @@ public class Parser{
 						}
 						Next();	
 					}
+					if(tt.getType() != TokenType.ident)
+					{
+						Result x = new Result(Type.arr,s1,arrsize);
+						Result_cache.put(s1,x);
+					}
 					
 				}
-				if(tt.getType() == TokenType.ident)
-				{
-					s1 = tt.getCharacters();
-					Result x = new Result(Type.arr,s1,size);
-					Result_cache.put(s1,x);
-				}
-				Next();
+				
+				
 			}
 			 if(Result_cache.get("FP")==null) {
 				 Result FP = new Result(Type.variable,"FP");
@@ -209,14 +211,15 @@ public class Parser{
 		BasicBlock funcbb= func.getfirstbb();
 		BasicBlock.block_id++;
 		Function_list.put(funcname, func);
-			
 		Next();Next();
 		if(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
 			var_decl();
 		}
 		Next();
+		BasicBlock returnblock=funcbb;
 		while(tt.getType()!=TokenType.endToken)
-			stat_seq(funcbb);
+			returnblock=stat_seq(returnblock);
+		func.setreturnbb(returnblock);
 		func.setreturninst(insts.get(insts.size()-1)); // for  last inst is end at -1
 		Next();
 
@@ -272,6 +275,7 @@ public class Parser{
 	public Result assignment(BasicBlock currentblock)		//"let"
 	{
 		boolean arrflag=false;
+		Instruction adda=null;
 		int index=0;
 		String var;
 		Result x = new Result();
@@ -291,7 +295,6 @@ public class Parser{
 					Next();
 					x=E(currentblock);
 					arrindex.add(x);
-					Next();
 					if(tt.getType()!= TokenType.closebracketToken)	//"]"
 					{
 						error("Syntax error: ']' missing");
@@ -299,8 +302,9 @@ public class Parser{
 					else
 						Next();
 				}
+				boolean flagarray=false;//false means size is 1
 				for(int i=0;i<arrsize.size()-1;i++){
-					int j=1,mul=0;
+					int j=(arrsize.size())-(arrsize.size()-i-1),mul=1;flagarray=true;
 					while(j<arrsize.size()){
 						mul*=arrsize.get(j);
 						j++;
@@ -321,20 +325,32 @@ public class Parser{
 						arrfinalindexins.block_id = BasicBlock.block_id;
 					}
 				}
+				Instruction arrmulins=null;
+				if(!flagarray){
+					Result intsize = new Result(Type.number,4);
+				    arrmulins = new Instruction("mul",intsize,arrindex.get(arrindex.size()-1));
+					currentblock.inst_list.add(arrmulins);
+					insts.add(arrmulins);				//add instruction to instruction list
+					arrmulins.basicblock = currentblock; 
+					arrmulins.block_id = BasicBlock.block_id;
+				}
+				else
+				{
 				Result finalindex = new Result(Type.instruction,insts.get(insts.size()-1));
 				Instruction arrfinalindexins = new Instruction("add",arrindex.get(arrindex.size()-1),finalindex);
 				currentblock.inst_list.add(arrfinalindexins);
 				insts.add(arrfinalindexins);				//add instruction to instruction list
 				arrfinalindexins.basicblock = currentblock; 
 				arrfinalindexins.block_id = BasicBlock.block_id;
-			
-				Result arrrelloc = new Result(Type.number,indexrelloc);
+				
+				Result arrrelloc = new Result(Type.instruction,arrfinalindexins);
 				Result intsize = new Result(Type.number,4);
-				Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
+				arrmulins = new Instruction("mul",intsize,arrrelloc);
 				currentblock.inst_list.add(arrmulins);
 				insts.add(arrmulins);				//add instruction to instruction list
 				arrmulins.basicblock = currentblock; 
 				arrmulins.block_id = BasicBlock.block_id;
+				}
 				
 				Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
 				currentblock.inst_list.add(arraddfpins);
@@ -349,15 +365,20 @@ public class Parser{
 				insts.add(arradda);				//add instruction to instruction list
 				arradda.basicblock = currentblock;
 				arradda.block_id = BasicBlock.block_id;
-				
+				adda=arradda;
 				
 				
 			}
 			if(tt.getType() == TokenType.becomesToken) //"<-"
 			{
 				Next();
-				
-				x = E(currentblock);
+				if (tt.getType()==TokenType.callToken){
+						currentblock=stat_seq(currentblock);
+						x=calledfunction.getreturninst();
+				}
+				else {
+					x = E(currentblock);
+				}
 							//e.g. let x <- 51;
 					Instruction i = new Instruction("move",x, Result_cache.get(var));
 					currentblock.inst_list.add(i);
@@ -390,14 +411,19 @@ public class Parser{
 					}
 					else{
 						Result arrstore1=new Result(Type.instruction,i);
-						Instruction arrstore = new Instruction("store",arrstore1);
+						Result addainst=new Result(Type.instruction,adda);
+						Instruction arrstore = new Instruction("store",arrstore1,addainst);
 						currentblock.inst_list.add(arrstore);
 						insts.add(arrstore);				//add instruction to instruction list
 						arrstore.basicblock = currentblock;
 						arrstore.block_id = BasicBlock.block_id;
 					}
 				
+				
+				
 			}
+			else 
+				throw new IllegalArgumentException("error:assignment not complete");
 		}
 		
 		return x;
@@ -406,9 +432,25 @@ public class Parser{
 	public BasicBlock funcCall(BasicBlock currentblock)
 	{
 		BasicBlock bb=currentblock;
-		//ToDo
-		
-		return bb;
+		Next();
+		System.out.println(tt.getCharacters());
+		if(Function_list.containsKey(tt.getCharacters())){
+			Function func=Function_list.get(tt.getCharacters());
+			calledfunction=func;
+			Instruction jump_ins = func.getfirstbb().inst_list.get(0);
+			Result jump_res = new Result(Type.instruction,jump_ins);
+			Instruction branch_inst = new Instruction("bra",jump_res);
+		    branch_inst.basicblock = currentblock;
+			branch_inst.block_id = BasicBlock.block_id;
+			currentblock.inst_list.add(branch_inst);
+			insts.add(branch_inst);
+			BasicBlock nextblock=currentblock.createafterfunction(func.getfirstbb());
+			BasicBlock.block_id++;
+			return nextblock;	
+		}
+		else
+			throw new IllegalArgumentException("error:undefined function");
+	
 	}
 	
 	public boolean isrelop(){
@@ -498,8 +540,8 @@ public class Parser{
 					Next();
 					if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 					{	
-						iftruebb=ifStatement(if_block);
-						//iftruebb=stat_seq(if_block);
+					//	iftruebb=ifStatement(if_block);
+						iftruebb=stat_seq(if_block);
 						if(tt.getType() == TokenType.semiToken)
 							Next();
 						//Next();
@@ -523,8 +565,8 @@ public class Parser{
 				
 				if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 				{	
-					 elsebb=ifStatement(else_block);
-					//elsebb=stat_seq(else_block);
+					// elsebb=ifStatement(else_block);
+					elsebb=stat_seq(else_block);
 					if(tt.getType() == TokenType.semiToken)
 						Next();
 					//Next();
@@ -801,7 +843,7 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken){
+				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken&&tt.getType() != TokenType.odToken){
 					follow_block=stat_seq(follow_block);}
 				
 				Instruction	my_fix = while_stack.pop();
@@ -945,7 +987,8 @@ public class Parser{
 							Next();
 							Result x=E(currentblock);
 							arrindex.add(x);
-							Next();
+							if(arr.getArraySize().size()!=1)
+								Next();
 							if(tt.getType()!= TokenType.closebracketToken)	//"]"
 							{
 								error("Syntax error: ']' missing");
@@ -953,9 +996,9 @@ public class Parser{
 							else
 								Next();
 						}
-					 
+						boolean flagarray=false;//false means size is 1
 						for(int i=0;i<arrsize.size()-1;i++){
-							int j=1,mul=0;
+							int j=(arrsize.size())-(arrsize.size()-i-1),mul=1;flagarray=true;
 							while(j<arrsize.size()){
 								mul*=arrsize.get(j);
 								j++;
@@ -976,6 +1019,17 @@ public class Parser{
 								arrfinalindexins.block_id = BasicBlock.block_id;
 							}
 						}
+						Instruction arrmulins=null;
+						if(!flagarray){
+							Result intsize = new Result(Type.number,4);
+						    arrmulins = new Instruction("mul",intsize,arrindex.get(arrindex.size()-1));
+							currentblock.inst_list.add(arrmulins);
+							insts.add(arrmulins);				//add instruction to instruction list
+							arrmulins.basicblock = currentblock; 
+							arrmulins.block_id = BasicBlock.block_id;
+						}
+						else
+						{
 						Result finalindex = new Result(Type.instruction,insts.get(insts.size()-1));
 						Instruction arrfinalindexins = new Instruction("add",arrindex.get(arrindex.size()-1),finalindex);
 						currentblock.inst_list.add(arrfinalindexins);
@@ -983,13 +1037,14 @@ public class Parser{
 						arrfinalindexins.basicblock = currentblock; 
 						arrfinalindexins.block_id = BasicBlock.block_id;
 						
-						Result arrrelloc = new Result(Type.number,indexrelloc);
+						Result arrrelloc = new Result(Type.instruction,arrfinalindexins);
 						Result intsize = new Result(Type.number,4);
-						Instruction arrmulins = new Instruction("mul",intsize,arrrelloc);
+						arrmulins = new Instruction("mul",intsize,arrrelloc);
 						currentblock.inst_list.add(arrmulins);
 						insts.add(arrmulins);				//add instruction to instruction list
 						arrmulins.basicblock = currentblock; 
 						arrmulins.block_id = BasicBlock.block_id;
+						}
 						
 						Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
 						currentblock.inst_list.add(arraddfpins);
