@@ -28,28 +28,31 @@ public class CFG {
         printer.println("manhattan_edges: yes");
         printer.println("smanhattan_edges: yes");
         
-        if(bb.getblockno()>0){
+       /* if(bb.getblockno()>0){
         	for(int i=0;i<bb.getblockno();i++){
         		blocks.add(BasicBlock.getblockbyid(i));
         	}
-        }
+        }*/
         blocks.add(bb);
         while(!blocks.isEmpty()){
         	bb=blocks.remove();
         	if(block_done[bb.getblockno()] == 0)
-        	printBlock(bb,block_done);
+        		printBlock(bb,block_done);
         	
         	if(bb.getprevblock()!=null)
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
         	if(bb.getprevblock2()!=null)
         		printEdge(bb.getprevblock2().getblockno(),bb.getblockno());
-        	//if(bb.getType()==BasicBlock.BlockType.doblock && bb.checkdotowhile())
-        	//	printEdge(bb.getblockno(),bb.getprevblock().getblockno());
         	if(bb.checkdotowhile())
         		printEdge(bb.getblockno(),bb.getdotowhile().getblockno());
-        	
+        	if(bb.getfunctionblock()!=null){
+        		printEdge(bb.getblockno(),bb.getfunctionblock().getblockno());
+        		printEdge(bb.getfunctionblock().getblockno(),bb.getnextblock().getblockno());
+        	}
         	if(bb.getnextblock()!=null &&!blocks.contains(bb.getnextblock()))
         		blocks.add(bb.getnextblock());
+        	if(bb.getfunctionblock()!=null &&!blocks.contains(bb.getfunctionblock()))
+        		blocks.add(bb.getfunctionblock());
         	if(bb.getifelseblock()!=null && !blocks.contains(bb.getifelseblock()))
         		blocks.add(bb.getifelseblock());
         	if(bb.getfollowblock()!=null &&!blocks.contains(bb.getfollowblock()))
@@ -76,7 +79,6 @@ public class CFG {
         printer.println("]\"");
         printer.println("}");
         
- 
     }
     
     

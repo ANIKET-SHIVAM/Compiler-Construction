@@ -10,6 +10,7 @@ public class Function {
 	private ArrayList<Result>  params;
 	private Result returninst;
 	private BasicBlock firstbb;
+	private BasicBlock returnbb;
 	
 	Function(Type kind,String name){
 		type=kind;
@@ -29,8 +30,17 @@ public class Function {
 	public BasicBlock getfirstbb(){
 		return firstbb;
 	}
+	public BasicBlock getreturnbb(){
+		return returnbb;
+	}
+	public void setreturnbb(BasicBlock bb){
+		returnbb=bb;;
+	}
 	public void setreturninst(Instruction inst){
 		returninst=new Result(Result.Type.instruction, inst);
+	}
+	public Result getreturninst(){
+		return returninst;
 	}
 	
 }
