@@ -31,7 +31,7 @@ public class RA {
 		BasicBlock bb;
 		for(int bbno=BasicBlock.basicblocks.size()-1;bbno>=0;bbno--){
 			bb=BasicBlock.basicblocks.get(bbno);
-			System.out.println("Live Set for BasicBlock:"+ bb.getblockno());
+			
 			/*int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
 			for(int index=last_inst;index>=0;index--)
 			{
@@ -139,6 +139,7 @@ public class RA {
 		if(bb.inst_list.indexOf(ii) == 0){
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
 
+			
 			if(bb.getType() == BlockType.follow)	//if its follow block of while
 			{
 				BasicBlock while_block = bb.getprevblock();
@@ -156,24 +157,25 @@ public class RA {
 				}
 				else {	//no nested while
 					create_liveset(do_block);	//liveset for do block
-				 
+				}
 					while_block.out_set = merge_set(while_block.out_set,do_block.in_set);
 					create_liveset(while_block);	//second iteration for while block
-				}
+				
 				if(while_block.getprevblock().inst_list.get(0).getOperator() != "phi")
 				{
 					while_block.getprevblock().out_set = while_block.in_set;
 				}
 			}
 		}
-		Live_Set.put(inst_index, set);	//add set corresponding to instruction
+			Live_Set.put(inst_index, set);	//add set corresponding to instruction
 
-		fill_matrix(set);	//fill matrix for IG creation
+			fill_matrix(set);	//fill matrix for IG creation
+			System.out.println("Live Set for BasicBlock:"+ bb.getblockno());
+			System.out.print(inst_index+":- ");
+			for(int i=0;i<set.size();i++)
+				System.out.print(set.get(i)+",");
+			System.out.println("\n");
 		
-		System.out.print(inst_index+":- ");
-		for(int i=0;i<set.size();i++)
-			System.out.print(set.get(i)+",");
-		System.out.println("\n");
 		}	
 	}
 }

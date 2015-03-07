@@ -801,7 +801,7 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				while(tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken){
+				while(tt.getType() != TokenType.odToken && tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken){
 					follow_block=stat_seq(follow_block);}
 				
 				Instruction	my_fix = while_stack.pop();
