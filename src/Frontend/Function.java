@@ -11,6 +11,7 @@ public class Function {
 	private ArrayList<Result> globalvars;
 	private ArrayList<Result>  params;
 	private HashMap<Integer,Stack<Instruction>> Sym_table;
+	public HashMap<Instruction,ArrayList<Result>> func_call_params;
 	private Result returninst;
 	private BasicBlock firstbb;
 	private BasicBlock returnbb;
@@ -20,6 +21,7 @@ public class Function {
 		funcname=name;
 		globalvars=new ArrayList<Result>();
 		Sym_table=new HashMap<Integer,Stack<Instruction>>();
+		func_call_params=new HashMap<Instruction,ArrayList<Result>>();
 	}
 	public Function(Type kind,String name,ArrayList<Result>parameters){
 		type=kind;
@@ -27,6 +29,7 @@ public class Function {
 		globalvars=new ArrayList<Result>();
 		params=parameters;
 		Sym_table=new HashMap<Integer,Stack<Instruction>>() ;
+		func_call_params=new HashMap<Instruction,ArrayList<Result>>();
 	}
 	public void setfirstbb(){
 		firstbb=new BasicBlock(BlockType.function,this);
@@ -48,6 +51,9 @@ public class Function {
 	}
 	public HashMap<Integer,Stack<Instruction>> get_Sym_table(){
 		return this.Sym_table;
+	}
+	public void add_param_call(Instruction inst,ArrayList<Result> params){
+		func_call_params.put(inst, params);
 	}
 	
 }

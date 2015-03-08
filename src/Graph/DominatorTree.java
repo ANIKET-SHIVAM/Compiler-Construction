@@ -7,11 +7,12 @@ import Frontend.*;
 
 public class DominatorTree {
 	private static HashMap<Integer,LinkedList<Integer>> Dominator= new  HashMap<Integer,LinkedList<Integer>>();
-	private BasicBlock main;
+//	private BasicBlock main;
 	
 	public DominatorTree(){
-		main=BasicBlock.mainblock;
+		for(BasicBlock main:BasicBlock.Functions_list){
 			LinkedList<Integer> ll=new LinkedList<Integer>();
+			//ll.add(main.getblockno());
 			Dominator.put(main.getblockno(),ll);
 		
 		if(main.getnextblock()!= null)
@@ -19,26 +20,24 @@ public class DominatorTree {
 		if(main.getifelseblock()!= null)
 			createDT(main.getifelseblock(),main);
 
-		
-		int n=Dominator.size()-1;
-		for(int i=1;i<=n;i++){
+		for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-1;i++){
 			ll=Dominator.get(i);
 			LinkedList<Integer> llnew=new LinkedList<Integer>();
 			int max=0;
-			for(int j=0;j<=n;j++){
+			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-1;j++){
 				if(Collections.frequency(ll, j)>max){
 					max=Collections.frequency(ll, j);
 				}
 			}
-			for(int j=0;j<=n;j++){
+			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-1;j++){
 				if(Collections.frequency(ll, j)==max){
 					llnew.add(j);
 				}
-			}	
-				if(!llnew.isEmpty()){
-					Dominator.put(i, llnew);
-				}
-			
+			}		
+			if(!llnew.isEmpty()){
+				Dominator.put(i, llnew);
+				System.out.println(i+llnew.toString());
+			}
 		}
 		/*for(int i=0;i<=n;i++){
 			System.out.print("block"+i+":");
@@ -47,7 +46,9 @@ public class DominatorTree {
 				System.out.print(z+"   ");
 			System.out.println();
 		}*/
-		printDT("testDT");
+		
+		}
+	//	printDT("testDT");
 	}
 	public void createDT(BasicBlock bb,BasicBlock bbdom){
 		if(Dominator.containsKey(bb.getblockno())){
@@ -78,19 +79,19 @@ public class DominatorTree {
 		  PrintWriter printer;
 		 try{
 	           printer = new PrintWriter(new FileWriter(name+".vcg"));
-	        
+	     for(BasicBlock main:BasicBlock.Functions_list){   
 		    printer.println("graph: { title: \"Control Flow Graph\"");
 	        printer.println("layoutalgorithm: dfs");
 	        printer.println("manhattan_edges: yes");
 	        printer.println("smanhattan_edges: yes");
 	        printer.println("node: {");
-	        printer.println("title: \"" + 0 + "\"");
-	        printer.println("label: \"" + 0 + "[");
-	        printer.println("Block #:"+0);
+	        printer.println("title: \"" + main.getblockno() + "\"");
+	        printer.println("label: \"" + main.getblockno() + "[");
+	        printer.println("Block #:"+main.getblockno());
 	        printer.println("]\"");
 	        printer.println("}");
 	        int n=Dominator.size()-1;
-			for(int i=1;i<=n;i++){
+			for(int i=main.getblockno()+1;i<main.getblockno()+Dominator.size()-1;i++){
 		        printer.println("node: {");
 		        printer.println("title: \"" + i + "\"");
 		        printer.println("label: \"" + i + "[");
@@ -104,7 +105,7 @@ public class DominatorTree {
 			}
 			 printer.println("}");
 		     printer.close();
-	        
+		 } 
 		 } catch (IOException ex) {
 	            System.out.println(ex.getMessage());
 	        }

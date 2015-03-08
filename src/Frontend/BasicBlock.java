@@ -8,6 +8,7 @@ public class BasicBlock {
 		main,iftrue,ifelse,join,whileblock,doblock,follow,function,call
 	}
 	public static int block_id;
+	public static ArrayList<BasicBlock>Functions_list=new ArrayList<BasicBlock>();
 	public static BasicBlock mainblock;
 	public static HashMap<Integer,BasicBlock>basicblocks=new HashMap<Integer,BasicBlock>();
 	private int blockno;
@@ -38,6 +39,7 @@ public class BasicBlock {
 		this.blockno = block_id;
 		basicblocks.put(block_id, this);
 		this.Sym_table=Parser.Sym_table;
+		Functions_list.add(this);
 	}
 	
 	BasicBlock(BlockType kind, Function func){							// for function first bb
@@ -46,6 +48,7 @@ public class BasicBlock {
 		this.blockno = block_id;
 		basicblocks.put(block_id, this);
 		this.Sym_table=func.get_Sym_table();
+		Functions_list.add(this);
 	}
 	
 	BasicBlock(BlockType kind,BasicBlock bb){
