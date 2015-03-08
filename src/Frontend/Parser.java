@@ -13,8 +13,9 @@ public class Parser{
 	//private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
 	private HashMap<String,Result> Result_cache;	//for storing Results
 	public static ArrayList<Instruction> insts;			//list for instructions
-	private HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
-	private HashMap<String,Function> Function_list=new HashMap<String,Function>();
+	public static HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
+//	public static HashMap<String,HashMap<Integer,Stack<Instruction>>> Func_Sym_table;
+	public static HashMap<String,Function> Function_list=new HashMap<String,Function>();
 	public Stack<Instruction> if_stack = new Stack<Instruction>();
 	public Stack<Instruction> while_stack = new Stack<Instruction>();
 	public char sym;
@@ -28,6 +29,7 @@ public class Parser{
 		insts=new ArrayList<Instruction>();				//initialize instruction list
 		//Sym_table = new HashMap<Integer,Instruction>();	//initialize symbol table
 		Sym_table = new HashMap<Integer,Stack<Instruction>>();		//initialize per variable stack	
+	//	HashMap<String,HashMap<Integer,Stack<Instruction>>> Func_Sym_table=new HashMap<String,HashMap<Integer,Stack<Instruction>>>();
 		tt = scanner.getToken();
 	}
 	
@@ -205,14 +207,16 @@ public class Parser{
 		}
 		Function func;
 		if(param_list.size()==0){
-			func=new Function(type,funcname);}
+			func=new Function(type,funcname);
+			func.setfirstbb();}
 		else{
-			func= new Function(type,funcname,param_list);}
+			func= new Function(type,funcname,param_list);
+			func.setfirstbb();}
 		BasicBlock funcbb= func.getfirstbb();
 		BasicBlock.block_id++;
 		Function_list.put(funcname, func);
 		Next();Next();
-		if(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
+		while(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
 			var_decl();
 		}
 		Next();
@@ -251,7 +255,7 @@ public class Parser{
 		else if(tt.getType() == TokenType.callToken)	//call
 		{
 			bb = funcCall(currentblock);
-			Next();
+		//	Next();
 		}
 		else if(tt.getType() == TokenType.ifToken)	//if
 		{	
@@ -388,15 +392,15 @@ public class Parser{
 					
 					
 					if(arrflag==false){
-					if(!Sym_table.containsKey(index))	//if sym_table is empty
+					if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
 					{
 						Stack<Instruction> ss = new Stack<Instruction>();
 						ss.push(i);
-						Sym_table.put(index, ss);
+						currentblock.get_Sym_table().put(index, ss);
 					}
 					else										//if the entry is present
 					{
-						Sym_table.get(index).push(i);	//push new value on stack
+						currentblock.get_Sym_table().get(index).push(i);	//push new value on stack
 					}
 					//Sym_table.put(index,i);		//map instruction to variable index 
 						
@@ -439,14 +443,15 @@ public class Parser{
 			calledfunction=func;
 			Instruction jump_ins = func.getfirstbb().inst_list.get(0);
 			Result jump_res = new Result(Type.instruction,jump_ins);
-			Instruction branch_inst = new Instruction("bra",jump_res);
+			Instruction branch_inst = new Instruction("call",jump_res);
 		    branch_inst.basicblock = currentblock;
 			branch_inst.block_id = BasicBlock.block_id;
 			currentblock.inst_list.add(branch_inst);
 			insts.add(branch_inst);
-			BasicBlock nextblock=currentblock.createafterfunction(func.getfirstbb());
-			BasicBlock.block_id++;
-			return nextblock;	
+		//	BasicBlock nextblock=currentblock.createafterfunction(func.getfirstbb());
+		//	BasicBlock.block_id++;
+		//	return nextblock;	
+			return  currentblock;
 		}
 		else
 			throw new IllegalArgumentException("error:undefined function");
@@ -617,25 +622,25 @@ public class Parser{
 					currentblock.setjoin(phi_block);
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
-				for(i=1;i<=Sym_table.size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
+				for(i=1;i<=currentblock.get_Sym_table().size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
 				{
-					if(Sym_table.get(i).size()>1)
+					if(currentblock.get_Sym_table().get(i).size()>1)
 					{
 							var = IdtoString(i);//Todo
-							Instruction i1 = Sym_table.get(i).pop();
+							Instruction i1 = currentblock.get_Sym_table().get(i).pop();
 							Instruction i2;
 							if(else_flag != 0){
-							 i2 = Sym_table.get(i).pop();
+							 i2 = currentblock.get_Sym_table().get(i).pop();
 							}
 							else
 							{
 								
-								int top = Sym_table.get(i).size()-1;
-								while(Sym_table.get(i).elementAt(top).block_id >= i1.block_id && top>0){
+								int top = currentblock.get_Sym_table().get(i).size()-1;
+								while(currentblock.get_Sym_table().get(i).elementAt(top).block_id >= i1.block_id && top>0){
 									top--;
 								}
 								
-								i2 = Sym_table.get(i).elementAt(top);
+								i2 = currentblock.get_Sym_table().get(i).elementAt(top);
 							}
 							Result oper1= new Result(Type.instruction,i1);
 							Result oper2= new Result(Type.instruction,i2);
@@ -643,7 +648,7 @@ public class Parser{
 							ii.basicblock=phi_block;
 							insts.add(ii);
 							phi_block.inst_list.add(ii);
-							Sym_table.get(i).push(ii);
+							currentblock.get_Sym_table().get(i).push(ii);
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 							
 						}
@@ -776,17 +781,17 @@ public class Parser{
 					int phi_counter=0;
 					HashMap<Instruction,Instruction> varsInDo=new HashMap<Instruction,Instruction>();
 					Instruction firstWhileInst=while_block.inst_list.get(0);
-					for(counter=1;counter<=Sym_table.size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
+					for(counter=1;counter<=currentblock.get_Sym_table().size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{	
-						if(Sym_table.get(counter).size()>1)
+						if(currentblock.get_Sym_table().get(counter).size()>1)
 						{
 								String var = IdtoString(counter);//Todo
-								Instruction i1 = Sym_table.get(counter).peek();
-								int top = Sym_table.get(counter).size()-2;			//second element from top
-								while(Sym_table.get(counter).elementAt(top).block_id >= i1.block_id && top>0){
+								Instruction i1 = currentblock.get_Sym_table().get(counter).peek();
+								int top = currentblock.get_Sym_table().get(counter).size()-2;			//second element from top
+								while(currentblock.get_Sym_table().get(counter).elementAt(top).block_id >= i1.block_id && top>0){
 									top--;
 								}
-								Instruction i2 = Sym_table.get(counter).elementAt(top);
+								Instruction i2 = currentblock.get_Sym_table().get(counter).elementAt(top);
 								Result oper1= new Result(Type.instruction,i1);
 								Result oper2= new Result(Type.instruction,i2);
 								Instruction ii = new Instruction("phi",var,oper1,oper2);
@@ -794,7 +799,7 @@ public class Parser{
 								insts.add(ii);
 								while_block.inst_list.add(phi_counter++, ii);
 								varsInDo.put(oper2.getInstruction(), ii);
-								Sym_table.get(counter).push(ii);
+								currentblock.get_Sym_table().get(counter).push(ii);
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 						}
 					
@@ -1069,7 +1074,24 @@ public class Parser{
 					}
 					else{
 						var_id = String2Id(tt.getCharacters());
-						if(Sym_table.containsKey(var_id))
+						if(currentblock.get_Sym_table().containsKey(var_id))
+						{
+							Result res1;
+							Stack<Instruction> s = currentblock.get_Sym_table().get(var_id);	//stack for the variable
+							if(currentblock.getType() != BlockType.ifelse)
+							res1 = 	new Result(Type.instruction,(Instruction)s.peek());
+							else											//if its in else block
+							{
+								int top = s.size()-1;
+								while(top >0 && currentblock.getprevblock().getblockno() <= s.get(top).basicblock.getprevblock().block_id)
+									top--;
+								res1 = new Result(Type.instruction,(Instruction)s.get(top));
+							}
+							res = res1;
+							//s.push(res1.getInstruction());
+							Next();
+						}
+						else if(Result_cache.containsKey(tt.getCharacters()))
 						{
 							Result res1;
 							Stack<Instruction> s = Sym_table.get(var_id);	//stack for the variable
@@ -1085,6 +1107,14 @@ public class Parser{
 							res = res1;
 							//s.push(res1.getInstruction());
 							Next();
+						}
+						else{			//for initailizing with zero
+							if(Result_cache.containsKey(tt.getCharacters())){
+								res=new Result(Type.number,0);
+							}
+							else
+								throw new IllegalArgumentException("error:undefined variable");
+							
 						}
 					}
 					
