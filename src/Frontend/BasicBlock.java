@@ -248,7 +248,13 @@ public class BasicBlock {
 		for(Instruction inst:inst_list){
 			String oper1=new String();
 			String oper2 = new String();
-			StringBuilder instruction_print= new StringBuilder(Integer.toString(Parser.insts.indexOf(inst))).append(":").append(inst.getOperator());
+			int n=0;
+			for(n=0;n< RA.Reg.size();n++)
+			{
+				if(RA.Reg.get(n).contains(Parser.insts.indexOf(inst)))
+					break;
+			}
+			StringBuilder instruction_print= new StringBuilder("r").append(n).append(":").append(inst.getOperator());
 			ArrayList<Result> operands=inst.getOperands();
 			if (operands!= null){
 			if(operands.size()==2){

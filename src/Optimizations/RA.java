@@ -35,9 +35,10 @@ public class RA {
 			if(IGMatrix[node][i] ==1)
 			{
 				IGMatrix[node][i] = IGMatrix[i][node] = 0;	//remove the edge
-				node_stack.push(node);
+				
 			}
 		}
+		node_stack.push(node);
 	}
 	
 	//add the node to IG
@@ -50,12 +51,16 @@ public class RA {
 	public static void assign_reg(int node)
 	{
 		int i=0;
+		
 		for(i=0;i < K;i++)
 		{
 			if(Reg.containsKey(i)){
+				if(Reg.get(i).contains(node))
+					break;
 				if(Reg.get(i).isEmpty())
 				{
 					Reg.get(i).add(node);	//assign the register to the node
+					break;
 				}
 			}
 			else
@@ -63,9 +68,10 @@ public class RA {
 				ArrayList<Integer> arr = new ArrayList<Integer>();
 				arr.add(node);
 				Reg.put(i, arr);
-			}
-			
+				break;
+			}	
 		}
+		
 		if(i == K)	//all registers have been assigned
 		{
 			for(i=0;i<K;i++)
@@ -83,11 +89,34 @@ public class RA {
 				if(n == Reg.get(i).size())
 				{
 					Reg.get(i).add(node);
+					break;
 				}
 			}
 		}
 	}
 	
+	public static int is_reg_assigned(int node)
+	{
+		int res=0;
+		for(int i=0;i< Reg.size();i++)
+		{
+			if(Reg.get(i).contains(node))
+				res=1;
+		}
+			
+		return res;
+	}
+	
+	public static int present_in_liveset(int node)
+	{
+		int res=0;
+		for(int i=0;i<Live_Set.size();i++)
+		{
+			if(Live_Set.get(i).contains(node))
+				res=1;
+		}
+		return res;
+	}
 	//color the nodes of graph
 	public static void color_node()
 	{
@@ -99,18 +128,37 @@ public class RA {
 				if(no_of_edges(IGMatrix[node]) > 0 && no_of_edges(IGMatrix[node]) < K)
 				{
 					remove(node);
-					//color_node();	//color rest of the graph
+					color_node();	//color rest of the graph
+					break;
 				}
-				//add(node);
-				//assign_reg(node);
+				else
+				{
+					if(no_of_edges(IGMatrix[node]) == 0 && !node_stack.contains(node) && is_reg_assigned(node) == 0)
+					{
+						if(present_in_liveset(node) == 0)
+						assign_reg(node);
+						else
+						{
+							remove(node);
+							color_node();
+							break;
+						}
+					}
+				}
 			}
+			else
+				return;
 		}
-		for(int n=0;n<node_stack.size();n++)
-		{
+
 			int nodes = node_stack.pop();
 			add(nodes);
 			assign_reg(nodes);
-		}
+			/*if(node_stack.size() == 1)
+			{
+				nodes = node_stack.pop();
+				add(nodes);
+				assign_reg(nodes);
+			}*/
 		
 		return;
 	}
@@ -217,7 +265,7 @@ public class RA {
 			}
 		}
 		else	//its the last instruction in the block
-		{	if(bb.getnextblock() != null){
+		{	if(bb.getnextblock() != null || bb.getjoinblock() != null){
 			
 				for(int i=0;i<bb.out_set.size();i++)
 				{
