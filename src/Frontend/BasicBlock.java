@@ -5,7 +5,7 @@ import Frontend.Result.Type;
 import Optimizations.*;
 public class BasicBlock {
 	public enum BlockType{
-		main,iftrue,ifelse,join,whileblock,doblock,follow
+		main,iftrue,ifelse,join,whileblock,doblock,follow,function,call
 	}
 	public static int block_id;
 	public static BasicBlock mainblock;
@@ -20,6 +20,7 @@ public class BasicBlock {
 	private BasicBlock followblock;	//for while
 	private BasicBlock dotowhileblock;
 	private BasicBlock functionblock;
+	private HashMap<Integer,Stack<Instruction>> Sym_table;
 	
 	public int start_instruction_index;
 	public int end_instruction_index;
@@ -36,18 +37,28 @@ public class BasicBlock {
 		this.kind=BlockType.main;
 		this.blockno = block_id;
 		basicblocks.put(block_id, this);
+		this.Sym_table=Parser.Sym_table;
 	}
 	
-	BasicBlock(BlockType kind){
+	BasicBlock(BlockType kind, Function func){							// for function first bb
 		inst_list = new ArrayList<Instruction>();
 		this.kind	=kind;
 		this.blockno = block_id;
 		basicblocks.put(block_id, this);
+		this.Sym_table=func.get_Sym_table();
+	}
+	
+	BasicBlock(BlockType kind,BasicBlock bb){
+		inst_list = new ArrayList<Instruction>();
+		this.kind	=kind;
+		this.blockno = block_id;
+		basicblocks.put(block_id, this);
+		this.Sym_table=bb.Sym_table;
 	}
 	
 	public BasicBlock createIfTrue(){
 		
-		BasicBlock iftrue=new BasicBlock(BlockType.iftrue);
+		BasicBlock iftrue=new BasicBlock(BlockType.iftrue,this);
 		this.nextblock=iftrue;
 		iftrue.prevblock=this;
 		basicblocks.put(block_id, iftrue);
@@ -55,7 +66,7 @@ public class BasicBlock {
 	}
 	
 	public BasicBlock createElse(){
-		BasicBlock ifelse=new BasicBlock(BlockType.ifelse);
+		BasicBlock ifelse=new BasicBlock(BlockType.ifelse,this);
 		this.ifelseblock=ifelse;
 		ifelse.prevblock=this;
 		basicblocks.put(block_id, ifelse);
@@ -63,7 +74,7 @@ public class BasicBlock {
 	}
 	
 	public BasicBlock createWhile(){
-		BasicBlock whileblock=new BasicBlock(BlockType.whileblock);
+		BasicBlock whileblock=new BasicBlock(BlockType.whileblock,this);
 		this.nextblock=whileblock;
 		whileblock.prevblock=this;
 		basicblocks.put(block_id, whileblock);
@@ -71,7 +82,7 @@ public class BasicBlock {
 	}
 	
 	public BasicBlock createdo(){
-		BasicBlock doblock=new BasicBlock(BlockType.doblock);
+		BasicBlock doblock=new BasicBlock(BlockType.doblock,this);
 		this.nextblock=doblock;
 		doblock.prevblock=this;
 		basicblocks.put(block_id, doblock);
@@ -81,7 +92,7 @@ public class BasicBlock {
 	}
 	
 	public BasicBlock createfollow(){
-		BasicBlock follow=new BasicBlock(BlockType.follow);
+		BasicBlock follow=new BasicBlock(BlockType.follow,this);
 		this.followblock=follow;
 		follow.prevblock=this;
 		basicblocks.put(block_id, follow);
@@ -89,14 +100,14 @@ public class BasicBlock {
 	}
 		
 	public BasicBlock createjoin(){		//only if will do this
-		BasicBlock join=new BasicBlock(BlockType.join);
+		BasicBlock join=new BasicBlock(BlockType.join,this);
 		this.joinblock=join;
 		join.prevblock=this;
 		basicblocks.put(block_id, join);
 		return join;
 	}
 	public BasicBlock createafterfunction(BasicBlock functionbb){		//only if will do this
-		BasicBlock afterfunction=new BasicBlock(this.kind);
+		BasicBlock afterfunction=new BasicBlock(this.kind,this);
 		this.functionblock=functionbb;
 		this.nextblock=afterfunction;
 		afterfunction.prevblock=this;
@@ -180,6 +191,9 @@ public class BasicBlock {
 	public static void decblockid(){
 		block_id--;
 	}
+	public HashMap<Integer,Stack<Instruction>> get_Sym_table(){
+		return this.Sym_table;
+	}
 	
 	public ArrayList<String> printInstructions(){
 		ArrayList<String> bb_insts=new ArrayList<>();
@@ -205,7 +219,7 @@ public class BasicBlock {
 				if(op2.getType()==Type.number)
 					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
 				else if(op2.getType()==Type.instruction){
-					if(Parser.insts.indexOf(op2.getInstruction())==-1){
+					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.kind==BlockType.whileblock){
 						op2.setInstruction(this.getfollowblock().inst_list.get(0));}
 						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 					//}

@@ -32,7 +32,7 @@ public class CP {
 					Instruction laterinst=bb.inst_list.get(instno);
 					if(laterinst.getOperator()=="end")
 						break;
-					if(laterinst.getOperator()!="bra"&&laterinst.getOperator()!="read"){
+					if(laterinst.getOperator()!="bra"&&laterinst.getOperator()!="call"&&laterinst.getOperator()!="read"){
 						if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
 							if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
 								{laterinst.getOperands().set(0, operand);
