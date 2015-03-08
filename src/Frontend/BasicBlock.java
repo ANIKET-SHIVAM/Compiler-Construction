@@ -2,7 +2,7 @@ package Frontend;
 import java.util.*;
 
 import Frontend.Result.Type;
-
+import Optimizations.*;
 public class BasicBlock {
 	public enum BlockType{
 		main,iftrue,ifelse,join,whileblock,doblock,follow
@@ -206,10 +206,10 @@ public class BasicBlock {
 					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
 				else if(op2.getType()==Type.instruction){
 					if(Parser.insts.indexOf(op2.getInstruction())==-1){
-						op2.setInstruction(this.getfollowblock().inst_list.get(0));
-						oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
-					}
-					else	
+						op2.setInstruction(this.getfollowblock().inst_list.get(0));}
+						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+					//}
+					//else	
 						oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 				}
 				else if (op2.getType()==Type.variable)
@@ -243,5 +243,82 @@ public class BasicBlock {
 		return bb_insts;
 	}
 
+	public ArrayList<String> printRegisters(){
+		ArrayList<String> bb_insts=new ArrayList<>();
+		for(Instruction inst:inst_list){
+			String oper1=new String();
+			String oper2 = new String();
+			StringBuilder instruction_print= new StringBuilder(Integer.toString(Parser.insts.indexOf(inst))).append(":").append(inst.getOperator());
+			ArrayList<Result> operands=inst.getOperands();
+			if (operands!= null){
+			if(operands.size()==2){
+				Result op1=operands.get(0);
+				if(op1.getType()==Type.number)
+					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
+				else if(op1.getType()==Type.instruction)
+				{
+					int ins_index = Parser.insts.indexOf(op1.getInstruction());
+					for(int i=0;i< RA.Reg.size();i++)
+					{
+						if(RA.Reg.get(i).contains(ins_index))
+						oper1= new StringBuilder(" r").append(i).toString();
+						
+					}
+				}	
+				else if (op1.getType()==Type.variable)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
+				else if(op1.getType()==Type.arr)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
+				else
+					oper1="error";
+			
+				Result op2=operands.get(1);
+				if(op2.getType()==Type.number)
+					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
+				else if(op2.getType()==Type.instruction){
+					//if(Parser.insts.indexOf(op2.getInstruction())==-1){
+						int ins_index = Parser.insts.indexOf(op2.getInstruction());
+						if(ins_index ==-1)
+							op2.setInstruction(this.getfollowblock().inst_list.get(0));
+						for(int i=0;i< RA.Reg.size();i++)
+						{
+							if(RA.Reg.get(i).contains(ins_index))
+								oper2 = new StringBuilder(" r").append(i).toString();
+	
+						}
+				}
+					//else{	
+						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
+				//}
+				else if (op2.getType()==Type.variable)
+					oper2= new StringBuilder(" ").append(op2.getName()).toString();
+				else if(op2.getType()==Type.arr)
+					oper2= new StringBuilder(" ").append(op2.getName()).toString();
+				else
+					oper2="error"+op2.getType().toString();
+				
+				if(inst.getOperator()=="phi"){
+					String phivar=inst.getPhiVar();
+					instruction_print.append(" ").append(phivar).append(oper1).append(oper2);
+				}
+				else
+					instruction_print.append(oper1).append(oper2);
+			}
+			else if (operands.size()==1){
+				Result op1=operands.get(0);
+				if(op1.getType()==Type.number)
+					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
+				else if(op1.getType()==Type.instruction)
+					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
+				else
+					oper1="error";
+				
+				instruction_print.append(oper1);
+			}
+			}	
+			  bb_insts.add(instruction_print.toString());
+		}
+		return bb_insts;
+	}
 
 }

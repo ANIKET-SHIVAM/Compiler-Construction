@@ -8,10 +8,113 @@ import java.util.*;
 public class RA {
 	//Set for Liveness Analysis
 	public static HashMap<Integer,ArrayList<Integer>> Live_Set = new HashMap<Integer,ArrayList<Integer>>(); 
-
+	public static final int K = 20;
+	public static HashMap<Integer,ArrayList<Integer>>Reg = new HashMap<Integer,ArrayList<Integer>>();	//Register set
 	//Matrix(2-D Array) for creating Interference Graph
 	public static int [][]IGMatrix = new int[Parser.insts.size()][Parser.insts.size()];
-	//	public static ArrayList<List<Integer>> IGMatrix = new ArrayList<List<Integer>>();
+	public static Stack<Integer> node_stack = new Stack<Integer>();
+	//calculate total number of edges from a node
+	public static int no_of_edges(int [] arr)
+	{
+		int edge=0,i=0;
+		
+		for(i=0;i< arr.length;i++)
+		{
+			if(arr[i] == 1)
+				edge++;
+		}
+		return edge;
+	}
+
+	//remove the node from IG
+	public static void remove(int node)
+	{
+		int i=0;
+		for(i=0;i< IGMatrix[node].length;i++)
+		{
+			if(IGMatrix[node][i] ==1)
+			{
+				IGMatrix[node][i] = IGMatrix[i][node] = 0;	//remove the edge
+				node_stack.push(node);
+			}
+		}
+	}
+	
+	//add the node to IG
+	public static void add(int node)
+	{
+		fill_matrix(Live_Set.get(node));
+	}
+	
+	//assign register to node
+	public static void assign_reg(int node)
+	{
+		int i=0;
+		for(i=0;i < K;i++)
+		{
+			if(Reg.containsKey(i)){
+				if(Reg.get(i).isEmpty())
+				{
+					Reg.get(i).add(node);	//assign the register to the node
+				}
+			}
+			else
+			{
+				ArrayList<Integer> arr = new ArrayList<Integer>();
+				arr.add(node);
+				Reg.put(i, arr);
+			}
+			
+		}
+		if(i == K)	//all registers have been assigned
+		{
+			for(i=0;i<K;i++)
+			{
+				int n=0;
+				for(n =0;n< Reg.get(i).size();n++)
+				{
+					//if there is interference among nodes
+					if(IGMatrix[node][Reg.get(i).get(n)] == 1 || IGMatrix[Reg.get(i).get(n)][node] == 1)
+					{
+						break;
+					}
+				}
+				//if no interference,then assign the same register
+				if(n == Reg.get(i).size())
+				{
+					Reg.get(i).add(node);
+				}
+			}
+		}
+	}
+	
+	//color the nodes of graph
+	public static void color_node()
+	{
+		int node=0;
+		for(node=0;node < Parser.insts.size();node++)
+		{
+			if(node != (Parser.insts.size()-1)) 	//IG is empty
+			{
+				if(no_of_edges(IGMatrix[node]) > 0 && no_of_edges(IGMatrix[node]) < K)
+				{
+					remove(node);
+					//color_node();	//color rest of the graph
+				}
+				//add(node);
+				//assign_reg(node);
+			}
+		}
+		for(int n=0;n<node_stack.size();n++)
+		{
+			int nodes = node_stack.pop();
+			add(nodes);
+			assign_reg(nodes);
+		}
+		
+		return;
+	}
+	
 	
 	public static void fill_matrix(ArrayList<Integer> set)
 	{
@@ -22,6 +125,7 @@ public class RA {
 			for(j=i+1;j< set.size();j++)
 			{
 					IGMatrix[set.get(i)][set.get(j)] =  1; //IGMatrix[set[i]][set[j]]=1
+					IGMatrix[set.get(j)][set.get(i)] =  1;
 			}
 		}
 	}

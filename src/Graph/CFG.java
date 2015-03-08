@@ -9,7 +9,7 @@ public class CFG {
 	
 	Queue<BasicBlock> blocks= new LinkedList<BasicBlock>();
     private PrintWriter printer;
-    
+    public static int R=0;
     public CFG(String name){
         try{
             printer = new PrintWriter(new FileWriter(name + ".vcg"));
@@ -18,7 +18,7 @@ public class CFG {
         }
     }
     
-    public void printCFG() {
+    public void printCFG(int Ra) {
     	
     	BasicBlock bb = BasicBlock.mainblock;
     	int block_length =bb.block_id;
@@ -27,7 +27,7 @@ public class CFG {
         printer.println("layoutalgorithm: dfs");
         printer.println("manhattan_edges: yes");
         printer.println("smanhattan_edges: yes");
-        
+        R=Ra;
        /* if(bb.getblockno()>0){
         	for(int i=0;i<bb.getblockno();i++){
         		blocks.add(BasicBlock.getblockbyid(i));
@@ -73,7 +73,10 @@ public class CFG {
         printer.println("title: \"" + bb.getblockno() + "\"");
         	printer.println("label: \"" + bb.getblockno() + "[");
         ArrayList<String> insts=new ArrayList<>();
+        if(R==0)
         insts=bb.printInstructions();
+        else
+        	insts = bb.printRegisters();
         for(String inst:insts)
         	 printer.println(inst);
         printer.println("]\"");
