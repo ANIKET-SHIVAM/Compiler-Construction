@@ -10,6 +10,7 @@ public class DominatorTree {
 //	private BasicBlock main;
 	
 	public DominatorTree(){
+		int offset=0;
 		for(BasicBlock main:BasicBlock.Functions_list){
 			LinkedList<Integer> ll=new LinkedList<Integer>();
 			//ll.add(main.getblockno());
@@ -20,23 +21,22 @@ public class DominatorTree {
 		if(main.getifelseblock()!= null)
 			createDT(main.getifelseblock(),main);
 
-		for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-1;i++){
+		for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-offset-1;i++){
 			ll=Dominator.get(i);
 			LinkedList<Integer> llnew=new LinkedList<Integer>();
 			int max=0;
-			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-1;j++){
+			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-offset-1;j++){
 				if(Collections.frequency(ll, j)>max){
 					max=Collections.frequency(ll, j);
 				}
 			}
-			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-1;j++){
+			for(int j=main.getblockno();j<=main.getblockno()+Dominator.size()-offset-1;j++){
 				if(Collections.frequency(ll, j)==max){
 					llnew.add(j);
 				}
 			}		
 			if(!llnew.isEmpty()){
 				Dominator.put(i, llnew);
-				System.out.println(i+llnew.toString());
 			}
 		}
 		/*for(int i=0;i<=n;i++){
@@ -46,9 +46,9 @@ public class DominatorTree {
 				System.out.print(z+"   ");
 			System.out.println();
 		}*/
-		
+		offset+=Dominator.size();
 		}
-	//	printDT("testDT");
+		printDT("testDT");
 	}
 	public void createDT(BasicBlock bb,BasicBlock bbdom){
 		if(Dominator.containsKey(bb.getblockno())){
@@ -99,6 +99,7 @@ public class DominatorTree {
 		        printer.println("]\"");
 		        printer.println("}");
 		        printer.println("edge: { sourcename: \""+i+"\"");
+		        if(!Dominator.get(i).isEmpty())
 		        printer.println("targetname: \""+Dominator.get(i).getLast()+"\"");
 		        printer.println("color: blue");
 		        printer.println("}");
