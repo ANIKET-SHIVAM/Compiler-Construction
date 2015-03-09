@@ -11,6 +11,7 @@ public class Instruction {
 	private ArrayList<Result> operands=new ArrayList<Result>();
 	public BasicBlock basicblock;
 	public int block_id;
+	public int register;
 	public Instruction(){}
 	
 	Instruction(String instoperator){
@@ -69,6 +70,9 @@ public class Instruction {
 	}
 	public String getPhiVar(){
 		return this.var;
+	}
+	public int getRegister(){
+		return this.register;
 	}
 	public boolean isConstantAssignment(){
 		if(this.getOperator()=="move"){

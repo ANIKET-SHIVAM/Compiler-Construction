@@ -281,7 +281,7 @@ public class Parser{
 	public Result assignment(BasicBlock currentblock)		//"let"
 	{
 		boolean arrflag=false;
-		Instruction adda=null;
+		Instruction adda=null,arrmulins=null,arraddfpins=null;
 		int index=0;
 		String var;
 		Result x = new Result();
@@ -317,7 +317,7 @@ public class Parser{
 						j++;
 					}
 					Result intsize = new Result(Type.number,mul);
-					Instruction arrmulins = new Instruction("mul",arrindex.get(i),intsize);
+					arrmulins = new Instruction("mul",arrindex.get(i),intsize);
 					currentblock.inst_list.add(arrmulins);
 					insts.add(arrmulins);				//add instruction to instruction list
 					arrmulins.basicblock = currentblock; 
@@ -332,7 +332,7 @@ public class Parser{
 						arrfinalindexins.block_id = BasicBlock.block_id;
 					}
 				}
-				Instruction arrmulins=null;
+				arrmulins=null;
 				if(!flagarray){
 					Result intsize = new Result(Type.number,4);
 				    arrmulins = new Instruction("mul",intsize,arrindex.get(arrindex.size()-1));
@@ -359,21 +359,11 @@ public class Parser{
 				arrmulins.block_id = BasicBlock.block_id;
 				}
 				
-				Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
+			    arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
 				currentblock.inst_list.add(arraddfpins);
 				insts.add(arraddfpins);				//add instruction to instruction list
 				arraddfpins.basicblock = currentblock;
 				arraddfpins.block_id = BasicBlock.block_id;
-				
-				Result addares1=new Result(Type.instruction,arrmulins);
-				Result addares2=new Result(Type.instruction,arraddfpins);
-				Instruction arradda = new Instruction("adda",addares1,addares2);
-				currentblock.inst_list.add(arradda);
-				insts.add(arradda);				//add instruction to instruction list
-				arradda.basicblock = currentblock;
-				arradda.block_id = BasicBlock.block_id;
-				adda=arradda;
-				
 				
 			}
 			if(tt.getType() == TokenType.becomesToken) //"<-"
@@ -417,6 +407,15 @@ public class Parser{
 					}
 					}
 					else{
+						Result addares1=new Result(Type.instruction,arrmulins);
+						Result addares2=new Result(Type.instruction,arraddfpins);
+						Instruction arradda = new Instruction("adda",addares1,addares2);
+						currentblock.inst_list.add(arradda);
+						insts.add(arradda);				//add instruction to instruction list
+						arradda.basicblock = currentblock;
+						arradda.block_id = BasicBlock.block_id;
+						adda=arradda;
+						
 						Result arrstore1=new Result(Type.instruction,i);
 						Result addainst=new Result(Type.instruction,adda);
 						Instruction arrstore = new Instruction("store",arrstore1,addainst);
