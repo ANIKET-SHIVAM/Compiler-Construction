@@ -235,6 +235,8 @@ public class Parser{
 		Function_param.put(function_name, param_list);
 	}*/
 	
+
+	
 	public BasicBlock stat_seq(BasicBlock currentblock)
 	{
 		return statement(currentblock);
@@ -445,11 +447,87 @@ public class Parser{
 		return x;
 	}
 	
-	public BasicBlock funcCall(BasicBlock currentblock)
-	{
+	public BasicBlock funcCall(BasicBlock currentblock){
 		BasicBlock bb=currentblock;
 		Next();
-		if(Function_list.containsKey(tt.getCharacters())){
+		if(tt.getCharacters().equals("InputNum")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				
+					String var = tt.getCharacters();
+					int index = String2Id(tt.getCharacters());
+					Instruction read_inst = new Instruction("read");
+					read_inst.basicblock = currentblock;
+					read_inst.block_id = BasicBlock.block_id;
+					currentblock.inst_list.add(read_inst);
+					insts.add(read_inst);
+					Result read=new Result(Type.instruction,read_inst);
+					Instruction move_read = new Instruction("move",read, Result_cache.get(var));
+					currentblock.inst_list.add(move_read);
+					insts.add(move_read);				//add instruction to instruction list
+					move_read.basicblock = currentblock;
+					move_read.block_id = BasicBlock.block_id;
+					
+					if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
+					{
+						Stack<Instruction> ss = new Stack<Instruction>();
+						ss.push(move_read);
+						currentblock.get_Sym_table().put(index, ss);
+					}
+					else										//if the entry is present
+					{
+						currentblock.get_Sym_table().get(index).push(move_read);	//push new value on stack
+					}
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in read");
+		}
+		else if(tt.getCharacters().equals("OutputNum")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				if(tt.getType()==TokenType.callToken){
+					currentblock=stat_seq(currentblock);
+					Result x=calledfunction.getreturninst();
+					Instruction i = new Instruction("write",x);
+					currentblock.inst_list.add(i);
+					insts.add(i);				//add instruction to instruction list
+					i.basicblock = currentblock;
+					i.block_id = BasicBlock.block_id;
+				}
+				else if(tt.getType()==TokenType.ident||tt.getType()==TokenType.number){
+					Result x=E(currentblock);
+					Instruction i = new Instruction("write",x);
+					currentblock.inst_list.add(i);
+					insts.add(i);				//add instruction to instruction list
+					i.basicblock = currentblock;
+					i.block_id = BasicBlock.block_id;
+				}
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in outputnum");
+		}
+		else if(tt.getCharacters().equals("OutputNewLine")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				Instruction i = new Instruction("writeNL");
+				currentblock.inst_list.add(i);
+				insts.add(i);				//add instruction to instruction list
+				i.basicblock = currentblock;
+				i.block_id = BasicBlock.block_id;
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in outputNL");
+		}
+		else if(Function_list.containsKey(tt.getCharacters())){
 			Function func=Function_list.get(tt.getCharacters());
 			calledfunction=func;
 			Instruction jump_ins = func.getfirstbb().inst_list.get(0);

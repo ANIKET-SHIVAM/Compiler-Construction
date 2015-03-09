@@ -104,7 +104,7 @@ public class Token {
 			case "while":
 				token = new Token(TokenType.whileToken, characters, 103);
 				break;
-			case "token =":
+			case "return":
 				token = new Token(TokenType.returnToken, characters, 104);
 				break;
 			case "var":
