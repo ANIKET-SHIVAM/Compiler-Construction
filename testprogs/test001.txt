@@ -1,13 +1,13 @@
 //Basic if statement test
 main
 var a, b;
-function foo( );
-var i,d,c;
-{
-	let c <- 1;
-	let d <- 2;
-	let i <- 2;
-};
+//function foo( );
+//var i,d,c;
+//{
+	//let c <- 1;
+	//let d <- 2;
+	//let i <- 2;
+//};
 {
 	let a <- 1;
 	let b <- 2;
