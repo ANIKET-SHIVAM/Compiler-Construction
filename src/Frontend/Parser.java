@@ -22,6 +22,7 @@ public class Parser{
 	public int index=0;
 	public static BasicBlock currentblock;
 	public Function calledfunction;
+	public HashMap<Integer,ArrayList<Result>> store_inst_bb=new HashMap<Integer,ArrayList<Result>>();
 
 	public Parser(String filename){
 		scanner = new Scanner(filename);				//initialize scanner
@@ -197,7 +198,8 @@ public class Parser{
 			
 			while(tt.getType()!=TokenType.closeparenToken)
 			{	
-				Next();//to skip comma
+				if(tt.getType()==TokenType.commaToken)	
+					Next();//to skip comma
 				String ss = tt.getCharacters();
 				Result x = new Result(Type.param,ss);
 				param_list.add(x);
@@ -283,6 +285,7 @@ public class Parser{
 		int index=0;
 		String var;
 		Result x = new Result();
+		Result arr=null;
 		Next();
 		if(tt.getType() == TokenType.ident)				//if its a var
 		{
@@ -292,7 +295,7 @@ public class Parser{
 			if(tt.getType() == TokenType.openbracketToken)	//"["	//for array
 			{	arrflag=true;
 				int indexrelloc=0;
-				Result arr=Result_cache.get(var);
+				arr=Result_cache.get(var);
 				ArrayList<Integer> arrsize=arr.getArraySize();
 				ArrayList<Result> arrindex=new ArrayList<Result>();
 				while(tt.getType()!=TokenType.becomesToken){
@@ -421,6 +424,16 @@ public class Parser{
 						insts.add(arrstore);				//add instruction to instruction list
 						arrstore.basicblock = currentblock;
 						arrstore.block_id = BasicBlock.block_id;
+						if(store_inst_bb.containsKey(currentblock.getblockno())){
+							if(!store_inst_bb.get(currentblock.getblockno()).contains(arr))
+								store_inst_bb.get(currentblock.getblockno()).add(arr);
+						}
+						else{
+							ArrayList<Result> arrays=new ArrayList<Result>();
+							arrays.add(arr);
+							store_inst_bb.put(currentblock.getblockno(),arrays);
+						}
+						
 					}
 				
 				
@@ -437,17 +450,30 @@ public class Parser{
 	{
 		BasicBlock bb=currentblock;
 		Next();
-		System.out.println(tt.getCharacters());
 		if(Function_list.containsKey(tt.getCharacters())){
 			Function func=Function_list.get(tt.getCharacters());
 			calledfunction=func;
 			Instruction jump_ins = func.getfirstbb().inst_list.get(0);
 			Result jump_res = new Result(Type.instruction,jump_ins);
-			Instruction branch_inst = new Instruction("call",jump_res);
-		    branch_inst.basicblock = currentblock;
-			branch_inst.block_id = BasicBlock.block_id;
-			currentblock.inst_list.add(branch_inst);
-			insts.add(branch_inst);
+			Instruction call_inst = new Instruction("call",jump_res);
+			call_inst.basicblock = currentblock;
+			call_inst.block_id = BasicBlock.block_id;
+			currentblock.inst_list.add(call_inst);
+			insts.add(call_inst);
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				ArrayList<Result> params=new ArrayList<Result>();
+				
+				while(tt.getType()!=TokenType.closeparenToken)
+				{	
+					if(tt.getType()==TokenType.commaToken)	
+						Next();//to skip comma
+					Result x = E(currentblock);
+					params.add(x);
+				}
+				func.add_param_call(call_inst, params);
+			}
 		//	BasicBlock nextblock=currentblock.createafterfunction(func.getfirstbb());
 		//	BasicBlock.block_id++;
 		//	return nextblock;	
@@ -622,6 +648,26 @@ public class Parser{
 					currentblock.setjoin(phi_block);
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
+				if(store_inst_bb.containsKey(iftruebb.getblockno())){
+					for(Result arrays:store_inst_bb.get(iftruebb.getblockno())){
+						Instruction ii = new Instruction("kill",arrays);
+						ii.basicblock=phi_block;
+						insts.add(ii);
+						phi_block.inst_list.add(ii);
+					}
+				}
+				else if(else_flag==1){
+					if(store_inst_bb.containsKey(elsebb.getblockno())){
+						for(Result arrays:store_inst_bb.get(elsebb.getblockno())){
+							Instruction ii = new Instruction("kill",arrays);
+							ii.basicblock=phi_block;
+							insts.add(ii);
+							phi_block.inst_list.add(ii);
+						}
+					}	
+						
+				}	
+				
 				for(i=1;i<=currentblock.get_Sym_table().size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
 				{
 					if(currentblock.get_Sym_table().get(i).size()>1)

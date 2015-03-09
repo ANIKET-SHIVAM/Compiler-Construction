@@ -1,23 +1,24 @@
 //Basic if statement test
 main
 var a, b;
-//function foo( );
-//var i,d,c;
-//{
-	//let c <- 1;
-	//let d <- 2;
-	//let i <- 2;
-//};
+array arr[5];
+function foo( );
+var c,d;
+{
+	let  c<- 2;
+	let d<- 3;
+	while c < 10 do
+		let c <- 3 + 2;
+		let d <- d + 1;
+	od;
+	
+};
+
 {
 	let a <- 1;
 	let b <- 2;
-	if a > b then
+	while a < 10 do
+		let b <- 3 + 2;
 		let a <- a + 1;
-	else
-		let b <- b + 1;
-	fi;
-	
-	if a < b then
-		let a <- a - 1;
-	fi;
+	od;
 }.

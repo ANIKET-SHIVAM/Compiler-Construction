@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.io.*;
 
 public class CFG {
-	
+	HashMap<Integer,ArrayList<Integer>> edgesPrinted=new HashMap<Integer,ArrayList<Integer>>();
 	Queue<BasicBlock> blocks= new LinkedList<BasicBlock>();
     private PrintWriter printer;
     public static int R=0;
@@ -39,12 +39,15 @@ public class CFG {
         	if(block_done[bb.getblockno()] == 0)
         		printBlock(bb,block_done);
         	
-        	if(bb.getprevblock()!=null)
+        	if(bb.getprevblock()!=null){
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
-        	if(bb.getprevblock2()!=null)
+        	}	
+        	if(bb.getprevblock2()!=null){
         		printEdge(bb.getprevblock2().getblockno(),bb.getblockno());
-        	if(bb.checkdotowhile())
+        	}
+        	if(bb.checkdotowhile()){
         		printEdge(bb.getblockno(),bb.getdotowhile().getblockno());
+        	}
         	if(bb.getfunctionblock()!=null){
         		printEdge(bb.getblockno(),bb.getfunctionblock().getblockno());
         		printEdge(bb.getfunctionblock().getblockno(),bb.getnextblock().getblockno());
@@ -86,10 +89,25 @@ public class CFG {
     
     
     public void printEdge(int source, int target){
-        printer.println("edge: { sourcename: \""+source+"\"");
-        printer.println("targetname: \""+target+"\"");
-        printer.println("color: blue");
-        printer.println("}");
+    	if(edgesPrinted.containsKey(source)){
+    		if(!edgesPrinted.get(source).contains(target)){
+    			edgesPrinted.get(source).add(target);
+    	        printer.println("edge: { sourcename: \""+source+"\"");
+    	        printer.println("targetname: \""+target+"\"");
+    	        printer.println("color: blue");
+    	        printer.println("}");
+    		}
+    	}
+    	else{
+    		ArrayList<Integer> targets=new ArrayList<Integer>();
+    		targets.add(target);
+    		edgesPrinted.put(source, targets);
+	        printer.println("edge: { sourcename: \""+source+"\"");
+	        printer.println("targetname: \""+target+"\"");
+	        printer.println("color: blue");
+	        printer.println("}");
+    	}
+    	
     }
     
    
