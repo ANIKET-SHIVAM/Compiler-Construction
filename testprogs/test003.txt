@@ -1,0 +1,15 @@
+main
+var b, c;
+{
+	let b <- 1;
+	let c <- 2;
+	if b < c then
+		if b < 1 then
+			let c <- c * 2;
+		else
+			let b <- b * 3;
+		fi;
+	fi;
+	call OutputNum(b);
+}
+.

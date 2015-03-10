@@ -12,24 +12,32 @@ public class Instruction {
 	public BasicBlock basicblock;
 	public int block_id;
 	public int register;
+	public int cluster;
+	public boolean is_cluster;
 	public Instruction(){}
 	
 	Instruction(String instoperator){
 		//if (instoperator=="end"||instoperator=="read"||instoperator=="writeNL"){
 			this.type=0;
 			this.operator=instoperator;
+			this.is_cluster =false;
+			this.cluster = 0;
 		}
 	Instruction(String instoperator,Result res){
 //		else if(instoperator=="neg"||instoperator=="load"||instoperator=="bra"||instoperator=="write"){
 			this.type=1;
 			this.operator=instoperator;
 			this.operands.add(res);
+			this.is_cluster =false;
+			this.cluster = 0;
 		}
 	Instruction(String instoperator,int op1,Result op2){
 //		else if(instoperator=="neg"||instoperator=="load"||instoperator=="bra"||instoperator=="write"){
 			this.type=1;
 			this.operator=instoperator;
 			this.operands.add(op2);
+			this.is_cluster =false;
+			this.cluster = 0;
 		}
 	public Instruction(String instoperator,Result res1,Result res2){
 		//else if(instoperator=="add"||instoperator=="sub"||instoperator=="mul"||instoperator=="div"||instoperator=="cmp"||instoperator=="adda"||instoperator=="store"||instoperator=="move"||instoperator=="bne"||instoperator=="beq"||instoperator=="ble"||instoperator=="blt"||instoperator=="bge"||instoperator=="bgt"){
@@ -37,6 +45,8 @@ public class Instruction {
 			this.operator=instoperator;
 			this.operands.add(res1);
 			this.operands.add(res2);
+			this.is_cluster =false;
+			this.cluster = 0;
 		}
 	Instruction(String instoperator,String var,Result res1,Result res2)
 	{
@@ -45,12 +55,16 @@ public class Instruction {
 		this.var = var;
 		this.operands.add(res1);
 		this.operands.add(res2);
+		this.is_cluster =false;
+		this.cluster = 0;
 	}
 	Instruction(String instoperator,ArrayList<Result> instoperands){
 		//else if(instoperator=="phi"){
 			this.type=3;
 			this.operator=instoperator;
 			this.operands=instoperands;
+			this.is_cluster =false;
+			this.cluster = 0;
 		}
 		//else
 			//System.out.println("Error:Invalid Instruction");

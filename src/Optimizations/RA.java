@@ -63,12 +63,28 @@ public class RA {
 		{
 			ArrayList<Integer> arr = new ArrayList<Integer>();
 			arr.add(node);
-			Reg.put(1, arr);
+			
 			Parser.insts.get(node).register = 1;
+		
+			if(Parser.insts.get(node).getOperator() == "phi")
+			{
+				if(!clusters.isEmpty()){
+				if(!clusters.get(node).isEmpty()){
+				for(i=0;i<clusters.get(node).size();i++)
+				{
+					arr.add(clusters.get(node).get(i));
+					Parser.insts.get(clusters.get(node).get(i)).register=1;
+				}
+				}
+				}
+			}
+			Reg.put(1, arr);
 			return;
 		}
 		else
 		{
+			if(is_reg_assigned(node) == 1)
+				return;
 			for(i=1;i < K;i++)
 			{
 				if(Reg.containsKey(i)){
@@ -82,6 +98,19 @@ public class RA {
 					//if not interfering,assign same register
 					if(k == Reg.get(i).size()){
 						Reg.get(i).add(node);
+						Parser.insts.get(node).register= i;
+						if(Parser.insts.get(node).getOperator() == "phi")
+						{
+							if(!clusters.isEmpty()){
+							if(!clusters.get(node).isEmpty()){
+							for(int j=0;j<clusters.get(node).size();j++)
+							{
+								Reg.get(i).add(clusters.get(node).get(j));
+								Parser.insts.get(clusters.get(node).get(j)).register=i;
+							}
+							}
+							}
+						}
 						break;
 					}
 				}
@@ -90,6 +119,19 @@ public class RA {
 					ArrayList<Integer> arr = new ArrayList<Integer>();
 					arr.add(node);
 					Reg.put(i, arr);
+					Parser.insts.get(node).register = i;
+					if(Parser.insts.get(node).getOperator() == "phi")
+					{
+						if(!clusters.isEmpty()){
+						if(!clusters.get(node).isEmpty()){
+						for(int j=0;j<clusters.get(node).size();j++)
+						{
+							Reg.get(i).add(clusters.get(node).get(j));
+							Parser.insts.get(clusters.get(node).get(j)).register=i;
+						}
+						}
+						}
+					}
 					break;
 				}	
 			}
@@ -119,9 +161,9 @@ public class RA {
 	public static int is_reg_assigned(int node)
 	{
 		int res=0;
-		for(int i=1;i< Reg.size();i++)
+		for(int i=0;i< Reg.size();i++)
 		{
-			if(Reg.get(i).contains(node))
+			if(Reg.get(i+1).contains(node))
 				res=1;
 		}
 			
@@ -160,7 +202,7 @@ public class RA {
 	
 	public static void coalese_phis()
 	{
-		while(phi_list.isEmpty())
+		while(!phi_list.isEmpty())
 		{
 			Instruction i = phi_list.poll();
 			Result res = new Result(Type.instruction,i);
@@ -180,6 +222,11 @@ public class RA {
 					//not interfering, create a cluster of them
 					phi_operands.add(oper1);
 					clusters.put(Parser.insts.indexOf(i),phi_operands);
+					
+					i.cluster  = Parser.insts.indexOf(i);
+					Parser.insts.get(oper1).cluster = Parser.insts.indexOf(i);
+					i.is_cluster=true;
+					Parser.insts.get(oper1).is_cluster = true;
 					
 					//remove node from the interference graph
 					int j=0;
@@ -216,6 +263,12 @@ public class RA {
 				{
 					phi_operands.add(oper2);
 					clusters.put(Parser.insts.indexOf(i),phi_operands);
+					
+					i.cluster  = Parser.insts.indexOf(i);
+					Parser.insts.get(oper2).cluster = Parser.insts.indexOf(i);
+					i.is_cluster=true;
+					Parser.insts.get(oper2).is_cluster = true;
+					
 					int j=0;
 					for(j=0;j<IGMatrix[oper2].length;j++)
 					{
@@ -234,7 +287,22 @@ public class RA {
 			{
 				Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
 				Instruction ins = new Instruction("move",res1,res);
-				i.basicblock.getprevblock().inst_list.add(ins);
+				i.basicblock.getprevblock2().inst_list.add(ins);
+			}
+		}
+	}
+	
+	public static void remove_phis()
+	{
+		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		{
+			BasicBlock bb = BasicBlock.basicblocks.get(i);
+			for(int j=0;j<bb.inst_list.size();j++)
+			{
+				if(bb.inst_list.get(j).getOperator()== "phi")
+				{
+					bb.inst_list.remove(j);
+				}
 			}
 		}
 	}
@@ -314,12 +382,16 @@ public class RA {
 	{
 		ArrayList<Integer> final_set = new ArrayList<Integer>();
 		int i=0;
+		if(if_set.size() != 0){
 		for(i=0;i < if_set.size();i++)
 			final_set.add(if_set.get(i));
+		}
+		if(else_set.size()!= 0){
 		for(i=0;i < else_set.size();i++)
 		{
 			if(!final_set.contains(else_set.get(i)))
 				final_set.add(else_set.get(i));
+		}
 		}
 		return final_set;
 	}
@@ -343,13 +415,20 @@ public class RA {
 		String ss = ii.getOperator();
 		
 		//if-else blocks
-		if(bb.getType() == BlockType.iftrue ||  bb.getType() == BlockType.ifelse)
+		if((bb.getType() == BlockType.iftrue ||  bb.getType() == BlockType.ifelse) && bb.getjoinblock() != null)
 			bb.out_set = bb.getjoinblock().in_set;
 		
 		else if(bb.getnextblock()!= null && bb.getnextblock().getType() == BlockType.iftrue && ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt")
 		{
 			if(bb.getifelseblock() != null)
-				bb.out_set = merge_set(bb.getnextblock().in_set,bb.getifelseblock().in_set);
+			{
+				if(bb.getnextblock().inst_list.size() == 0 && bb.getifelseblock().inst_list.size() == 0)
+				{
+					bb.out_set = bb.getnextblock().getjoinblock().in_set;
+				}
+				else
+					bb.out_set = merge_set(bb.getnextblock().in_set,bb.getifelseblock().in_set);
+			}
 			else
 				bb.out_set = merge_set(bb.getnextblock().in_set,bb.getjoinblock().in_set);
 		}

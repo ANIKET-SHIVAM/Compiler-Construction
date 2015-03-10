@@ -753,7 +753,15 @@ public class Parser{
 							Instruction i1 = currentblock.get_Sym_table().get(i).pop();
 							Instruction i2;
 							if(else_flag != 0){
-							 i2 = currentblock.get_Sym_table().get(i).pop();
+								//int top = currentblock.get_Sym_table().get(i).size()-1;
+								while(currentblock.get_Sym_table().get(i).peek().block_id >= i1.block_id && currentblock.get_Sym_table().get(i).size()>1){
+									i2 = currentblock.get_Sym_table().get(i).pop();	
+									//top--;
+								}
+								if(currentblock.get_Sym_table().get(i).size() > 1)
+									i2 = currentblock.get_Sym_table().get(i).pop();
+								else
+									i2 = currentblock.get_Sym_table().get(i).peek();
 							}
 							else
 							{
@@ -765,9 +773,19 @@ public class Parser{
 								
 								i2 = currentblock.get_Sym_table().get(i).elementAt(top);
 							}
+							
 							Result oper1= new Result(Type.instruction,i1);
 							Result oper2= new Result(Type.instruction,i2);
-							Instruction ii = new Instruction("phi",var,oper1,oper2);
+							Instruction ii;
+							if(else_flag==0)
+								ii = new Instruction("phi",var,oper1,oper2);
+							else
+							{
+								if(oper1.getInstruction().basicblock.getType() == BlockType.iftrue)
+									ii = new Instruction("phi",var,oper1,oper2);
+								else
+									ii = new Instruction("phi",var,oper2,oper1);
+							}
 							ii.basicblock=phi_block;
 							insts.add(ii);
 							phi_block.inst_list.add(ii);
