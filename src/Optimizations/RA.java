@@ -4,15 +4,21 @@ import Frontend.BasicBlock.BlockType;
 import Frontend.Result.Type;
 //import Graph.*;
 
+
 import java.util.*;
 public class RA {
 	//Set for Liveness Analysis
 	public static HashMap<Integer,ArrayList<Integer>> Live_Set = new HashMap<Integer,ArrayList<Integer>>(); 
-	public static final int K = 20;
+	public static final int K = 30;
+	public static int top=-1;
+	public static ArrayDeque<Instruction> phi_list = new ArrayDeque<Instruction>();
 	public static HashMap<Integer,ArrayList<Integer>>Reg = new HashMap<Integer,ArrayList<Integer>>();	//Register set
 	//Matrix(2-D Array) for creating Interference Graph
 	public static int [][]IGMatrix = new int[Parser.insts.size()][Parser.insts.size()];
 	public static Stack<Integer> node_stack = new Stack<Integer>();
+
+	public static HashMap<Integer,ArrayList<Integer>> clusters = new HashMap<Integer,ArrayList<Integer>>();
+	
 	//calculate total number of edges from a node
 	public static int no_of_edges(int [] arr)
 	{
@@ -39,6 +45,7 @@ public class RA {
 			}
 		}
 		node_stack.push(node);
+		top++;
 	}
 	
 	//add the node to IG
@@ -51,47 +58,61 @@ public class RA {
 	public static void assign_reg(int node)
 	{
 		int i=0;
-		
-		for(i=0;i < K;i++)
+		//if its the top most node
+		if(top == node_stack.size()-1)
 		{
-			if(Reg.containsKey(i)){
-				if(Reg.get(i).contains(node))
-					break;
-				if(Reg.get(i).isEmpty())
-				{
-					Reg.get(i).add(node);	//assign the register to the node
-					break;
-				}
-			}
-			else
-			{
-				ArrayList<Integer> arr = new ArrayList<Integer>();
-				arr.add(node);
-				Reg.put(i, arr);
-				break;
-			}	
+			ArrayList<Integer> arr = new ArrayList<Integer>();
+			arr.add(node);
+			Reg.put(0, arr);
+			Parser.insts.get(node).register = 0;
+			return;
 		}
-		
-		if(i == K)	//all registers have been assigned
+		else
 		{
-			for(i=0;i<K;i++)
+			for(i=0;i < K;i++)
 			{
-				int n=0;
-				for(n =0;n< Reg.get(i).size();n++)
-				{
-					//if there is interference among nodes
-					if(IGMatrix[node][Reg.get(i).get(n)] == 1 || IGMatrix[Reg.get(i).get(n)][node] == 1)
+				if(Reg.containsKey(i)){
+					
+					int k=0;
+					for(k=0;k< Reg.get(i).size();k++)
 					{
+						if(is_interfering(node,Reg.get(i).get(k)))
+							break;
+					}
+					//if not interfering,assign same register
+					if(k == Reg.get(i).size()){
+						Reg.get(i).add(node);
 						break;
 					}
 				}
-				//if no interference,then assign the same register
-				if(n == Reg.get(i).size())
+				else
 				{
-					Reg.get(i).add(node);
+					ArrayList<Integer> arr = new ArrayList<Integer>();
+					arr.add(node);
+					Reg.put(i, arr);
 					break;
-				}
+				}	
 			}
+			
+			/*if(i == K)	//all registers have been assigned
+			{
+				for(i=0;i<K;i++)
+				{
+					int n=0;
+					for(n =0;n< Reg.get(i).size();n++)
+					{
+						//if there is interference among nodes
+						if(IGMatrix[node][Reg.get(i).get(n)] == 1 || IGMatrix[Reg.get(i).get(n)][node] == 1)
+							break;
+					}
+					//if no interference,then assign the same register
+					if(n == Reg.get(i).size())
+					{
+						Reg.get(i).add(node);
+						break;
+					}
+				}
+			}*/
 		}
 	}
 	
@@ -117,6 +138,79 @@ public class RA {
 		}
 		return res;
 	}
+	
+	public static boolean is_interfering(int res_node,int oper_node)
+	{
+		int count=0;
+		for(int i=0;i<Live_Set.size();i++)
+		{
+			count=0;
+			for(int k=0;k<Live_Set.get(i).size();k++)
+			{
+				if(Live_Set.get(i).get(k) == res_node || Live_Set.get(i).get(k) == oper_node)
+				{
+					count++;
+				}
+				if(count==2)
+					return true;
+			}
+		}
+		return false;
+	}
+	
+	public static void coalese_phis()
+	{
+		Instruction i = phi_list.poll();
+		Result res = new Result(Type.instruction,i);
+		ArrayList<Integer> phi_operands = new ArrayList<Integer>();
+
+		//if 1st operand is instruction 
+		if(i.getOperands().get(0).getType() == Type.instruction)
+		{
+			int oper1 = Parser.insts.indexOf(i.getOperands().get(0).getInstruction());
+			if(is_interfering(Parser.insts.indexOf(i),oper1))
+			{
+				Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
+				i.basicblock.getprevblock().inst_list.add(ins);
+			}
+			else
+			{
+				//not interfering, create a cluster of them
+				phi_operands.add(oper1);
+				clusters.put(Parser.insts.indexOf(i),phi_operands);
+				
+			}
+		}
+		else	//it is a constant
+		{
+			Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
+			Instruction ins = new Instruction("move",res1,res);
+			i.basicblock.getprevblock().inst_list.add(ins);
+		}
+		
+		//if 2nd operand is instruction 
+		if(i.getOperands().get(1).getType() == Type.instruction)
+		{
+			int oper2 = Parser.insts.indexOf(i.getOperands().get(1).getInstruction());
+			if(is_interfering(Parser.insts.indexOf(i),oper2))
+			{
+				Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
+				i.basicblock.getprevblock2().inst_list.add(ins);
+			}
+			else
+			{
+				phi_operands.add(oper2);
+				clusters.put(Parser.insts.indexOf(i),phi_operands);
+			}
+		}
+		else	//its a constant
+		{
+			Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
+			Instruction ins = new Instruction("move",res1,res);
+			i.basicblock.getprevblock().inst_list.add(ins);
+		}
+	}
+	
 	//color the nodes of graph
 	public static void color_node()
 	{
@@ -135,14 +229,14 @@ public class RA {
 				{
 					if(no_of_edges(IGMatrix[node]) == 0 && !node_stack.contains(node) && is_reg_assigned(node) == 0)
 					{
-						if(present_in_liveset(node) == 0)
-						assign_reg(node);
-						else
-						{
+						//if(present_in_liveset(node) == 0)
+						//assign_reg(node);
+						//else
+						//{
 							remove(node);
 							color_node();
 							break;
-						}
+						//}
 					}
 				}
 			}
@@ -150,15 +244,11 @@ public class RA {
 				return;
 		}
 
-			int nodes = node_stack.pop();
+			int nodes = node_stack.get(top);
+			
 			add(nodes);
 			assign_reg(nodes);
-			/*if(node_stack.size() == 1)
-			{
-				nodes = node_stack.pop();
-				add(nodes);
-				assign_reg(nodes);
-			}*/
+			top--;
 		
 		return;
 	}
@@ -182,23 +272,12 @@ public class RA {
 	{
 		BasicBlock bb;
 		for(int bbno=BasicBlock.basicblocks.size()-1;bbno>=0;bbno--){
-			bb=BasicBlock.basicblocks.get(bbno);
-			
-			/*int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
-			for(int index=last_inst;index>=0;index--)
+			bb=BasicBlock.basicblocks.get(bbno);		
+			create_liveset(bb);	//create live set for each instruction in basic block
+			if(bb.getType() == BlockType.follow)
 			{
-				Instruction ii = bb.inst_list.get(index);
-				if(ii.getOperator() == "end")
-				{
-					continue;
-				}
-			 	*/		
-				create_liveset(bb);	//create live set for each instruction in basic block
-				if(bb.getType() == BlockType.follow)
-				{
-					bbno = bb.getprevblock().getblockno();
-				}
-			//}
+				bbno = bb.getprevblock().getblockno();
+			}
 		}
 		
 	}
@@ -222,6 +301,9 @@ public class RA {
 		int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
 		for(int index1=last_inst;index1>=0;index1--){
 			Instruction ii = bb.inst_list.get(index1);
+			
+			if(ii.getOperator() == "phi")
+				phi_list.add(ii);
 			if(ii.getOperator() == "end")
 			{
 				continue;
@@ -326,7 +408,7 @@ public class RA {
 			System.out.print(inst_index+":- ");
 			for(int i=0;i<set.size();i++)
 				System.out.print(set.get(i)+",");
-			System.out.println("\n");
+			System.out.println("\n");																																																										
 		
 		}	
 	}

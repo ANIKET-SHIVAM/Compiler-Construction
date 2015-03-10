@@ -11,6 +11,7 @@ public class Instruction {
 	private ArrayList<Result> operands=new ArrayList<Result>();
 	public BasicBlock basicblock;
 	public int block_id;
+	public int register;
 	public Instruction(){}
 	
 	Instruction(String instoperator){
