@@ -56,7 +56,7 @@ public class RA {
 	
 	//assign register to node
 	public static void assign_reg(int node)
-	{
+	{	
 		int i=0;
 		//if its the top most node
 		if(top == node_stack.size()-1)
@@ -111,6 +111,7 @@ public class RA {
 							}
 							}
 						}
+
 						break;
 					}
 				}
@@ -132,6 +133,7 @@ public class RA {
 						}
 						}
 					}
+
 					break;
 				}	
 			}

@@ -1031,7 +1031,7 @@ public class Parser{
 				oper = new String("sub");
 			
 			Next();
-			res1 = T(currentblock);
+			res1 = E(currentblock);
 			Instruction i = new Instruction(oper,res,res1);
 			insts.add(i);
 			currentblock.inst_list.add(i);
@@ -1068,7 +1068,7 @@ public class Parser{
 			tmp=tt;
 			String oper;
 			Next();
-			res1 = F(currentblock);
+			res1 = E(currentblock);
 			if(tmp.getType() == TokenType.timesToken)	
 				oper = "mul";
 			else
