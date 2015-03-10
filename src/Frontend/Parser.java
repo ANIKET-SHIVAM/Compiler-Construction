@@ -1214,12 +1214,16 @@ public class Parser{
 							//s.push(res1.getInstruction());
 							Next();
 						}
-						else if(Result_cache.containsKey(tt.getCharacters()))
+						else if(Result_cache.containsKey(tt.getCharacters())&&Sym_table.containsKey(var_id))
 						{
-							Result res1;
+							Result res1=new Result();
 							Stack<Instruction> s = Sym_table.get(var_id);	//stack for the variable
-							if(currentblock.getType() != BlockType.ifelse)
-							res1 = 	new Result(Type.instruction,(Instruction)s.peek());
+							if(currentblock.getType() != BlockType.ifelse){
+								if(!s.isEmpty()){
+									res1 = 	new Result(Type.instruction,(Instruction)s.peek());
+								}
+								
+							}
 							else											//if its in else block
 							{
 								int top = s.size()-1;

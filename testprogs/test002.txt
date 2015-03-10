@@ -1,21 +1,12 @@
-//Basic if statement test
+# Copy propagation transitive test
 main
-var a, b;
+var a, b, c, d;
 {
-	let a <- 1;
-	let b <- 2;
-	if a > b then
-	if a < 10 then
-		let b <- b*2;
-		//if b > a then
-		let a <- a - 1;
-	fi;
-		//let b <- b*2;
-	fi;
-	//if a < 10 then
-		//let b <- b + 1;
-//	fi;
+	let b <- a;
+	let c <- b;
+	let d <- c;
 	
-	
-	
-}.
+	let d <- d + 1;
+	call OutputNum(d);
+}
+.

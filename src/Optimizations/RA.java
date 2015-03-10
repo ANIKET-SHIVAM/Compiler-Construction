@@ -63,13 +63,13 @@ public class RA {
 		{
 			ArrayList<Integer> arr = new ArrayList<Integer>();
 			arr.add(node);
-			Reg.put(0, arr);
-			Parser.insts.get(node).register = 0;
+			Reg.put(1, arr);
+			Parser.insts.get(node).register = 1;
 			return;
 		}
 		else
 		{
-			for(i=0;i < K;i++)
+			for(i=1;i < K;i++)
 			{
 				if(Reg.containsKey(i)){
 					
@@ -119,7 +119,7 @@ public class RA {
 	public static int is_reg_assigned(int node)
 	{
 		int res=0;
-		for(int i=0;i< Reg.size();i++)
+		for(int i=1;i< Reg.size();i++)
 		{
 			if(Reg.get(i).contains(node))
 				res=1;

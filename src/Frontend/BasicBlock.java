@@ -270,10 +270,10 @@ public class BasicBlock {
 			int n=0;
 			for(n=0;n< RA.Reg.size();n++)
 			{
-				if(RA.Reg.get(n).contains(Parser.insts.indexOf(inst)))
+				if(RA.Reg.get(n+1).contains(Parser.insts.indexOf(inst)))
 					break;
 			}
-			StringBuilder instruction_print= new StringBuilder("r").append(n).append(":").append(inst.getOperator());
+			StringBuilder instruction_print= new StringBuilder("r").append(n+1).append(":").append(inst.getOperator());
 			ArrayList<Result> operands=inst.getOperands();
 			if (operands!= null){
 			if(operands.size()==2){
@@ -285,8 +285,8 @@ public class BasicBlock {
 					int ins_index = Parser.insts.indexOf(op1.getInstruction());
 					for(int i=0;i< RA.Reg.size();i++)
 					{
-						if(RA.Reg.get(i).contains(ins_index))
-						oper1= new StringBuilder(" r").append(i).toString();
+						if(RA.Reg.get(i+1).contains(ins_index))
+						oper1= new StringBuilder(" r").append(i+1).toString();
 						
 					}
 				}	
@@ -307,8 +307,8 @@ public class BasicBlock {
 							op2.setInstruction(this.getfollowblock().inst_list.get(0));
 						for(int i=0;i< RA.Reg.size();i++)
 						{
-							if(RA.Reg.get(i).contains(ins_index))
-								oper2 = new StringBuilder(" r").append(i).toString();
+							if(RA.Reg.get(i+1).contains(ins_index))
+								oper2 = new StringBuilder(" r").append(i+1).toString();
 	
 						}
 				}
