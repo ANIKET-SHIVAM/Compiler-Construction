@@ -56,7 +56,7 @@ public class RA {
 	
 	//assign register to node
 	public static void assign_reg(int node)
-	{
+	{	
 		int i=0;
 		//if its the top most node
 		if(top == node_stack.size()-1)
@@ -82,6 +82,7 @@ public class RA {
 					//if not interfering,assign same register
 					if(k == Reg.get(i).size()){
 						Reg.get(i).add(node);
+						Parser.insts.get(node).register=i;
 						break;
 					}
 				}
@@ -90,6 +91,7 @@ public class RA {
 					ArrayList<Integer> arr = new ArrayList<Integer>();
 					arr.add(node);
 					Reg.put(i, arr);
+					Parser.insts.get(node).register=i;
 					break;
 				}	
 			}

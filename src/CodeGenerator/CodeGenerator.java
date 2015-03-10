@@ -127,7 +127,7 @@ public class CodeGenerator {
 							break;
 				
 				default:
-					throw new IllegalArgumentException("error:Code generator wrong instruction");
+					throw new IllegalArgumentException("error:Code generator wrong instruction"+operator);
 				}
 			}
 			
@@ -174,8 +174,6 @@ public class CodeGenerator {
 				int opcode;
 				switch(operator){
 				case "add":opcode=DLX.ADDI;
-				System.out.println(inst_register+"oper1 value"+oper1.getValue());
-				System.out.println("oper 2 val"+oper2.getValue());
 							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
 							break;
 				case "sub":opcode=DLX.SUBI;
@@ -224,7 +222,6 @@ public class CodeGenerator {
 			case "write":opcode=DLX.WRD;
 						if(oper1.getType()==Type.instruction){
 							machine_insts.add(DLX.assemble(opcode,oper1.getInstruction().getRegister()));
-							System.out.println(inst_register+"WRD"+oper1.getInstruction().getRegister());
 						}
 						else if(oper1.getType()==Type.number){
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
