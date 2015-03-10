@@ -160,54 +160,82 @@ public class RA {
 	
 	public static void coalese_phis()
 	{
-		Instruction i = phi_list.poll();
-		Result res = new Result(Type.instruction,i);
-		ArrayList<Integer> phi_operands = new ArrayList<Integer>();
-
-		//if 1st operand is instruction 
-		if(i.getOperands().get(0).getType() == Type.instruction)
+		while(phi_list.isEmpty())
 		{
-			int oper1 = Parser.insts.indexOf(i.getOperands().get(0).getInstruction());
-			if(is_interfering(Parser.insts.indexOf(i),oper1))
+			Instruction i = phi_list.poll();
+			Result res = new Result(Type.instruction,i);
+			ArrayList<Integer> phi_operands = new ArrayList<Integer>();
+
+			//if 1st operand is instruction 
+			if(i.getOperands().get(0).getType() == Type.instruction)
 			{
-				Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
+				int oper1 = Parser.insts.indexOf(i.getOperands().get(0).getInstruction());
+				if(is_interfering(Parser.insts.indexOf(i),oper1))
+				{
+					Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
+					i.basicblock.getprevblock().inst_list.add(ins);
+				}
+				else
+				{
+					//not interfering, create a cluster of them
+					phi_operands.add(oper1);
+					clusters.put(Parser.insts.indexOf(i),phi_operands);
+					
+					//remove node from the interference graph
+					int j=0;
+					for(j=0;j<IGMatrix[oper1].length;j++)
+					{
+						if(IGMatrix[oper1][j] == 1)
+							IGMatrix[oper1][j] = IGMatrix[j][oper1] = 0;
+					}
+					//assign same neighbors in a cluster
+					for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
+					{
+						if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
+							IGMatrix[oper1][j] = IGMatrix[j][oper1] = 1;
+					}
+				}
+			}
+			else	//it is a constant
+			{
+				Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
+				Instruction ins = new Instruction("move",res1,res);
 				i.basicblock.getprevblock().inst_list.add(ins);
 			}
-			else
-			{
-				//not interfering, create a cluster of them
-				phi_operands.add(oper1);
-				clusters.put(Parser.insts.indexOf(i),phi_operands);
-				
-			}
-		}
-		else	//it is a constant
-		{
-			Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
-			Instruction ins = new Instruction("move",res1,res);
-			i.basicblock.getprevblock().inst_list.add(ins);
-		}
 		
-		//if 2nd operand is instruction 
-		if(i.getOperands().get(1).getType() == Type.instruction)
-		{
-			int oper2 = Parser.insts.indexOf(i.getOperands().get(1).getInstruction());
-			if(is_interfering(Parser.insts.indexOf(i),oper2))
+			//if 2nd operand is instruction 
+			if(i.getOperands().get(1).getType() == Type.instruction)
 			{
-				Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
-				i.basicblock.getprevblock2().inst_list.add(ins);
+				int oper2 = Parser.insts.indexOf(i.getOperands().get(1).getInstruction());
+				if(is_interfering(Parser.insts.indexOf(i),oper2))
+				{
+					Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
+					i.basicblock.getprevblock2().inst_list.add(ins);
+				}
+				else
+				{
+					phi_operands.add(oper2);
+					clusters.put(Parser.insts.indexOf(i),phi_operands);
+					int j=0;
+					for(j=0;j<IGMatrix[oper2].length;j++)
+					{
+						if(IGMatrix[oper2][j] == 1)
+							IGMatrix[oper2][j] = IGMatrix[j][oper2] = 0;
+					}
+					//assign same neighbors in a cluster
+					for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
+					{
+						if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
+							IGMatrix[oper2][j] = IGMatrix[j][oper2] = 1;
+					}
+				}
 			}
-			else
+			else	//its a constant
 			{
-				phi_operands.add(oper2);
-				clusters.put(Parser.insts.indexOf(i),phi_operands);
+				Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
+				Instruction ins = new Instruction("move",res1,res);
+				i.basicblock.getprevblock().inst_list.add(ins);
 			}
-		}
-		else	//its a constant
-		{
-			Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
-			Instruction ins = new Instruction("move",res1,res);
-			i.basicblock.getprevblock().inst_list.add(ins);
 		}
 	}
 	
