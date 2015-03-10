@@ -12,14 +12,17 @@ public class ParserRun {
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
-			
 			DominatorTree domtree=new DominatorTree();
 			CFG graph=new CFG("test002");
 			//CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
+			
+	
+	//optimizations
 			CP.doCP();
 			CSE.doCSE();
 			//CFG graph1=new CFG("arithemeticwo");
+
 			CFG graph1=new CFG("test002wo");
 
 			graph1.printCFG(Ra);
@@ -27,6 +30,7 @@ public class ParserRun {
 			Ra=1;
 		//	IG graph2 = new IG("arithemetic_IG");
 			IG graph2 = new IG("test002_IG");
+
 			graph2.printIG();
 			RA.coalese_phis();
 			RA.color_node();
@@ -41,6 +45,7 @@ public class ParserRun {
 			}
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
+			
 			System.out.println("\n!!! Done successfully !!!");
 		}		
 }

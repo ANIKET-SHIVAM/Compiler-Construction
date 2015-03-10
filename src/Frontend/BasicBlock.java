@@ -8,6 +8,7 @@ public class BasicBlock {
 		main,iftrue,ifelse,join,whileblock,doblock,follow,function,call
 	}
 	public static int block_id;
+	public static ArrayList<Instruction> inline_inst_list=new ArrayList<Instruction>();
 	public static ArrayList<BasicBlock>Functions_list=new ArrayList<BasicBlock>();
 	public static BasicBlock mainblock;
 	public static HashMap<Integer,BasicBlock>basicblocks=new HashMap<Integer,BasicBlock>();
@@ -201,6 +202,7 @@ public class BasicBlock {
 	public ArrayList<String> printInstructions(){
 		ArrayList<String> bb_insts=new ArrayList<>();
 		for(Instruction inst:inst_list){
+			inline_inst_list.add(inst);
 			String oper1;String oper2;
 			StringBuilder instruction_print= new StringBuilder(Integer.toString(Parser.insts.indexOf(inst))).append(":").append(inst.getOperator());
 			ArrayList<Result> operands=inst.getOperands();

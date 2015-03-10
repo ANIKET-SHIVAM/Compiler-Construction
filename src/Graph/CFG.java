@@ -1,5 +1,6 @@
 package Graph;
 import java.util.*;
+
 import Frontend.*;
 
 import java.util.ArrayList;
@@ -19,7 +20,8 @@ public class CFG {
     }
     
     public void printCFG(int Ra) {
-    	
+    	if(Ra==0)
+    		BasicBlock.inline_inst_list.clear();
     	BasicBlock bb = BasicBlock.mainblock;
     	int block_length =bb.block_id;
     	int [] block_done = new int[block_length];

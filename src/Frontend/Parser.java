@@ -235,6 +235,8 @@ public class Parser{
 		Function_param.put(function_name, param_list);
 	}*/
 	
+
+	
 	public BasicBlock stat_seq(BasicBlock currentblock)
 	{
 		return statement(currentblock);
@@ -281,7 +283,7 @@ public class Parser{
 	public Result assignment(BasicBlock currentblock)		//"let"
 	{
 		boolean arrflag=false;
-		Instruction adda=null;
+		Instruction adda=null,arrmulins=null,arraddfpins=null;
 		int index=0;
 		String var;
 		Result x = new Result();
@@ -317,7 +319,7 @@ public class Parser{
 						j++;
 					}
 					Result intsize = new Result(Type.number,mul);
-					Instruction arrmulins = new Instruction("mul",arrindex.get(i),intsize);
+					arrmulins = new Instruction("mul",arrindex.get(i),intsize);
 					currentblock.inst_list.add(arrmulins);
 					insts.add(arrmulins);				//add instruction to instruction list
 					arrmulins.basicblock = currentblock; 
@@ -332,7 +334,7 @@ public class Parser{
 						arrfinalindexins.block_id = BasicBlock.block_id;
 					}
 				}
-				Instruction arrmulins=null;
+				arrmulins=null;
 				if(!flagarray){
 					Result intsize = new Result(Type.number,4);
 				    arrmulins = new Instruction("mul",intsize,arrindex.get(arrindex.size()-1));
@@ -359,21 +361,11 @@ public class Parser{
 				arrmulins.block_id = BasicBlock.block_id;
 				}
 				
-				Instruction arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
+			    arraddfpins = new Instruction("add",Result_cache.get(var),Result_cache.get("FP"));
 				currentblock.inst_list.add(arraddfpins);
 				insts.add(arraddfpins);				//add instruction to instruction list
 				arraddfpins.basicblock = currentblock;
 				arraddfpins.block_id = BasicBlock.block_id;
-				
-				Result addares1=new Result(Type.instruction,arrmulins);
-				Result addares2=new Result(Type.instruction,arraddfpins);
-				Instruction arradda = new Instruction("adda",addares1,addares2);
-				currentblock.inst_list.add(arradda);
-				insts.add(arradda);				//add instruction to instruction list
-				arradda.basicblock = currentblock;
-				arradda.block_id = BasicBlock.block_id;
-				adda=arradda;
-				
 				
 			}
 			if(tt.getType() == TokenType.becomesToken) //"<-"
@@ -417,6 +409,15 @@ public class Parser{
 					}
 					}
 					else{
+						Result addares1=new Result(Type.instruction,arrmulins);
+						Result addares2=new Result(Type.instruction,arraddfpins);
+						Instruction arradda = new Instruction("adda",addares1,addares2);
+						currentblock.inst_list.add(arradda);
+						insts.add(arradda);				//add instruction to instruction list
+						arradda.basicblock = currentblock;
+						arradda.block_id = BasicBlock.block_id;
+						adda=arradda;
+						
 						Result arrstore1=new Result(Type.instruction,i);
 						Result addainst=new Result(Type.instruction,adda);
 						Instruction arrstore = new Instruction("store",arrstore1,addainst);
@@ -446,11 +447,87 @@ public class Parser{
 		return x;
 	}
 	
-	public BasicBlock funcCall(BasicBlock currentblock)
-	{
+	public BasicBlock funcCall(BasicBlock currentblock){
 		BasicBlock bb=currentblock;
 		Next();
-		if(Function_list.containsKey(tt.getCharacters())){
+		if(tt.getCharacters().equals("InputNum")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				
+					String var = tt.getCharacters();
+					int index = String2Id(tt.getCharacters());
+					Instruction read_inst = new Instruction("read");
+					read_inst.basicblock = currentblock;
+					read_inst.block_id = BasicBlock.block_id;
+					currentblock.inst_list.add(read_inst);
+					insts.add(read_inst);
+					Result read=new Result(Type.instruction,read_inst);
+					Instruction move_read = new Instruction("move",read, Result_cache.get(var));
+					currentblock.inst_list.add(move_read);
+					insts.add(move_read);				//add instruction to instruction list
+					move_read.basicblock = currentblock;
+					move_read.block_id = BasicBlock.block_id;
+					
+					if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
+					{
+						Stack<Instruction> ss = new Stack<Instruction>();
+						ss.push(move_read);
+						currentblock.get_Sym_table().put(index, ss);
+					}
+					else										//if the entry is present
+					{
+						currentblock.get_Sym_table().get(index).push(move_read);	//push new value on stack
+					}
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in read");
+		}
+		else if(tt.getCharacters().equals("OutputNum")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				if(tt.getType()==TokenType.callToken){
+					currentblock=stat_seq(currentblock);
+					Result x=calledfunction.getreturninst();
+					Instruction i = new Instruction("write",x);
+					currentblock.inst_list.add(i);
+					insts.add(i);				//add instruction to instruction list
+					i.basicblock = currentblock;
+					i.block_id = BasicBlock.block_id;
+				}
+				else if(tt.getType()==TokenType.ident||tt.getType()==TokenType.number){
+					Result x=E(currentblock);
+					Instruction i = new Instruction("write",x);
+					currentblock.inst_list.add(i);
+					insts.add(i);				//add instruction to instruction list
+					i.basicblock = currentblock;
+					i.block_id = BasicBlock.block_id;
+				}
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in outputnum");
+		}
+		else if(tt.getCharacters().equals("OutputNewLine")){
+			Next();
+			if (tt.getType()==TokenType.openparenToken)
+			{	Next();
+				Instruction i = new Instruction("writeNL");
+				currentblock.inst_list.add(i);
+				insts.add(i);				//add instruction to instruction list
+				i.basicblock = currentblock;
+				i.block_id = BasicBlock.block_id;
+				Next();
+				return  currentblock;
+			}
+			else 
+				throw new IllegalArgumentException("error:no paranthesis in outputNL");
+		}
+		else if(Function_list.containsKey(tt.getCharacters())){
 			Function func=Function_list.get(tt.getCharacters());
 			calledfunction=func;
 			Instruction jump_ins = func.getfirstbb().inst_list.get(0);

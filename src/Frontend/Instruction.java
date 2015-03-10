@@ -71,6 +71,9 @@ public class Instruction {
 	public String getPhiVar(){
 		return this.var;
 	}
+	public int getRegister(){
+		return this.register;
+	}
 	public boolean isConstantAssignment(){
 		if(this.getOperator()=="move"){
 			if((this.operands.get(0).getType()==Type.number)&&(this.operands.get(1).getType()==Type.variable)){

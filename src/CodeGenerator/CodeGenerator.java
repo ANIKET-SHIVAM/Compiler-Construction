@@ -1,68 +1,248 @@
 package CodeGenerator;
 import java.util.*;
 
+import Frontend.*;
+import Frontend.Result.Type;
+import Optimizations.*;
+
+
 public class CodeGenerator {
 	
-	//ARITHEMETIC INSTRUCTIONS	- F2
-		private static int ADD = 0;
-		private static int SUB = 1;
-		private static int MUL = 2;
-		private static int DIV = 3;
-		private static int MOD = 4;
-		private static int CMP = 5;
-		private static int OR = 8;
-		private static int AND = 9;
-		private static int BIC = 10;
-		private static int XOR = 11;
+	int scratch_reg_1=26,scratch_reg_2=27;
+	public ArrayList<Integer> machine_insts;		
+	CodeGenerator(){
+		machine_insts=new ArrayList<Integer>();
+		for(Instruction inst:BasicBlock.inline_inst_list)
+			generate_assembly(inst);			
+	}
 		
-		private static int LSH = 12;
-		private static int ASH = 13;
+	public void generate_assembly(Instruction inst){
+		int operand_size=inst.getOperands().size();
+		int adda_register_1=0,adda_register_2=0;
+
+//for double operand
+						
+		if(operand_size==2){
+			String operator=inst.getOperator();
+			Result oper1=inst.getOperands().get(0);
+			Result oper2=inst.getOperands().get(1);
+			if(oper1.getType()==Type.instruction&&oper2.getType()==Type.instruction){
+				int oper1_register=oper1.getInstruction().getRegister();
+				int oper2_register=oper2.getInstruction().getRegister();
+				int jump_index=BasicBlock.inline_inst_list.indexOf(oper2.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add": opcode=DLX.ADD;
+							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
+							break;
+				case "sub":opcode=DLX.SUB;
+							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
+							break;
+				case "mul":opcode=DLX.MUL;
+							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
+							break;
+				case "div":opcode=DLX.DIV;
+							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
+							break;
+				case "cmp":opcode=DLX.CMP;
+							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
+							break;
+						
+						
+				case "bne":opcode=DLX.BNE;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				case "beq":opcode=DLX.BEQ;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				case "ble":opcode=DLX.BLE;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				case "blt":opcode=DLX.BLT;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				case "bge":opcode=DLX.BGE;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				case "bgt":opcode=DLX.BGT;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, jump_index));
+							break;
+				
+							
+				case "adda":
+							adda_register_1=oper1_register;
+							adda_register_2=oper2_register;
+							break;
+				case "store":
+						opcode=DLX.STX;
+							machine_insts.add(DLX.assemble(opcode, oper1_register, adda_register_1,adda_register_2));
+							break;
+							
+							
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			
+			
+			
+			
+			else if(oper1.getType()==Type.instruction&&oper2.getType()==Type.number){
+				int oper1_register=oper1.getInstruction().getRegister();
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADDI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
+							break;
+				case "sub":opcode=DLX.SUBI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
+							break;
+				case "mul":opcode=DLX.MULI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
+							break;
+				case "div":opcode=DLX.DIVI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
+							break;
+				case "cmp":opcode=DLX.CMPI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
+							break;
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			
+			
+			
+			else if(oper2.getType()==Type.instruction&&oper1.getType()==Type.number){
+				int oper2_register=oper2.getInstruction().getRegister();
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADDI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+							break;
+				case "sub":opcode=DLX.SUBI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+							break;
+				case "mul":opcode=DLX.MULI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+							break;
+				case "div":opcode=DLX.DIVI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+							break;
+				case "cmp":opcode=DLX.CMPI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+							break;
+				
+							
+				case "store":opcode=DLX.STX;
+							machine_insts.add(DLX.assemble(opcode, oper1.getValue(), adda_register_1,adda_register_2));
+							break;
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			
+			
+			
+			else if(oper1.getType()==Type.number&&oper2.getType()==Type.number){
+				machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADDI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							break;
+				case "sub":opcode=DLX.SUBI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							break;
+				case "mul":opcode=DLX.MULI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							break;
+				case "div":opcode=DLX.DIVI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							break;
+				case "cmp":opcode=DLX.CMPI;
+							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							break;
+				
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			
+			
+			else
+				throw new IllegalArgumentException("error:Code generator wrong operand type");
+		}
 		
-		private static int CHK = 14;
 		
-	//IMMEDIATE ARITHEMETIC INSTRUCTION	-F1
-		private static int ADDI = 16;
-		private static int SUBI = 17;
-		private static int MULI = 18;
-		private static int DIVI = 19;
-		private static int MODI = 20;
-		private static int CMPI = 21;
-		private static int ORI = 24;
-		private static int ANDI = 25;
-		private static int BICI = 26;
-		private static int XORI = 27;
+//for single operand
 		
-		private static int LSHI = 28;
-		private static int ASHI = 29;
-		
-		private static int CHKI = 30;
-		
-	//LOAD/STORE INSTRUCTIONS	
-		private static int LDW = 32;	//F1
-		private static int LDX = 33;	//F2
-		private static int POP = 34;	//F1
-		private static int STW = 36;	//F1
-		private static int STX = 37;	//F2
-		private static int PSH = 38;	//F1
-		
-	//CONTROL INSTRUCTIONS - F1
-		private static int BEQ = 40;	
-		private static int BNE = 41;
-		private static int BLT = 42;
-		private static int BGE = 43;
-		private static int BLE = 44;
-		private static int BGT = 45;
-	
-		private static int BSR = 46;	//F1
-		private static int JSR = 48;	//F3
-		private static int RET = 49;	//F2
-		
-	//I/O INSTRUCTIONS	
-		private static int RDD = 50;	//F2
-		private static int WRD = 51;	//F2
-		private static int WRH = 52;	//F2
-		private static int WRL = 53;	//F1
+		else if(operand_size==1){
+			String operator=inst.getOperator();
+			Result oper1=inst.getOperands().get(0);
+			int inst_register=inst.getRegister();
+			int opcode;
+			switch(operator){
+			case "load":opcode=DLX.LDX;
+						machine_insts.add(DLX.assemble(opcode, inst_register, adda_register_1,adda_register_2));
+						break;
+				
+			case "bra":opcode=DLX.BEQ;
+						int jump_index=BasicBlock.inline_inst_list.indexOf(oper1.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
+						machine_insts.add(DLX.assemble(opcode, 0, jump_index));
+						break;
+			
+			case "write":opcode=DLX.WRD;
+						if(oper1.getType()==Type.instruction)
+							machine_insts.add(DLX.assemble(opcode,oper1.getInstruction().getRegister()));
+						else if(oper1.getType()==Type.number){
+							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
+							machine_insts.add(DLX.assemble(opcode, scratch_reg_1));
+						}
+						else
+							throw new IllegalArgumentException("error:Code generator wrong WRD result");
+						break;
+			
+			default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+			
+			}
+		}
 		
 		
+		
+//for no operand		
+		else if(operand_size==0){
+			String operator=inst.getOperator();
+			int inst_register=inst.getRegister();
+			int opcode;
+			switch(operator){
+			case "end":opcode=DLX.RET;
+						machine_insts.add(DLX.assemble(opcode, 0));
+						break;
+			case "read":opcode=DLX.RDI;
+						machine_insts.add(DLX.assemble(opcode, inst_register));
+						break;
+			case "writeNL":opcode=DLX.WRL;
+						machine_insts.add(DLX.assemble(opcode));
+						break;
+			default:
+				throw new IllegalArgumentException("error:Code generator wrong instruction");
+			}
+		}
+		else
+			throw new IllegalArgumentException("error:Code generator wrong operands");
+	}
 	
 }
