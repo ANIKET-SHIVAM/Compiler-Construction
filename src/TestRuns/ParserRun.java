@@ -2,6 +2,7 @@ package TestRuns;
 import Frontend.*;
 import Graph.*;
 import Optimizations.*;
+import CodeGenerator.*;
 
 public class ParserRun {
 		public static void main(String []args){
@@ -32,20 +33,23 @@ public class ParserRun {
 			IG graph2 = new IG("test002_IG");
 
 			graph2.printIG();
-			RA.coalese_phis();
+		//	RA.coalese_phis();
 			RA.color_node();
-			for(int i=0;i<RA.Reg.size();i++)
+			for(int i=1;i<RA.Reg.size();i++)
 			{
 				System.out.println("For reg:"+i);
-				for(int j=0;j < RA.Reg.get(i).size();j++)
+				for(int j=1;j < RA.Reg.get(i).size();j++)
 				{
 					System.out.print(RA.Reg.get(i).get(j)+",");
 				}
 				System.out.println();
 			}
 			CFG graph3 = new CFG("testRA");
-			graph3.printCFG(Ra);
-			
-			System.out.println("\n!!! Done successfully !!!");
+		//	graph3.printCFG(Ra);
+			System.out.println("\n!!! RA successfully !!!");
+			System.out.println("\n!!! Compile successfully !!!");
+			System.out.println("Result:");
+			CodeGenerator cg=new CodeGenerator();
+
 		}		
 }

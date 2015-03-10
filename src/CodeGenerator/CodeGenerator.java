@@ -1,4 +1,5 @@
 package CodeGenerator;
+import java.io.IOException;
 import java.util.*;
 
 import Frontend.*;
@@ -10,10 +11,25 @@ public class CodeGenerator {
 	
 	int scratch_reg_1=26,scratch_reg_2=27;
 	public ArrayList<Integer> machine_insts;		
-	CodeGenerator(){
+	public CodeGenerator(){
 		machine_insts=new ArrayList<Integer>();
-		for(Instruction inst:BasicBlock.inline_inst_list)
-			generate_assembly(inst);			
+		for(Instruction inst:BasicBlock.inline_inst_list){
+			generate_assembly(inst);	
+		}	
+		int[] inst_list = new int[machine_insts.size()];
+	    int i = 0;
+	    for (Integer n : machine_insts) {
+	        inst_list[i++] = n;
+	    }
+	    DLX.load(inst_list);
+	    try{
+	    	DLX.execute();
+	    }
+	    catch(IOException e){
+	    	e.printStackTrace();
+	    }
+	    	
+	    
 	}
 		
 	public void generate_assembly(Instruction inst){
@@ -158,6 +174,8 @@ public class CodeGenerator {
 				int opcode;
 				switch(operator){
 				case "add":opcode=DLX.ADDI;
+				System.out.println(inst_register+"oper1 value"+oper1.getValue());
+				System.out.println("oper 2 val"+oper2.getValue());
 							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
 							break;
 				case "sub":opcode=DLX.SUBI;
@@ -204,8 +222,10 @@ public class CodeGenerator {
 						break;
 			
 			case "write":opcode=DLX.WRD;
-						if(oper1.getType()==Type.instruction)
+						if(oper1.getType()==Type.instruction){
 							machine_insts.add(DLX.assemble(opcode,oper1.getInstruction().getRegister()));
+							System.out.println(inst_register+"WRD"+oper1.getInstruction().getRegister());
+						}
 						else if(oper1.getType()==Type.number){
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
 							machine_insts.add(DLX.assemble(opcode, scratch_reg_1));

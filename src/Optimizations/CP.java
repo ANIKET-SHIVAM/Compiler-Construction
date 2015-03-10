@@ -33,26 +33,40 @@ public class CP {
 					if(laterinst.getOperator()=="end")
 						break;
 					if(laterinst.getOperator()!="bra"&&laterinst.getOperator()!="call"&&laterinst.getOperator()!="kill"&&laterinst.getOperator()!="read"){
-						if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
-							if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
-								{laterinst.getOperands().set(0, operand);
-								if(firstpatch){
-									patch=laterinst;
-									firstpatch=false;
-								}
+							if(laterinst.getOperands().size()==2){
+								if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+									if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
+										{laterinst.getOperands().set(0, operand);
+										if(firstpatch){
+											patch=laterinst;
+											firstpatch=false;
+										}
+										}
+									}
+								}	
+								if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
+									if(Parser.insts.indexOf(laterinst.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
+										{laterinst.getOperands().set(1, operand);
+										if(firstpatch){
+											patch=laterinst;
+											firstpatch=false;
+										}
+										}
+									}
 								}
 							}
-						}	
-						if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
-							if(Parser.insts.indexOf(laterinst.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
-								{laterinst.getOperands().set(1, operand);
-								if(firstpatch){
-									patch=laterinst;
-									firstpatch=false;
-								}
+							else if(laterinst.getOperands().size()==1){
+								if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+									if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
+										{laterinst.getOperands().set(0, operand);
+										if(firstpatch){
+											patch=laterinst;
+											firstpatch=false;
+										}
+										}
+									}
 								}
 							}
-						}
 					}
 				}
 				
@@ -66,24 +80,39 @@ public class CP {
 								break;
 							
 							if(laterinst.getOperator()!="bra"&&laterinst.getOperator()!="call"&&laterinst.getOperator()!="kill"&&laterinst.getOperator()!="read"){	
-								if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
-									if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
-											laterinst.getOperands().set(0, operand);
+								if(laterinst.getOperands().size()==2){	
+										if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+											if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
+													laterinst.getOperands().set(0, operand);
+													if(firstpatch){
+														patch=laterinst;
+														firstpatch=false;
+													}
+											}
+										}	
+										if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
+											if(Parser.insts.indexOf(laterinst.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
+												laterinst.getOperands().set(1, operand);
+												if(firstpatch){
+													patch=laterinst;
+													firstpatch=false;
+												}
+											}
+										}
+								}
+								else if(laterinst.getOperands().size()==1){
+									if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+										if(Parser.insts.indexOf(laterinst.getOperands().get(0).getInstruction())==Parser.insts.indexOf(inst)){
+											{laterinst.getOperands().set(0, operand);
 											if(firstpatch){
 												patch=laterinst;
 												firstpatch=false;
 											}
-									}
-								}	
-								if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
-									if(Parser.insts.indexOf(laterinst.getOperands().get(1).getInstruction())==Parser.insts.indexOf(inst)){
-										laterinst.getOperands().set(1, operand);
-										if(firstpatch){
-											patch=laterinst;
-											firstpatch=false;
+											}
 										}
 									}
 								}
+								
 							}
 						}
 					}

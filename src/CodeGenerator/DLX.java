@@ -232,6 +232,7 @@ public class DLX {
 		}
 
 		}
+		
 		catch (java.lang.ArrayIndexOutOfBoundsException e ) {
 		  System.out.println( "failed at " + PC*4 + ",   "  + disassemble( M[PC] ) );
 		}
