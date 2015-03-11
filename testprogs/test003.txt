@@ -5,12 +5,12 @@ var a, b;
 	let a <- 1;
 	let b <- 2;
 	if a < b then
-		if a == b then
+		
+		let a <- a + 1;
+	fi;
+	if a == b then
 			let a <- a + 1;
 			let b <- b + 2;
 		fi;
-		let a <- a + 1;
-	fi;
-	
-	call OutputNum(a)
+	call OutputNum(b)
 }.

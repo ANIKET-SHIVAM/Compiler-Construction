@@ -966,7 +966,9 @@ public class Parser{
 						}
 					}
 					if(dobb.inst_list.get(dobb.inst_list.size()-1).getOperator()=="end"){
+						Parser.insts.remove(dobb.inst_list.get(dobb.inst_list.size()-1));
 						dobb.inst_list.remove(dobb.inst_list.size()-1);
+
 					}
 						Instruction jump_ins = while_block.inst_list.get(0);
 						Result jump_res = new Result(Type.instruction,jump_ins);

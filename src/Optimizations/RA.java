@@ -431,7 +431,6 @@ public class RA {
 						else
 							System.out.println("RA bra inst patchup fail");
 					}
-					Parser.insts.remove(bb.inst_list.get(j));
 					bb.inst_list.remove(j);
 					
 					j--;
