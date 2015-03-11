@@ -245,7 +245,7 @@ public class Parser{
 	}
 	
 	public BasicBlock statement(BasicBlock currentblock)
-	{
+	{	System.out.println(tt.getCharacters());
 		BasicBlock bb;
 		if(tt.getType() == TokenType.semiToken){	//";"
 			Next();
@@ -999,7 +999,7 @@ public class Parser{
 			
 				while_count--;
 				Next();
-				while(tt.getType() != TokenType.odToken && tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken){
+				while(tt.getType() != TokenType.odToken && tt.getType() != TokenType.elseToken&&tt.getType() != TokenType.endToken&&tt.getType() != TokenType.fiToken&&tt.getType() != TokenType.eofToken&&tt.getType() != TokenType.periodToken){
 					follow_block=stat_seq(follow_block);}
 				
 				Instruction	my_fix = while_stack.pop();
