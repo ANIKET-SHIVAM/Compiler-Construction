@@ -261,6 +261,7 @@ public class Parser{
 		else if(tt.getType() == TokenType.callToken)	//call
 		{
 			bb = funcCall(currentblock);
+			if(tt.getType()!= TokenType.semiToken)
 			Next();
 		}
 		else if(tt.getType() == TokenType.ifToken)	//if
