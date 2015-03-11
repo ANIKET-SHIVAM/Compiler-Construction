@@ -1,0 +1,12 @@
+main
+var a;
+function foo();
+var i;
+{
+	let i <- 10;
+	return i;
+};
+{
+	let a <- call foo;
+	call OutputNum(a);
+}.
