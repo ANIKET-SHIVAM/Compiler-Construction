@@ -185,19 +185,19 @@ public class CodeGenerator {
 				case "add":opcode=DLX.ADDI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()+oper2.getValue()));	
 							break;
-				case "sub":opcode=DLX.SUBI;
+				case "sub":opcode=DLX.ADDI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()-oper2.getValue()));	
 							break;
-				case "mul":opcode=DLX.MULI;
+				case "mul":opcode=DLX.ADDI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()*oper2.getValue()));	
 							break;
-				case "div":opcode=DLX.DIVI;
+				case "div":opcode=DLX.ADDI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()/oper2.getValue()));	
 							break;
 				case "cmp":opcode=DLX.CMPI;
 							machine_insts.add(DLX.assemble(opcode,inst_register,0,oper2.getValue()-oper1.getValue()));	
 							break;
-				case "move":opcode=DLX.ADD;
+				case "move":opcode=DLX.ADDI;
 							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1.getValue()));	
 							break;	
 				
@@ -226,6 +226,7 @@ public class CodeGenerator {
 						break;
 				
 			case "bra":opcode=DLX.BEQ;
+			System.out.println(BasicBlock.inline_inst_list.indexOf(oper1.getInstruction())+"xxxxxxxxxxxxxxx"+BasicBlock.inline_inst_list.indexOf(inst));
 						int jump_index=BasicBlock.inline_inst_list.indexOf(oper1.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
 						machine_insts.add(DLX.assemble(opcode, 0, jump_index));
 						break;

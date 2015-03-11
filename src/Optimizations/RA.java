@@ -194,6 +194,7 @@ public class RA {
 		for(int i=0;i<Live_Set.size();i++)
 		{
 			count=0;
+			
 			for(int k=0;k<Live_Set.get(i).size();k++)
 			{
 				if(Live_Set.get(i).get(k) == res_node || Live_Set.get(i).get(k) == oper_node)
@@ -203,6 +204,7 @@ public class RA {
 				if(count==2)
 					return true;
 			}
+		
 		}
 		return false;
 	}
@@ -212,104 +214,184 @@ public class RA {
 		while(!phi_list.isEmpty())
 		{
 			Instruction i = phi_list.poll();
-			Result res = new Result(Type.instruction,i);
-			ArrayList<Integer> phi_operands = new ArrayList<Integer>();
+			//else	//its phi of if-else 
+			//{
+				Result res = new Result(Type.instruction,i);
+				ArrayList<Integer> phi_operands = new ArrayList<Integer>();
 
-			//if 1st operand is instruction 
-			if(i.getOperands().get(0).getType() == Type.instruction)
-			{
-				int oper1 = Parser.insts.indexOf(i.getOperands().get(0).getInstruction());
-				if(is_interfering(Parser.insts.indexOf(i),oper1))
+				//if 1st operand is instruction 
+				if(i.getOperands().get(0).getType() == Type.instruction)
 				{
-					Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
-					i.basicblock.getprevblock().inst_list.add(ins);
-				}
-				else
-				{
-					//not interfering, create a cluster of them
-					phi_operands.add(oper1);
-					clusters.put(Parser.insts.indexOf(i),phi_operands);
-					
-					i.cluster  = Parser.insts.indexOf(i);
-					Parser.insts.get(oper1).cluster = Parser.insts.indexOf(i);
-					i.is_cluster=true;
-					Parser.insts.get(oper1).is_cluster = true;
-					
-					//remove node from the interference graph
-					int j=0;
-					for(j=0;j<IGMatrix[oper1].length;j++)
+					int oper1 = Parser.insts.indexOf(i.getOperands().get(0).getInstruction());
+					if(is_interfering(Parser.insts.indexOf(i),oper1))
 					{
-						if(IGMatrix[oper1][j] == 1)
-							IGMatrix[oper1][j] = IGMatrix[j][oper1] = 0;
+						Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
+						if(i.basicblock.getType() != BlockType.whileblock)
+							i.basicblock.getprevblock().inst_list.add(ins);
+						else
+						{
+							//its a while block phi
+							BasicBlock oper1_bb = i.getOperands().get(0).getInstruction().basicblock;
+							oper1_bb.inst_list.add(oper1_bb.inst_list.size()-1, ins);
+						}
 					}
-					//assign same neighbors in a cluster
-					for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
-					{
-						if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
-							IGMatrix[oper1][j] = IGMatrix[j][oper1] = 1;
-					}
-				}
-			}
-			else	//it is a constant
-			{
-				Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
-				Instruction ins = new Instruction("move",res1,res);
-				i.basicblock.getprevblock().inst_list.add(ins);
-			}
-		
-			//if 2nd operand is instruction 
-			if(i.getOperands().get(1).getType() == Type.instruction)
-			{
-				int oper2 = Parser.insts.indexOf(i.getOperands().get(1).getInstruction());
-				if(is_interfering(Parser.insts.indexOf(i),oper2))
-				{
-					Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
-
-					if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
-						i.basicblock.getprevblock2().inst_list.add(ins);
 					else
 					{
-						int pos = i.basicblock.getprevblock2().inst_list.size()-1; 
-						i.basicblock.getprevblock2().inst_list.add(pos, ins);
+						//not interfering, create a cluster of them
+						phi_operands.add(oper1);
+						clusters.put(Parser.insts.indexOf(i),phi_operands);
+						
+						i.cluster  = Parser.insts.indexOf(i);
+						Parser.insts.get(oper1).cluster = Parser.insts.indexOf(i);
+						i.is_cluster=true;
+						Parser.insts.get(oper1).is_cluster = true;
+						
+						//remove node from the interference graph
+						int j=0;
+						for(j=0;j<IGMatrix[oper1].length;j++)
+						{
+							if(IGMatrix[oper1][j] == 1)
+								IGMatrix[oper1][j] = IGMatrix[j][oper1] = 0;
+						}
+						//assign same neighbors in a cluster
+						for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
+						{
+							if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
+								IGMatrix[oper1][j] = IGMatrix[j][oper1] = 1;
+						}
 					}
 				}
-				else
+				else	//it is a constant
 				{
-					phi_operands.add(oper2);
-					clusters.put(Parser.insts.indexOf(i),phi_operands);
-					
-					i.cluster  = Parser.insts.indexOf(i);
-					Parser.insts.get(oper2).cluster = Parser.insts.indexOf(i);
-					i.is_cluster=true;
-					Parser.insts.get(oper2).is_cluster = true;
-					
-					int j=0;
-					for(j=0;j<IGMatrix[oper2].length;j++)
+
+					Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
+					Instruction ins = new Instruction("move",res1,res);
+					if(i.basicblock.getType() != BlockType.whileblock)
+						i.basicblock.getprevblock().inst_list.add(ins);
+
+					else
 					{
-						if(IGMatrix[oper2][j] == 1)
-							IGMatrix[oper2][j] = IGMatrix[j][oper2] = 0;
-					}
-					//assign same neighbors in a cluster
-					for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
-					{
-						if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
-							IGMatrix[oper2][j] = IGMatrix[j][oper2] = 1;
+						BasicBlock todo_block = i.basicblock.getwhiletodo();
+						todo_block.inst_list.add(todo_block.inst_list.size()-1, ins);
 					}
 				}
-			}
-			else	//its a constant
-			{
-				Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
-				Instruction ins = new Instruction("move",res1,res);
-				if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
-					i.basicblock.getprevblock2().inst_list.add(ins);
-				else
-				{
-					int pos = i.basicblock.getprevblock2().inst_list.size()-1;
-					i.basicblock.getprevblock2().inst_list.add(pos, ins);
-				}
-			}
 			
+				//if 2nd operand is instruction 
+				if(i.getOperands().get(1).getType() == Type.instruction)
+				{
+					int oper2 = Parser.insts.indexOf(i.getOperands().get(1).getInstruction());
+					if(is_interfering(Parser.insts.indexOf(i),oper2))
+					{
+						Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
+						if(i.basicblock.getType() != BlockType.whileblock){
+							if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
+								i.basicblock.getprevblock2().inst_list.add(ins);
+							else
+							{
+								int pos = i.basicblock.getprevblock2().inst_list.size()-1; 
+								i.basicblock.getprevblock2().inst_list.add(pos, ins);
+							}
+						}
+							else
+							{
+								//its phi of while block
+								BasicBlock prev_block = i.basicblock.getprevblock();  
+								String ss =prev_block.inst_list.get(prev_block.inst_list.size()-1).getOperator();
+								switch(ss)
+								{
+								case "bge":
+								case "ble":
+								case "beq":
+								case "bne":		
+								case "bgt":
+								case "blt":
+									//add before bge
+									prev_block.inst_list.add(prev_block.inst_list.size()-1, ins);
+									break;
+								default:
+									//or else add at last
+									prev_block.inst_list.add(ins);
+									break;
+								}
+							}
+						
+					}
+					else
+					{
+						phi_operands.add(oper2);
+						clusters.put(Parser.insts.indexOf(i),phi_operands);
+						
+						i.cluster  = Parser.insts.indexOf(i);
+						Parser.insts.get(oper2).cluster = Parser.insts.indexOf(i);
+						i.is_cluster=true;
+						Parser.insts.get(oper2).is_cluster = true;
+						
+						int j=0;
+						for(j=0;j<IGMatrix[oper2].length;j++)
+						{
+							if(IGMatrix[oper2][j] == 1)
+								IGMatrix[oper2][j] = IGMatrix[j][oper2] = 0;
+						}
+						//assign same neighbors in a cluster
+						for(j=0;j<IGMatrix[Parser.insts.indexOf(i)].length;j++)
+						{
+							if(IGMatrix[Parser.insts.indexOf(i)][j] == 1)
+								IGMatrix[oper2][j] = IGMatrix[j][oper2] = 1;
+						}
+					}
+				}
+				else	//its a constant
+				{
+					Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
+					Instruction ins = new Instruction("move",res1,res);
+					if(i.basicblock.getType() != BlockType.whileblock){
+						if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
+							i.basicblock.getprevblock2().inst_list.add(ins);
+						else
+						{
+							int pos = i.basicblock.getprevblock2().inst_list.size()-1;
+							i.basicblock.getprevblock2().inst_list.add(pos, ins);
+						}
+					}
+					else
+					{
+						//its phi of while block
+						BasicBlock prev_block = i.basicblock.getprevblock();  
+						String ss =prev_block.inst_list.get(prev_block.inst_list.size()-1).getOperator();
+						switch(ss)
+						{
+						case "bge":
+						case "ble":
+						case "beq":
+						case "bne":		
+						case "bgt":
+						case "blt":
+							//add before bge
+							prev_block.inst_list.add(prev_block.inst_list.size()-1, ins);
+							break;
+						default:
+							//or else add at last
+							prev_block.inst_list.add(ins);
+							break;
+						}
+					}
+				}
+			//}
+				if(i.basicblock.getType() != BlockType.whileblock){
+					//correct the branch location of bge,etc.
+					BasicBlock main_bb = i.basicblock.getprevblock().getprevblock();
+					Result oper2 = main_bb.inst_list.get(main_bb.inst_list.size()-1).getOperands().get(1);
+					for(int ii=0;ii<i.basicblock.inst_list.size();ii++)
+					{
+						if(i.basicblock.inst_list.get(ii).getOperator() != "phi")
+						{
+							Result fixed_res  = new Result(Type.instruction,i.basicblock.inst_list.get(ii));
+							oper2 = fixed_res;
+							break;
+						}
+					}
+				}
+
 		}
 	}
 	
@@ -338,7 +420,17 @@ public class RA {
 				
 				if(bb.inst_list.get(j).getOperator()== "phi")
 				{
-
+					if(bb.getType()==BlockType.whileblock){
+						BasicBlock newbb=bb.getwhiletodo();
+						if(newbb.inst_list.get(newbb.inst_list.size()-1).getOperator()=="bra"){
+							Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+							Instruction patchbra=bb.inst_list.get(1);
+							Result patchbraup=new Result(Type.instruction,patchbra);
+							bra.getOperands().set(0, patchbraup);
+						}
+						else
+							System.out.println("RA bra inst patchup fail");
+					}
 					Parser.insts.remove(bb.inst_list.get(j));
 					bb.inst_list.remove(j);
 					
@@ -445,7 +537,7 @@ public class RA {
 		for(int index1=last_inst;index1>=0;index1--){
 			Instruction ii = bb.inst_list.get(index1);
 			
-			if(ii.getOperator() == "phi")
+			if(ii.getOperator() == "phi" && !phi_list.contains(ii))
 				phi_list.add(ii);
 			if(ii.getOperator() == "end")
 			{
@@ -461,7 +553,7 @@ public class RA {
 		if((bb.getType() == BlockType.iftrue ||  bb.getType() == BlockType.ifelse) && bb.getjoinblock() != null)
 			bb.out_set = bb.getjoinblock().in_set;
 		
-		else if(bb.getnextblock()!= null && bb.getnextblock().getType() == BlockType.iftrue && ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt")
+		else if(bb.getnextblock()!= null && bb.getnextblock().getType() == BlockType.iftrue && (ss == "bge" || ss=="ble" || ss == "beq" || ss == "bne" || ss == "bgt" || ss == "blt"))
 		{
 			if(bb.getifelseblock() != null)
 			{

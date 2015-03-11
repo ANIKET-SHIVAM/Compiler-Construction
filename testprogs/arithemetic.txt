@@ -5,10 +5,10 @@ var x, y;
     let x <- 51; 
     let y <- 2 * x;
     while x < y do
-    	while x < 50 do
+    	 while x < y do
     		let x <- x + 20;
-    	od;
-    let x <- x+y;
+    	od;	
     od;
     let y <- y+10;
+    call OutputNum(x);
 }.

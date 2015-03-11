@@ -8,29 +8,32 @@ public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
 			
-			//String filename = "testprogs/arithemetic.txt";
-			String filename = "testprogs/test003.txt";
+			String filename = "testprogs/arithemetic.txt";
+			//String filename = "testprogs/test003.txt";
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
 			DominatorTree domtree=new DominatorTree();
-			CFG graph=new CFG("test001");
-			//CFG graph=new CFG("arithemetic");
+
+			//CFG graph=new CFG("test003");
+			CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 	
 	//optimizations
 			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
-			//CFG graph1=new CFG("arithemeticwo");
-			
-			
-			CFG graph1=new CFG("test001wo");graph1.printCFG(Ra);
-			
-		RA.doLivenessAnalysis();
+
+			CFG graph1=new CFG("arithemeticwo");
+
+			//CFG graph1=new CFG("test003wo");
+
+			graph1.printCFG(Ra);
+			RA.doLivenessAnalysis();
+
 			Ra=1;
-			//IG graph2 = new IG("arithemetic_IG");
-			IG graph2 = new IG("test003_IG");
+			IG graph2 = new IG("arithemetic_IG");
+			//IG graph2 = new IG("test003_IG");
 
 			graph2.printIG();
 			RA.coalese_phis();

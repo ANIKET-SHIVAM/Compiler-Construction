@@ -965,15 +965,18 @@ public class Parser{
 							}
 						}
 					}
+					if(dobb.inst_list.get(dobb.inst_list.size()-1).getOperator()=="end"){
+						dobb.inst_list.remove(dobb.inst_list.size()-1);
+					}
+						Instruction jump_ins = while_block.inst_list.get(0);
+						Result jump_res = new Result(Type.instruction,jump_ins);
+						Instruction branch_inst = new Instruction("bra",jump_res);
+						//System.out.println(bb.getType().toString());
+						branch_inst.basicblock = dobb;
+						branch_inst.block_id = BasicBlock.block_id;
+						dobb.inst_list.add(branch_inst);
+						insts.add(branch_inst);
 					
-					Instruction jump_ins = while_block.inst_list.get(0);
-					Result jump_res = new Result(Type.instruction,jump_ins);
-					Instruction branch_inst = new Instruction("bra",jump_res);
-					//System.out.println(bb.getType().toString());
-					branch_inst.basicblock = dobb;
-					branch_inst.block_id = BasicBlock.block_id;
-					dobb.inst_list.add(branch_inst);
-					insts.add(branch_inst);
 				}
 				else 
 					System.out.println("no do token after while");

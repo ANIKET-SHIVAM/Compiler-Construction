@@ -21,6 +21,7 @@ public class BasicBlock {
 	private BasicBlock prevblock2;  // for joinblock only
 	private BasicBlock followblock;	//for while
 	private BasicBlock dotowhileblock;
+	private BasicBlock whiletodoblock;
 	private BasicBlock functionblock;
 	private HashMap<Integer,Stack<Instruction>> Sym_table;
 	
@@ -132,6 +133,7 @@ public class BasicBlock {
 	}
 	public void setdotowhile(BasicBlock while_block){	
 		this.dotowhileblock=while_block;
+		while_block.whiletodoblock = this;
 	}
 	public boolean checkdotowhile(){
 		boolean b;
@@ -143,6 +145,9 @@ public class BasicBlock {
 	}
 	public BasicBlock getdotowhile(){	
 		return this.dotowhileblock;
+	}
+	public BasicBlock getwhiletodo(){	
+		return this.whiletodoblock;
 	}
 	public void setStartInstructionIndex(int index){
 		start_instruction_index=index;
@@ -230,7 +235,7 @@ public class BasicBlock {
 						op2.setInstruction(this.getifelseblock().inst_list.get(0));}
 					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.getjoinblock()!=null){
 						op2.setInstruction(this.getjoinblock().inst_list.get(0));
-						System.out.println("asdasd"+this.getjoinblock().inst_list.get(0).getOperator());}
+						}
 						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 					//}
 					//else	
