@@ -263,7 +263,7 @@ public class RA {
 						i.basicblock.getprevblock2().inst_list.add(ins);
 					else
 					{
-						int pos = i.basicblock.getprevblock2().inst_list.size()-2; 
+						int pos = i.basicblock.getprevblock2().inst_list.size()-1; 
 						i.basicblock.getprevblock2().inst_list.add(pos, ins);
 					}
 				}
@@ -299,7 +299,7 @@ public class RA {
 					i.basicblock.getprevblock2().inst_list.add(ins);
 				else
 				{
-					int pos = i.basicblock.getprevblock2().inst_list.size()-2;
+					int pos = i.basicblock.getprevblock2().inst_list.size()-1;
 					i.basicblock.getprevblock2().inst_list.add(pos, ins);
 				}
 			}
