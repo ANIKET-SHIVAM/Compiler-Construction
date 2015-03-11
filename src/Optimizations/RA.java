@@ -459,14 +459,9 @@ public class RA {
 				{
 					if(no_of_edges(IGMatrix[node]) == 0 && !node_stack.contains(node) && is_reg_assigned(node) == 0)
 					{
-						//if(present_in_liveset(node) == 0)
-						//assign_reg(node);
-						//else
-						//{
-							remove(node);
-							color_node();
-							break;
-						//}
+						remove(node);
+						color_node();
+						break;
 					}
 				}
 			}

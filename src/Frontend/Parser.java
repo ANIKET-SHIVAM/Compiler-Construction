@@ -275,6 +275,7 @@ public class Parser{
 		}
 		else if(tt.getType() == TokenType.returnToken)	//return
 		{
+			Next();
 			E(currentblock);
 			bb=currentblock;
 		}

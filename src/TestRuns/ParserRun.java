@@ -8,25 +8,26 @@ public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
 			
-			String filename = "testprogs/test001.txt";
-			//String filename = "testprogs/test003.txt";
+			//String filename = "testprogs/arithemetic.txt";
+			String filename = "testprogs/test004.txt";
+
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
 			DominatorTree domtree=new DominatorTree();
 
-			//CFG graph=new CFG("test003");
-			CFG graph=new CFG("arithemetic");
+			CFG graph=new CFG("test004");
+			//CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 			System.out.println("\n!!! optimization successfully !!!");
 	//optimizations
-			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
+			CP.doCP();CFG graphx=new CFG("test004woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
 
-			CFG graph1=new CFG("arithemeticwo");
+			//CFG graph1=new CFG("arithemeticwo");
 
-			//CFG graph1=new CFG("test003wo");
+			CFG graph1=new CFG("test004wo");
 
 			graph1.printCFG(Ra);
 			RA.doLivenessAnalysis();
