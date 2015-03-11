@@ -29,7 +29,7 @@ public class ParserRun {
 			
 		RA.doLivenessAnalysis();
 			Ra=1;
-		//	IG graph2 = new IG("arithemetic_IG");
+			//IG graph2 = new IG("arithemetic_IG");
 			IG graph2 = new IG("test003_IG");
 
 			graph2.printIG();

@@ -88,6 +88,7 @@ public class Parser{
 					int errorcheck=0;
 					while(tt.getType() != TokenType.endToken&&tt.getType() != TokenType.periodToken){
 						currentblock=stat_seq(currentblock);	errorcheck++;					//statSequence
+						System.out.println(tt.getCharacters());
 						if(errorcheck>1500)
 							throw new IllegalArgumentException("error:missing semicolon");
 					}
@@ -259,12 +260,12 @@ public class Parser{
 		else if(tt.getType() == TokenType.callToken)	//call
 		{
 			bb = funcCall(currentblock);
-		//	Next();
+			Next();
 		}
 		else if(tt.getType() == TokenType.ifToken)	//if
 		{	
 			bb=ifStatement(currentblock);
-			Next();
+			if(tt.getType()==TokenType.fiToken)Next();
 		}
 		else if(tt.getType() == TokenType.whileToken)	//while
 		{

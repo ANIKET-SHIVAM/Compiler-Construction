@@ -69,7 +69,9 @@ public class RA {
 			if(Parser.insts.get(node).getOperator() == "phi")
 			{
 				if(!clusters.isEmpty()){
-				if(clusters.containsKey(node)&&!clusters.get(node).isEmpty()){
+
+				if(clusters.containsKey(node) && !clusters.get(node).isEmpty()){
+
 				for(i=0;i<clusters.get(node).size();i++)
 				{
 					arr.add(clusters.get(node).get(i));
@@ -102,7 +104,8 @@ public class RA {
 						if(Parser.insts.get(node).getOperator() == "phi")
 						{
 							if(!clusters.isEmpty()){
-							if(clusters.containsKey(node)&&!clusters.get(node).isEmpty()){
+						if(clusters.containsKey(node) && !clusters.get(node).isEmpty()){
+
 							for(int j=0;j<clusters.get(node).size();j++)
 							{
 								Reg.get(i).add(clusters.get(node).get(j));
@@ -124,7 +127,9 @@ public class RA {
 					if(Parser.insts.get(node).getOperator() == "phi")
 					{
 						if(!clusters.isEmpty()){
-						if(clusters.containsKey(node)&&!clusters.get(node).isEmpty()){
+
+						if(clusters.containsKey(node) && !clusters.get(node).isEmpty()){
+
 						for(int j=0;j<clusters.get(node).size();j++)
 						{
 							Reg.get(i).add(clusters.get(node).get(j));
@@ -261,12 +266,12 @@ public class RA {
 					Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
 
 					if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
-					i.basicblock.getprevblock2().inst_list.add(ins);
+						i.basicblock.getprevblock2().inst_list.add(ins);
 					else
 					{
-					i.basicblock.getprevblock2().inst_list.add(i.basicblock.getprevblock2().inst_list.size()-2, ins);
+						int pos = i.basicblock.getprevblock2().inst_list.size()-1; 
+						i.basicblock.getprevblock2().inst_list.add(pos, ins);
 					}
-					
 				}
 				else
 				{
@@ -296,8 +301,15 @@ public class RA {
 			{
 				Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
 				Instruction ins = new Instruction("move",res1,res);
-				i.basicblock.getprevblock2().inst_list.add(ins);
+				if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
+					i.basicblock.getprevblock2().inst_list.add(ins);
+				else
+				{
+					int pos = i.basicblock.getprevblock2().inst_list.size()-1;
+					i.basicblock.getprevblock2().inst_list.add(pos, ins);
+				}
 			}
+			
 		}
 	}
 	
@@ -311,22 +323,29 @@ public class RA {
 				//correct the move instruction,if any added on above block
 				if(bb.inst_list.get(j).getOperator() == "move")
 				{
-				Result oper2 = bb.inst_list.get(j).getOperands().get(1);
-				if(oper2.getType() == Type.instruction)
-				{
-				if(oper2.getInstruction().getOperator() == "phi")
-				{
-				Result res = new Result(Type.number,oper2.getInstruction().register);
-				bb.inst_list.get(j).getOperands().set(1, res);
-				}
-				}
+
+					Result oper2 = bb.inst_list.get(j).getOperands().get(1);
+					if(oper2.getType() == Type.instruction)
+					{
+						if(oper2.getInstruction().getOperator() == "phi")
+						{
+							Result res = new Result(Type.number,oper2.getInstruction().register);
+							bb.inst_list.get(j).getOperands().set(1, res);
+						}
+					}
+
 				}
 				
 				if(bb.inst_list.get(j).getOperator()== "phi")
 				{
+
+					Parser.insts.remove(bb.inst_list.get(j));
+					bb.inst_list.remove(j);
 					
-					bb.inst_list.remove(j);j--;
+					j--;
+
 				}
+				
 			}
 		}
 	}

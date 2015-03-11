@@ -14,11 +14,13 @@ public class CodeGenerator {
 	public CodeGenerator(){
 		machine_insts=new ArrayList<Integer>();
 		for(Instruction inst:BasicBlock.inline_inst_list){
+			System.out.println(BasicBlock.inline_inst_list.indexOf(inst)+inst.getOperator());
 			generate_assembly(inst);	
 		}	
 		int[] inst_list = new int[machine_insts.size()];
 	    int i = 0;
 	    for (Integer n : machine_insts) {
+	    	System.out.println(DLX.disassemble(n));
 	        inst_list[i++] = n;
 	    }
 	    DLX.load(inst_list);
@@ -46,6 +48,8 @@ public class CodeGenerator {
 				int oper1_register=oper1.getInstruction().getRegister();
 				int oper2_register=oper2.getInstruction().getRegister();
 				int jump_index=BasicBlock.inline_inst_list.indexOf(oper2.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
+				System.out.println("asdasd"+oper2.getInstruction().getOperator()+BasicBlock.inline_inst_list.indexOf(oper2.getInstruction()));
+				System.out.println("asd"+BasicBlock.inline_inst_list.indexOf(inst));
 				int inst_register=inst.getRegister();
 				int opcode;
 				switch(operator){
@@ -126,7 +130,7 @@ public class CodeGenerator {
 				case "cmp":opcode=DLX.CMPI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
 							break;
-				case "move":opcode=DLX.ADDI;
+				case "move":opcode=DLX.ADD;
 							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1_register));	
 							break;	
 				
@@ -174,27 +178,26 @@ public class CodeGenerator {
 			
 			
 			else if(oper1.getType()==Type.number&&oper2.getType()==Type.number){
-				machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
+			
 				int inst_register=inst.getRegister();
 				int opcode;
 				switch(operator){
 				case "add":opcode=DLX.ADDI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()+oper2.getValue()));	
 							break;
 				case "sub":opcode=DLX.SUBI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()-oper2.getValue()));	
 							break;
 				case "mul":opcode=DLX.MULI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()*oper2.getValue()));	
 							break;
 				case "div":opcode=DLX.DIVI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 0, oper1.getValue()/oper2.getValue()));	
 							break;
 				case "cmp":opcode=DLX.CMPI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,0,oper2.getValue()-oper1.getValue()));	
 							break;
-				case "move":opcode=DLX.ADDI;
-				System.out.println(oper2.getValue()+"asdas"+ oper1.getValue());
+				case "move":opcode=DLX.ADD;
 							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1.getValue()));	
 							break;	
 				

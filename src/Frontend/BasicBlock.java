@@ -228,6 +228,9 @@ public class BasicBlock {
 						op2.setInstruction(this.getfollowblock().inst_list.get(0));}
 					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.getifelseblock()!=null){
 						op2.setInstruction(this.getifelseblock().inst_list.get(0));}
+					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.getjoinblock()!=null){
+						op2.setInstruction(this.getjoinblock().inst_list.get(0));
+						System.out.println("asdasd"+this.getjoinblock().inst_list.get(0).getOperator());}
 						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 					//}
 					//else	
@@ -310,8 +313,8 @@ public class BasicBlock {
 				else if(op2.getType()==Type.instruction){
 					//if(Parser.insts.indexOf(op2.getInstruction())==-1){
 						int ins_index = Parser.insts.indexOf(op2.getInstruction());
-						if(ins_index ==-1)
-							op2.setInstruction(this.getfollowblock().inst_list.get(0));
+					//	if(ins_index ==-1)
+						//	op2.setInstruction(this.getfollowblock().inst_list.get(0));
 						for(int i=0;i< RA.Reg.size();i++)
 						{
 							if(RA.Reg.get(i+1).contains(ins_index))
