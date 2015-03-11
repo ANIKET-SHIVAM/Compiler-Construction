@@ -22,6 +22,7 @@ public class Parser{
 	public int index=0;
 	public static BasicBlock currentblock;
 	public Function calledfunction;
+	public boolean read_statement_boolean=false;
 	public HashMap<Integer,ArrayList<Result>> store_inst_bb=new HashMap<Integer,ArrayList<Result>>();
 
 	public Parser(String filename){
@@ -374,7 +375,11 @@ public class Parser{
 				Next();
 				if (tt.getType()==TokenType.callToken){
 						currentblock=stat_seq(currentblock);
-						x=calledfunction.getreturninst();
+						if (read_statement_boolean==true){
+							read_statement_boolean=false;
+							x=new Result(Type.instruction,insts.get(insts.size()-1));}
+						else	
+							x=calledfunction.getreturninst();
 				}
 				else {
 					x = E(currentblock);
@@ -452,24 +457,24 @@ public class Parser{
 		BasicBlock bb=currentblock;
 		Next();
 		if(tt.getCharacters().equals("InputNum")){
-			Next();
+			Next();read_statement_boolean=true;
 			if (tt.getType()==TokenType.openparenToken)
 			{	Next();
 				
-					String var = tt.getCharacters();
-					int index = String2Id(tt.getCharacters());
+				//	String var = tt.getCharacters();
+				//	int index = String2Id(tt.getCharacters());
 					Instruction read_inst = new Instruction("read");
 					read_inst.basicblock = currentblock;
 					read_inst.block_id = BasicBlock.block_id;
 					currentblock.inst_list.add(read_inst);
 					insts.add(read_inst);
-					Result read=new Result(Type.instruction,read_inst);
+			/*		Result read=new Result(Type.instruction,read_inst);
 					Instruction move_read = new Instruction("move",read, Result_cache.get(var));
 					currentblock.inst_list.add(move_read);
 					insts.add(move_read);				//add instruction to instruction list
 					move_read.basicblock = currentblock;
 					move_read.block_id = BasicBlock.block_id;
-					
+			*/		
 			/*		if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
 					{
 						Stack<Instruction> ss = new Stack<Instruction>();
@@ -649,8 +654,8 @@ public class Parser{
 					Next();
 					if(tt.getType() == TokenType.ifToken||tt.getType() == TokenType.whileToken)
 					{	
-					//	iftruebb=ifStatement(if_block);
-						iftruebb=stat_seq(if_block);
+						while((tt.getType() != TokenType.elseToken)&&(tt.getType() != TokenType.fiToken))
+							iftruebb=stat_seq(if_block);
 						if(tt.getType() == TokenType.semiToken)
 							Next();
 						//Next();
@@ -811,6 +816,7 @@ public class Parser{
 				Next();
 				else_flag=0;
 			}
+	
 		return phi_block;
 		
 	}

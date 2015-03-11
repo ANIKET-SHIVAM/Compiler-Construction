@@ -8,7 +8,7 @@ public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
 			
-			String filename = "testprogs/arithemetic.txt";
+			String filename = "testprogs/test001.txt";
 			//String filename = "testprogs/test003.txt";
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
