@@ -51,6 +51,7 @@ public class DominatorTree {
 		printDT("testDT");
 	}
 	public void createDT(BasicBlock bb,BasicBlock bbdom){
+		
 		if(Dominator.containsKey(bb.getblockno())){
 			Dominator.get(bb.getblockno()).addAll(Dominator.get(bbdom.getblockno()));
 			Dominator.get(bb.getblockno()).add(bbdom.getblockno());
@@ -91,7 +92,7 @@ public class DominatorTree {
 	        printer.println("]\"");
 	        printer.println("}");
 	        int n=Dominator.size()-1;
-			for(int i=main.getblockno()+1;i<main.getblockno()+Dominator.size()-1;i++){
+			for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-1;i++){
 		        printer.println("node: {");
 		        printer.println("title: \"" + i + "\"");
 		        printer.println("label: \"" + i + "[");

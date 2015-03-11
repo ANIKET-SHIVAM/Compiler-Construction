@@ -19,7 +19,7 @@ public class ParserRun {
 			CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
-	
+			System.out.println("\n!!! optimization successfully !!!");
 	//optimizations
 			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
 			CSE.doCSE();

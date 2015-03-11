@@ -8,13 +8,14 @@ import Optimizations.*;
 
 
 public class CodeGenerator {
-	
+	private static ArrayList<Instruction> inline_inst_list=new ArrayList<Instruction>();
 	int scratch_reg_1=26,scratch_reg_2=27;
 	public ArrayList<Integer> machine_insts;		
 	public CodeGenerator(){
+		inline_inst_list=generate_inline_inst_list();
 		machine_insts=new ArrayList<Integer>();
-		for(Instruction inst:BasicBlock.inline_inst_list){
-			System.out.println(BasicBlock.inline_inst_list.indexOf(inst)+inst.getOperator());
+		for(Instruction inst:inline_inst_list){
+			System.out.println(inline_inst_list.indexOf(inst)+inst.getOperator());
 			generate_assembly(inst);	
 		}	
 		int[] inst_list = new int[machine_insts.size()];
@@ -47,9 +48,7 @@ public class CodeGenerator {
 			if(oper1.getType()==Type.instruction&&oper2.getType()==Type.instruction){
 				int oper1_register=oper1.getInstruction().getRegister();
 				int oper2_register=oper2.getInstruction().getRegister();
-				int jump_index=BasicBlock.inline_inst_list.indexOf(oper2.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
-				System.out.println("asdasd"+oper2.getInstruction().getOperator()+BasicBlock.inline_inst_list.indexOf(oper2.getInstruction()));
-				System.out.println("asd"+BasicBlock.inline_inst_list.indexOf(inst));
+				int jump_index=inline_inst_list.indexOf(oper2.getInstruction())-inline_inst_list.indexOf(inst);
 				int inst_register=inst.getRegister();
 				int opcode;
 				switch(operator){
@@ -226,8 +225,7 @@ public class CodeGenerator {
 						break;
 				
 			case "bra":opcode=DLX.BEQ;
-			System.out.println(BasicBlock.inline_inst_list.indexOf(oper1.getInstruction())+"xxxxxxxxxxxxxxx"+BasicBlock.inline_inst_list.indexOf(inst));
-						int jump_index=BasicBlock.inline_inst_list.indexOf(oper1.getInstruction())-BasicBlock.inline_inst_list.indexOf(inst);
+						int jump_index=inline_inst_list.indexOf(oper1.getInstruction())-inline_inst_list.indexOf(inst);
 						machine_insts.add(DLX.assemble(opcode, 0, jump_index));
 						break;
 			
@@ -274,4 +272,15 @@ public class CodeGenerator {
 			throw new IllegalArgumentException("error:Code generator wrong operands");
 	}
 	
+	public ArrayList<Instruction> generate_inline_inst_list(){
+		ArrayList<Instruction> list=new ArrayList<Instruction>();
+		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		{
+			BasicBlock bb = BasicBlock.basicblocks.get(i);
+			for(Instruction inst:bb.inst_list)
+			{list.add(inst);
+			}
+		}
+		return list;
+	}
 }

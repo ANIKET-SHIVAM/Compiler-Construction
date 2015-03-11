@@ -470,7 +470,7 @@ public class Parser{
 					move_read.basicblock = currentblock;
 					move_read.block_id = BasicBlock.block_id;
 					
-					if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
+			/*		if(!currentblock.get_Sym_table().containsKey(index))	//if sym_table is empty
 					{
 						Stack<Instruction> ss = new Stack<Instruction>();
 						ss.push(move_read);
@@ -479,7 +479,7 @@ public class Parser{
 					else										//if the entry is present
 					{
 						currentblock.get_Sym_table().get(index).push(move_read);	//push new value on stack
-					}
+					}*/
 				Next();
 				return  currentblock;
 			}
