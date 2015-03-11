@@ -26,12 +26,15 @@ public class CP {
 				//	inst.removeUselessPhi();
 				//}
 				
-				
+				boolean kill=false;
 				if(copy){
 				for(int instno=bb.inst_list.indexOf(inst)+1;instno<bb.inst_list.size();instno++){
 					Instruction laterinst=bb.inst_list.get(instno);
 					if(laterinst.getOperator()=="end")
 						break;
+					if(laterinst.getOperator()=="kill"&&laterinst.getOperands().get(0).getName()==inst.getOperands().get(0).getName()){
+						kill=true;break;
+					}
 					if(laterinst.getOperator()!="bra"&&laterinst.getOperator()!="call"&&laterinst.getOperator()!="kill"&&laterinst.getOperator()!="read"){
 							if(laterinst.getOperands().size()==2){
 								if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
@@ -70,7 +73,7 @@ public class CP {
 					}
 				}
 				
-				
+				if(!kill){
 				for (int laterbb=bbno+1;laterbb<BasicBlock.basicblocks.size();laterbb++){
 					if(DominatorTree.getDominators(laterbb).contains(bbno)){
 						
@@ -117,6 +120,7 @@ public class CP {
 						}
 					}
 					
+				}
 				}
 					deleteinst.add(inst);
 					replaceInPhis(inst,operand);

@@ -226,6 +226,8 @@ public class BasicBlock {
 				else if(op2.getType()==Type.instruction){
 					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.kind==BlockType.whileblock){
 						op2.setInstruction(this.getfollowblock().inst_list.get(0));}
+					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.getifelseblock()!=null){
+						op2.setInstruction(this.getifelseblock().inst_list.get(0));}
 						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 					//}
 					//else	
@@ -249,6 +251,8 @@ public class BasicBlock {
 				Result op1=operands.get(0);
 				if(op1.getType()==Type.number)
 					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
+				if(op1.getType()==Type.variable||op1.getType()==Type.arr)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else if(op1.getType()==Type.instruction)
 					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
 				else
@@ -278,8 +282,8 @@ public class BasicBlock {
 			if (operands!= null){
 			if(operands.size()==2){
 				Result op1=operands.get(0);
-				if(op1.getType()==Type.number)
-					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
+				if(op1.getType()==Type.number){
+					oper1= new StringBuilder(" #").append(op1.getValue()).toString();}
 				else if(op1.getType()==Type.instruction)
 				{
 					int ins_index = Parser.insts.indexOf(op1.getInstruction());
@@ -299,7 +303,10 @@ public class BasicBlock {
 			
 				Result op2=operands.get(1);
 				if(op2.getType()==Type.number)
-					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
+				{if(inst.getOperator()=="move")
+					oper2= new StringBuilder(" r").append(op2.getValue()).toString();
+				else
+					oper2= new StringBuilder(" #").append(op2.getValue()).toString();	}
 				else if(op2.getType()==Type.instruction){
 					//if(Parser.insts.indexOf(op2.getInstruction())==-1){
 						int ins_index = Parser.insts.indexOf(op2.getInstruction());
@@ -333,8 +340,15 @@ public class BasicBlock {
 				Result op1=operands.get(0);
 				if(op1.getType()==Type.number)
 					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
-				else if(op1.getType()==Type.instruction)
-					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
+				else if(op1.getType()==Type.instruction){
+					int ins_index = Parser.insts.indexOf(op1.getInstruction());
+					for(int i=0;i< RA.Reg.size();i++)
+					{
+						if(RA.Reg.get(i+1).contains(ins_index))
+						oper1= new StringBuilder(" r").append(i+1).toString();
+						
+					}
+				}
 				else
 					oper1="error";
 				

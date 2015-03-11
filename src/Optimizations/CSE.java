@@ -16,6 +16,7 @@ public class CSE {
 		    HashMap<String,LinkedList<Instruction>> sameInstList=new HashMap<String,LinkedList<Instruction>>();
 			bb=Frontend.BasicBlock.basicblocks.get(bbno);
 			for(Instruction inst:bb.inst_list){
+				if(!replace.contains(inst)	){
 				if(inst.getOperands().size()==2){
 					if(sameInstList.containsKey(inst.getOperator())){
 								sameInstList.get(inst.getOperator()).add(inst);		
@@ -28,13 +29,13 @@ public class CSE {
 					}
 					for(int instno=bb.inst_list.indexOf(inst)+1;instno<bb.inst_list.size();instno++){
 						Instruction laterinst=bb.inst_list.get(instno);
-						if(matchInstruction(laterinst,inst)){
+						if(matchInstruction(laterinst,inst)&&!replace.contains(inst)){
 							replaceInstList.put(laterinst,inst);
 							replace.add(laterinst);
-							
 						}		
 					}
 				}	
+			}
 			}
 			replaceInst(replaceInstList,replace,bbno);
 			replaceInstList.clear();	
@@ -50,7 +51,7 @@ public class CSE {
 								ll=sameInstList.get(laterinst.getOperator());
 								for(int i=0;i<ll.size();i++){
 									Instruction in=ll.get(i);
-									if(matchInstruction(laterinst,in)){
+									if(matchInstruction(laterinst,in)&&!replace.contains(in)){
 										replaceInstList.put(laterinst,in);
 										replace.add(laterinst);
 									}	
@@ -69,8 +70,8 @@ public class CSE {
 	}
 	private static void replaceInst(HashMap<Instruction,Instruction> replaceInst,ArrayList<Instruction>remove, int no){
 		BasicBlock bb;
-		for(int bbno=no+1;bbno<BasicBlock.basicblocks.size();bbno++){
-			if(DominatorTree.getDominators(bbno).contains(no)){
+		for(int bbno=no;bbno<BasicBlock.basicblocks.size();bbno++){
+			if(DominatorTree.getDominators(bbno).contains(no)||bbno==no){
 				bb=Frontend.BasicBlock.basicblocks.get(bbno);
 				for(Instruction inst:bb.inst_list){
 					if(inst.getOperands().size()==2){
@@ -87,9 +88,19 @@ public class CSE {
 								Result replacewith=new Result(Type.instruction,replaceinst);
 								inst.getOperands().set(1, replacewith);
 							}	
+						}			
+					}
+					else if(inst.getOperands().size()==1){
+						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
+							if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
+								Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
+								Result replacewith=new Result(Type.instruction,replaceinst);
+								inst.getOperands().set(0, replacewith);
+							}	
 						}	
 							
-						}
+					}
+					
 					}
 				}
 			}
@@ -98,7 +109,9 @@ public class CSE {
 			Instruction replaceinst=replaceInst.get(inst);
 			Result replacewith=new Result(Type.instruction,replaceinst);
 			replaceInPhis(inst,replacewith);
+			if(bb.inst_list.contains(inst))
 			bb.inst_list.remove(bb.inst_list.indexOf(inst));
+			if(Parser.insts.contains(inst))
 			Parser.insts.remove(Parser.insts.indexOf(inst));
 		}	
 	}
@@ -161,8 +174,10 @@ public class CSE {
 				Result res=new Result(Type.instruction,patch);
 				instruction.getOperands().set(1, res);
 				
-			}
+				}
+				
 			}
 		}
 	}
+	
 }

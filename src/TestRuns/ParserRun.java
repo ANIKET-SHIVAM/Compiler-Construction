@@ -14,20 +14,20 @@ public class ParserRun {
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
 			DominatorTree domtree=new DominatorTree();
-			CFG graph=new CFG("test003");
+			CFG graph=new CFG("test001");
 			//CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 	
 	//optimizations
-			CP.doCP();
+			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
 			//CFG graph1=new CFG("arithemeticwo");
-
-			CFG graph1=new CFG("test003wo");
-
-			graph1.printCFG(Ra);
-			RA.doLivenessAnalysis();
+			
+			
+			CFG graph1=new CFG("test001wo");graph1.printCFG(Ra);
+			
+		RA.doLivenessAnalysis();
 			Ra=1;
 		//	IG graph2 = new IG("arithemetic_IG");
 			IG graph2 = new IG("test003_IG");
@@ -48,9 +48,11 @@ public class ParserRun {
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
 			System.out.println("\n!!! RA successfully !!!");
+			CFG graph4=new CFG("test001aRA");
+			graph4.printCFG(0);
 			System.out.println("\n!!! Compile successfully !!!");
 			System.out.println("Result:");
-			//CodeGenerator cg=new CodeGenerator();
+			CodeGenerator cg=new CodeGenerator();
 
 		}		
 }

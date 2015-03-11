@@ -1,15 +1,13 @@
+//Basic if statement test
 main
-var b, c;
+var a, b;
 {
-	let b <- 1;
-	let c <- 2;
-	if b < c then
-		if b < 1 then
-			let c <- c * 2;
-		else
-			let b <- b * 3;
-		fi;
+	let a <- 1;
+	let b <- 2;
+	if a > b then
+		let a <- a + 1;
+
+		let b <- b + 2;
 	fi;
-	call OutputNum(b);
-}
-.
+	
+}.

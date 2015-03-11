@@ -101,7 +101,7 @@ public class Instruction {
 	}
 	public boolean isVariableAssignment(){
 		if(this.getOperator()=="move"){
-			if(this.operands.get(0).getType()==Type.instruction&&this.operands.get(1).getType()==Type.variable){
+			if(this.operands.get(0).getType()==Type.instruction&&(this.operands.get(1).getType()==Type.variable||this.operands.get(1).getType()==Type.arr)){
 				Result op1=this.operands.get(0);
 				//if(op1.getInstruction().getOperator()=="move"||isReadAssignment()){
 					return true;

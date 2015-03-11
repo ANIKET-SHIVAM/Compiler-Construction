@@ -64,6 +64,7 @@ public class CodeGenerator {
 				case "cmp":opcode=DLX.CMP;
 							machine_insts.add(DLX.assemble(opcode, inst_register, oper1_register, oper2_register));
 							break;
+	
 						
 						
 				case "bne":opcode=DLX.BNE;
@@ -125,6 +126,9 @@ public class CodeGenerator {
 				case "cmp":opcode=DLX.CMPI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register, oper2.getValue()));	
 							break;
+				case "move":opcode=DLX.ADDI;
+							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1_register));	
+							break;	
 				
 				default:
 					throw new IllegalArgumentException("error:Code generator wrong instruction"+operator);
@@ -154,6 +158,7 @@ public class CodeGenerator {
 				case "cmp":opcode=DLX.CMPI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
 							break;
+					
 				
 							
 				case "store":opcode=DLX.STX;
@@ -188,7 +193,10 @@ public class CodeGenerator {
 				case "cmp":opcode=DLX.CMPI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, scratch_reg_1, oper2.getValue()));	
 							break;
-				
+				case "move":opcode=DLX.ADDI;
+				System.out.println(oper2.getValue()+"asdas"+ oper1.getValue());
+							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1.getValue()));	
+							break;	
 				
 				default:
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
