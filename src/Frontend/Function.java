@@ -15,6 +15,9 @@ public class Function {
 	private Result returninst;
 	private BasicBlock firstbb;
 	private BasicBlock returnbb;
+	public static int func_id;
+	private int id;
+	
 	
 	Function(Type kind,String name){
 		type=kind;
@@ -22,6 +25,7 @@ public class Function {
 		globalvars=new ArrayList<Result>();
 		Sym_table=new HashMap<Integer,Stack<Instruction>>();
 		func_call_params=new HashMap<Instruction,ArrayList<Result>>();
+		this.id = func_id;
 	}
 	public Function(Type kind,String name,ArrayList<Result>parameters){
 		type=kind;
@@ -30,7 +34,14 @@ public class Function {
 		params=parameters;
 		Sym_table=new HashMap<Integer,Stack<Instruction>>() ;
 		func_call_params=new HashMap<Instruction,ArrayList<Result>>();
+		this.id = func_id;
 	}
+	
+	public int getId()
+	{
+		return this.id;
+	}
+	
 	public void setfirstbb(){
 		firstbb=new BasicBlock(BlockType.function,this);
 	}

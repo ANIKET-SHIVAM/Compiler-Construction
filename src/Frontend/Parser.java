@@ -25,6 +25,8 @@ public class Parser{
 	public boolean read_statement_boolean=false;
 	public HashMap<Integer,ArrayList<Result>> store_inst_bb=new HashMap<Integer,ArrayList<Result>>();
 
+	public static HashMap<Integer,String> func_mapping = new HashMap<Integer,String>();
+	
 	public Parser(String filename){
 		scanner = new Scanner(filename);				//initialize scanner
 		Result_cache = new HashMap<String,Result>();	//initialize result_cache
@@ -33,6 +35,7 @@ public class Parser{
 		Sym_table = new HashMap<Integer,Stack<Instruction>>();		//initialize per variable stack	
 	//	HashMap<String,HashMap<Integer,Stack<Instruction>>> Func_Sym_table=new HashMap<String,HashMap<Integer,Stack<Instruction>>>();
 		tt = scanner.getToken();
+		Function.func_id =0;
 	}
 	
 	void Next()
@@ -181,6 +184,11 @@ public class Parser{
 			
 	}
 	
+	public String get_funcname(int index)
+	{
+		return func_mapping.get(index);
+	}
+	
 	public void func_decl(Function.Type type)
 	{	
 		String funcname = null;
@@ -218,6 +226,10 @@ public class Parser{
 			func.setfirstbb();}
 		BasicBlock funcbb= func.getfirstbb();
 		BasicBlock.block_id++;
+		func_mapping.put(Function.func_id, funcname);
+		
+		Function.func_id++;
+		
 		Function_list.put(funcname, func);
 		Next();Next();
 		while(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
@@ -225,10 +237,12 @@ public class Parser{
 		}
 		Next();
 		BasicBlock returnblock=funcbb;
+		calledfunction = func;
 		while(tt.getType()!=TokenType.endToken)
 			returnblock=stat_seq(returnblock);
 		func.setreturnbb(returnblock);
-		func.setreturninst(insts.get(insts.size()-1)); // for  last inst is end at -1
+		
+		//func.setreturninst(insts.get(insts.size()-1)); // for  last inst is end at -1
 		Next();
 
 	}
@@ -277,7 +291,8 @@ public class Parser{
 		else if(tt.getType() == TokenType.returnToken)	//return
 		{
 			Next();
-			E(currentblock);
+			Result res = E(currentblock);
+			calledfunction.setreturninst(res.getInstruction());
 			bb=currentblock;
 		}
 		else bb=currentblock;
@@ -1270,6 +1285,7 @@ public class Parser{
 						else{			//for initailizing with zero
 							if(Result_cache.containsKey(tt.getCharacters())){
 								res=new Result(Type.number,0);
+								Next();
 							}
 							else
 								throw new IllegalArgumentException("error:undefined variable");

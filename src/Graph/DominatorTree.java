@@ -77,6 +77,7 @@ public class DominatorTree {
 		return Dominator.get(blockno);
 	}
 	public void printDT(String name){
+		int offset=0;
 		  PrintWriter printer;
 		 try{
 	           printer = new PrintWriter(new FileWriter(name+".vcg"));
@@ -92,7 +93,7 @@ public class DominatorTree {
 	        printer.println("]\"");
 	        printer.println("}");
 	        int n=Dominator.size()-1;
-			for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-1;i++){
+			for(int i=main.getblockno()+1;i<=main.getblockno()+Dominator.size()-offset-1;i++){
 		        printer.println("node: {");
 		        printer.println("title: \"" + i + "\"");
 		        printer.println("label: \"" + i + "[");
@@ -100,10 +101,12 @@ public class DominatorTree {
 		        printer.println("]\"");
 		        printer.println("}");
 		        printer.println("edge: { sourcename: \""+i+"\"");
+		        System.out.println(Dominator.size());
 		        if(!Dominator.get(i).isEmpty())
 		        printer.println("targetname: \""+Dominator.get(i).getLast()+"\"");
 		        printer.println("color: blue");
 		        printer.println("}");
+		        offset+=Dominator.size();
 			}
 			 printer.println("}");
 		     printer.close();

@@ -3,15 +3,14 @@ main
 var a, b;
 array arr[5];
 {
-	let a <- 1+2;
-	let b <- 1+2;
-	let b<-1+2;
-	let arr[4]<-b;
-	let arr[4]<-a;
+	let a <- 1;
+	let b <- 1;
 	if a < 10 then
-		let b <- 3 + 2;
+		while a < 10 do
+			let b <- 3 + 2;
+		od;
 		let a <- a + 1;
-	else
-		let arr[4]<-b;
 	fi;
+	call OutputNum(a);
+	call OutputNum(b)
 }.

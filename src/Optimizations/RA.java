@@ -5,6 +5,7 @@ import Frontend.Result.Type;
 //import Graph.*;
 
 
+
 import java.util.*;
 public class RA {
 	//Set for Liveness Analysis
@@ -395,9 +396,9 @@ public class RA {
 		}
 	}
 	
-	public static void remove_phis()
+	public static void remove_phis(int first_block_id,int last_block_id)
 	{
-		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		for(int i= first_block_id;i <= last_block_id;i++)
 		{
 			BasicBlock bb = BasicBlock.basicblocks.get(i);
 			for(int j=0;j<bb.inst_list.size();j++)
@@ -442,17 +443,17 @@ public class RA {
 	}
 	
 	//color the nodes of graph
-	public static void color_node()
+	public static void color_node(int start_node,int end_node)
 	{
 		int node=0;
-		for(node=0;node < Parser.insts.size();node++)
+		for(node=start_node;node <= end_node;node++)
 		{
-			if(node != (Parser.insts.size()-1)) 	//IG is empty
+			if(node != end_node) 	//IG is empty
 			{
 				if(no_of_edges(IGMatrix[node]) > 0 && no_of_edges(IGMatrix[node]) < K)
 				{
 					remove(node);
-					color_node();	//color rest of the graph
+					color_node(start_node,end_node);	//color rest of the graph
 					break;
 				}
 				else
@@ -460,7 +461,7 @@ public class RA {
 					if(no_of_edges(IGMatrix[node]) == 0 && !node_stack.contains(node) && is_reg_assigned(node) == 0)
 					{
 						remove(node);
-						color_node();
+						color_node(start_node,end_node);
 						break;
 					}
 				}
@@ -478,7 +479,6 @@ public class RA {
 		return;
 	}
 	
-	
 	public static void fill_matrix(ArrayList<Integer> set)
 	{
 		int i=0,j=0;
@@ -493,10 +493,18 @@ public class RA {
 		}
 	}
 	
-	public static void doLivenessAnalysis()
+	//for functions only
+	public static void doFuncLivenessAnalysis(int first_block_id,int last_block_id)
+	{
+		
+		
+	}
+	
+	
+	public static void doLivenessAnalysis(int first_block_id,int last_block_id)
 	{
 		BasicBlock bb;
-		for(int bbno=BasicBlock.basicblocks.size()-1;bbno>=0;bbno--){
+		for(int bbno=last_block_id;bbno >= first_block_id;bbno--){
 			bb=BasicBlock.basicblocks.get(bbno);		
 			create_liveset(bb);	//create live set for each instruction in basic block
 			if(bb.getType() == BlockType.follow)
@@ -528,7 +536,7 @@ public class RA {
 	public static void create_liveset(BasicBlock bb)
 	{
 		int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
-		for(int index1=last_inst;index1>=0;index1--){
+		for(int index1=last_inst;index1 >= 0;index1--){
 			Instruction ii = bb.inst_list.get(index1);
 			
 			if(ii.getOperator() == "phi" && !phi_list.contains(ii))
@@ -608,7 +616,6 @@ public class RA {
 
 		if(bb.inst_list.indexOf(ii) == 0){
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
-
 			
 			if(bb.getType() == BlockType.follow)	//if its follow block of while
 			{
@@ -625,11 +632,13 @@ public class RA {
 				{
 					create_liveset(do_block.getfollowblock());
 				}
-				else {	//no nested while
+				else
+				{	//no nested while
 					create_liveset(do_block);	//liveset for do block
 				}
-					while_block.out_set = merge_set(while_block.out_set,do_block.in_set);
-					create_liveset(while_block);	//second iteration for while block
+				
+				while_block.out_set = merge_set(while_block.out_set,do_block.in_set);
+				create_liveset(while_block);	//second iteration for while block
 				
 				if(while_block.getprevblock().inst_list.get(0).getOperator() != "phi")
 				{
