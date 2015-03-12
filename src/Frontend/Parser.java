@@ -790,23 +790,30 @@ public class Parser{
 					if(currentblock.get_Sym_table().get(i).size()>1)
 					{
 							var = IdtoString(i);//Todo
-							Instruction i1 = currentblock.get_Sym_table().get(i).pop();
-							Instruction i2;
+							
+							//Instruction i1 = currentblock.get_Sym_table().get(i).pop();
+							
+							Instruction i1 = currentblock.get_Sym_table().get(i).peek();
+							
+							Instruction i2 = new Instruction();
+							int top = currentblock.get_Sym_table().get(i).size()-2;
 							if(else_flag != 0){
-								//int top = currentblock.get_Sym_table().get(i).size()-1;
-								while(currentblock.get_Sym_table().get(i).peek().block_id >= i1.block_id && currentblock.get_Sym_table().get(i).size()>1){
-									i2 = currentblock.get_Sym_table().get(i).pop();	
-									//top--;
+								//top = currentblock.get_Sym_table().get(i).size()-2;
+								while(currentblock.get_Sym_table().get(i).get(top).block_id >= i1.block_id && currentblock.get_Sym_table().get(i).size()>1){
+									i2 = currentblock.get_Sym_table().get(i).get(top);	
+									top--;
 								}
 								if(currentblock.get_Sym_table().get(i).size() > 1)
-									i2 = currentblock.get_Sym_table().get(i).pop();
+								{	i2 = currentblock.get_Sym_table().get(i).get(top);
+									top--;
+								}
 								else
-									i2 = currentblock.get_Sym_table().get(i).peek();
+									i2 = currentblock.get_Sym_table().get(i).get(top);
 							}
 							else
 							{
 								
-								int top = currentblock.get_Sym_table().get(i).size()-1;
+								//top = currentblock.get_Sym_table().get(i).size()-1;
 								while(currentblock.get_Sym_table().get(i).elementAt(top).block_id >= i1.block_id && top>0){
 									top--;
 								}
@@ -815,7 +822,32 @@ public class Parser{
 							}
 							
 							if(i1.basicblock.getblockno() > currentblock.getblockno() || i2.basicblock.getblockno() > currentblock.getblockno()){
-							//if(i1.block_id > phi_block.jointoif.block_id || i2.block_id > phi_block.jointoif.block_id){
+								
+								i1 = currentblock.get_Sym_table().get(i).pop();
+								
+								if(else_flag != 0){
+									//int top = currentblock.get_Sym_table().get(i).size()-1;
+									while(currentblock.get_Sym_table().get(i).peek().block_id >= i1.block_id && currentblock.get_Sym_table().get(i).size()>1){
+										i2 = currentblock.get_Sym_table().get(i).pop();	
+										//top--;
+									}
+									if(currentblock.get_Sym_table().get(i).size() > 1)
+										i2 = currentblock.get_Sym_table().get(i).pop();
+									else
+										i2 = currentblock.get_Sym_table().get(i).peek();
+								}
+								else
+								{
+									
+									int top1 = currentblock.get_Sym_table().get(i).size()-1;
+									while(currentblock.get_Sym_table().get(i).elementAt(top1).block_id >= i1.block_id && top1>0){
+										top1--;
+									}
+									
+									i2 = currentblock.get_Sym_table().get(i).elementAt(top1);
+								}	
+								
+								
 							Result oper1= new Result(Type.instruction,i1);
 							Result oper2= new Result(Type.instruction,i2);
 							Instruction ii;
@@ -1271,7 +1303,41 @@ public class Parser{
 							Result res1;
 							Stack<Instruction> s = currentblock.get_Sym_table().get(var_id);	//stack for the variable
 							if(currentblock.getType() != BlockType.ifelse)
-							res1 = 	new Result(Type.instruction,(Instruction)s.peek());
+							{
+								int top = s.size()-1;
+								if(currentblock.getType() == BlockType.iftrue)
+								{
+									BasicBlock tmp_block = currentblock;
+									if(tmp_block == s.get(top).basicblock)
+									{
+										res1 = 	new Result(Type.instruction,(Instruction)s.get(top));
+									}
+									else
+									{
+										while(tmp_block.getprevblock() != null){
+											while(top>=0)
+											{
+												if(tmp_block.getprevblock() != s.get(top).basicblock)
+													top--;
+												else
+													break;
+											}	
+											if(top == -1)//value is not in its prev block..search prev->prev block
+											{
+												tmp_block = tmp_block.getprevblock();
+												top = s.size()-1;
+											}
+											else
+											{
+												//value found
+												break;
+											}
+										}
+									}
+								}
+								//else
+									res1 = 	new Result(Type.instruction,(Instruction)s.get(top));
+							}
 							else											//if its in else block
 							{
 								int top = s.size()-1;

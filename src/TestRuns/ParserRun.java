@@ -78,6 +78,8 @@ public class ParserRun {
 			RA.coalese_phis();
 
 			RA.color_node(last_inst_index,Parser.insts.size()-1);
+			CFG graph33 = new CFG("testRAb4removal");
+			graph33.printCFG(Ra);
 			for(int i=0;i<RA.Reg.size();i++)
 			{
 				System.out.println("For reg:"+(i+1));
