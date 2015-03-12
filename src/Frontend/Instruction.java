@@ -17,7 +17,7 @@ public class Instruction {
 	public Instruction PhitoMove;
 	public Instruction(){}
 	
-	Instruction(String instoperator){
+	public Instruction(String instoperator){
 		//if (instoperator=="end"||instoperator=="read"||instoperator=="writeNL"){
 			this.type=0;
 			this.operator=instoperator;
