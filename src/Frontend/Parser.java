@@ -12,6 +12,7 @@ public class Parser{
 	private Scanner scanner;
 	//private HashMap<Integer,Instruction> Sym_table;	//mapping b/w index and instruction
 	private HashMap<String,Result> Result_cache;	//for storing Results
+	public static ArrayList<Result> array_list=new  ArrayList<Result>();
 	public static ArrayList<Instruction> insts;			//list for instructions
 	public static HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
 //	public static HashMap<String,HashMap<Integer,Stack<Instruction>>> Func_Sym_table;
@@ -138,12 +139,12 @@ public class Parser{
 		{
 			int num=0;
 			String s1 = new String();
-			ArrayList<Integer> arrsize=new ArrayList<Integer>();
 			while(tt.getType() != TokenType.semiToken)
 			{					
 				Next();
 				while(tt.getType() == TokenType.ident)
 				{	s1=tt.getCharacters();
+					ArrayList<Integer> arrsize=new ArrayList<Integer>();
 					Next();
 					while(tt.getType() == TokenType.openbracketToken)	//array [
 					{	
@@ -166,6 +167,7 @@ public class Parser{
 					if(tt.getType() != TokenType.ident)
 					{
 						Result x = new Result(Type.arr,s1,arrsize);
+						array_list.add(x);
 						Result_cache.put(s1,x);
 					}
 					
@@ -174,7 +176,7 @@ public class Parser{
 				
 			}
 			 if(Result_cache.get("FP")==null) {
-				 Result FP = new Result(Type.variable,"FP");
+				 Result FP = new Result(Type.FP,"FP");
 				 Result_cache.put("FP",FP);
 			 }
 		}
@@ -1153,7 +1155,7 @@ public class Parser{
 								Next();
 							if(tt.getType()!= TokenType.closebracketToken)	//"]"
 							{
-								error("Syntax error: ']' missing");
+								error("Syntax error   : ']' missing");
 							}
 							else
 								Next();

@@ -229,7 +229,7 @@ public class BasicBlock {
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
 					oper1="error";
-				System.out.println(op1.getValue());
+				System.out.println(inst.getOperator());
 				Result op2=operands.get(1);
 				if(op2.getType()==Type.number)
 					oper2= new StringBuilder(" #").append(op2.getValue()).toString();
