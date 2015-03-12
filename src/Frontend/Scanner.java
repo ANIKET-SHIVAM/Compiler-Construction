@@ -114,7 +114,8 @@ public class Scanner {
 		case '}':
 			Next();return Token.checkToken("}");
 		}
-		System.out.println("Syntax Error"+ inputSym);return null;
+		throw new IllegalArgumentException("error: MISSING TOKEN");
+		//System.out.println("Syntax Error"+ inputSym);return null;
 	}
 	
 	

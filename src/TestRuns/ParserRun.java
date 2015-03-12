@@ -10,7 +10,7 @@ public class ParserRun {
 			
 
 			//String filename = "testprogs/arithemetic.txt";
-			String filename = "testprogs/test002.txt";
+			String filename = "testprogs/test001.txt";
 
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
@@ -18,18 +18,18 @@ public class ParserRun {
 			DominatorTree domtree=new DominatorTree();
 
 
-			CFG graph=new CFG("test003");
+			CFG graph=new CFG("test001");
 			//CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 			System.out.println("\n!!! optimization successfully !!!");
 			//optimizations
-			CP.doCP();CFG graphx=new CFG("test004woCP");graphx.printCFG(Ra);
+			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
 
 			//CFG graph1=new CFG("arithemeticwo");
 
-			CFG graph1=new CFG("test003wo");
+			CFG graph1=new CFG("test001wo");
 
 			graph1.printCFG(Ra);
 			//for functions
@@ -72,10 +72,11 @@ public class ParserRun {
 
 			Ra=1;
 			//IG graph2 = new IG("arithemetic_IG");
-			IG graph2 = new IG("test003_IG");
+			IG graph2 = new IG("test001_IG");
 
 			graph2.printIG();
 			RA.coalese_phis();
+
 			RA.color_node(last_inst_index,Parser.insts.size()-1);
 			for(int i=0;i<RA.Reg.size();i++)
 			{
@@ -90,8 +91,14 @@ public class ParserRun {
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
 			System.out.println("\n!!! RA successfully !!!");
-		//	CFG graph4=new CFG("test001aRA");
-		//	graph4.printCFG(0);
+
+	/*		for(int i=0;i<Parser.insts.size();i++)
+			{
+				System.out.println("reg forinstruction"+ i +":" + Parser.insts.get(i).register);
+			}*/
+			CFG graph4=new CFG("test001aRA");
+			graph4.printCFG(0);
+
 			System.out.println("\n!!! Compile successfully !!!");
 			System.out.println("Result:");
 			CodeGenerator cg=new CodeGenerator();
