@@ -215,6 +215,7 @@ public class RA {
 		while(!phi_list.isEmpty())
 		{
 			Instruction i = phi_list.poll();
+			System.out.println("coalese of phi :" + Parser.insts.indexOf(i));
 			//else	//its phi of if-else 
 			//{
 				Result res = new Result(Type.instruction,i);
@@ -380,9 +381,12 @@ public class RA {
 			//}
 				if(i.basicblock.getType() != BlockType.whileblock){
 					//correct the branch location of bge,etc.
-					BasicBlock main_bb = i.basicblock.getprevblock().getprevblock();
+					if(i.basicblock.getprevblock2().getType() != BlockType.ifelse){
+					BasicBlock main_bb = i.basicblock.getprevblock2();
+					
 					Result oper2 = main_bb.inst_list.get(main_bb.inst_list.size()-1).getOperands().get(1);
-					for(int ii=0;ii<i.basicblock.inst_list.size();ii++)
+					int ii=0;
+					for(ii=0;ii<i.basicblock.inst_list.size();ii++)
 					{
 						if(i.basicblock.inst_list.get(ii).getOperator() != "phi")
 						{
@@ -391,7 +395,21 @@ public class RA {
 							break;
 						}
 					}
+					//if there were only phi instructions in block,then after removal,
+					//bge should jump to next join block
+					if(ii == i.basicblock.inst_list.size())
+					{
+						for(int j=0;j<i.basicblock.getjoinblock().inst_list.size();j++)
+						{
+							if(i.basicblock.getjoinblock().inst_list.get(j).getOperator() != "phi"){
+								Result fixed_res  = new Result(Type.instruction,i.basicblock.getjoinblock().inst_list.get(0));
+								oper2 = fixed_res;
+								break;
+							}
+						}
+					}
 				}
+				}	
 
 		}
 	}

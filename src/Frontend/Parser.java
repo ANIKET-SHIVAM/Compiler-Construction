@@ -689,7 +689,7 @@ public class Parser{
 			if(tt.getType() == TokenType.elseToken)	//else
 			{
 				else_flag=1;
-				else_block = currentblock.createElse();
+				elsebb= else_block = currentblock.createElse();
 				System.out.println("Basic Block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
 				Next();
@@ -704,7 +704,7 @@ public class Parser{
 				}
 				else
 				{	while((tt.getType() != TokenType.fiToken)){
-					elsebb = stat_seq(else_block);
+					elsebb = stat_seq(elsebb);
 					}
 
 				}
@@ -811,6 +811,7 @@ public class Parser{
 							}
 							ii.basicblock=phi_block;
 							insts.add(ii);
+							ii.block_id = BasicBlock.block_id;
 							phi_block.inst_list.add(ii);
 							currentblock.get_Sym_table().get(i).push(ii);
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
