@@ -8,16 +8,16 @@ public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
 			
-			//String filename = "testprogs/arithemetic.txt";
-			String filename = "testprogs/test004.txt";
+			String filename = "testprogs/arithemetic.txt";
+			//String filename = "testprogs/test004.txt";
 
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
 			DominatorTree domtree=new DominatorTree();
 
-			CFG graph=new CFG("test004");
-			//CFG graph=new CFG("arithemetic");
+			//CFG graph=new CFG("test004");
+			CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 			System.out.println("\n!!! optimization successfully !!!");
@@ -52,8 +52,8 @@ public class ParserRun {
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
 			System.out.println("\n!!! RA successfully !!!");
-			CFG graph4=new CFG("test001aRA");
-			graph4.printCFG(0);
+		//	CFG graph4=new CFG("test001aRA");
+		//	graph4.printCFG(0);
 			System.out.println("\n!!! Compile successfully !!!");
 			System.out.println("Result:");
 			CodeGenerator cg=new CodeGenerator();
