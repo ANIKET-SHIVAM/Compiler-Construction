@@ -362,9 +362,21 @@ public class CodeGenerator {
 		for(int i=0;i< BasicBlock.basicblocks.size();i++)
 		{	BasicBlock bb = BasicBlock.basicblocks.get(i);
 			if(bb.getType()==BlockType.join){
+				if(bb.inst_list.size() != 0){
 				Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
 				Instruction jump_else= new Instruction("jump_else",jump_to);
 				bb.getprevblock().inst_list.add(jump_else);
+				}
+				else
+				{
+					if(bb.getjoinblock() != null)
+						bb = bb.getjoinblock();
+					else
+						bb = bb.getnextblock();
+					Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
+					Instruction jump_else= new Instruction("jump_else",jump_to);
+					bb.getprevblock().getprevblock().inst_list.add(jump_else);
+				}
 			}
 		}
 		for(int i=BasicBlock.mainblock.getblockno();i< BasicBlock.basicblocks.size();i++)

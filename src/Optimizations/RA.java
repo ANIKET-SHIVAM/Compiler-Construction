@@ -12,7 +12,7 @@ public class RA {
 	public static HashMap<Integer,ArrayList<Integer>> Live_Set = new HashMap<Integer,ArrayList<Integer>>(); 
 	public static final int K = 30;
 	public static int top=-1;
-	public static ArrayDeque<Instruction> phi_list = new ArrayDeque<Instruction>();
+	public static Stack<Instruction> phi_list = new Stack<Instruction>();
 	public static HashMap<Integer,ArrayList<Integer>>Reg = new HashMap<Integer,ArrayList<Integer>>();	//Register set
 	//Matrix(2-D Array) for creating Interference Graph
 	public static int [][]IGMatrix = new int[Parser.insts.size()][Parser.insts.size()];
@@ -214,7 +214,7 @@ public class RA {
 	{
 		while(!phi_list.isEmpty())
 		{
-			Instruction i = phi_list.poll();
+			Instruction i = phi_list.pop();
 			System.out.println("coalese of phi :" + Parser.insts.indexOf(i));
 			//else	//its phi of if-else 
 			//{
@@ -445,6 +445,7 @@ public class RA {
 				
 				if(bb.inst_list.get(j).getOperator()== "phi")
 				{
+					System.out.println("removing phi of basicblock: "+ bb.getblockno());
 					if(bb.getType()==BlockType.whileblock){
 						BasicBlock newbb=bb.getwhiletodo();
 						if(newbb.inst_list.get(newbb.inst_list.size()-1).getOperator()=="bra"){
@@ -459,6 +460,7 @@ public class RA {
 
 					if(bb.getType()==BlockType.join){
 						BasicBlock newbb=bb.getprevblock2();
+						if(newbb != null && newbb.inst_list.size() != 0){
 						String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
 						if(operator.equals("ble")||operator.equals("blt")||operator.equals("bgt")||operator.equals("bne")||operator.equals("bge")||operator.equals("beq")){
 							Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
@@ -468,15 +470,18 @@ public class RA {
 						}
 						else
 							System.out.println("RA bra inst patchup failkjkjklp");
+						}
 					}
 					
 					Instruction phi=bb.inst_list.get(j);
+					System.out.println("patching phi of block:"+ phi.basicblock.getblockno());
 					Result operand=new Result(Type.instruction,phi.PhitoMove);
 					for(Instruction laterinst:Parser.insts){
 					if(laterinst.getOperands().size()==2){
 						if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
 							if(laterinst.getOperands().get(0).getInstruction()==phi){
-								{laterinst.getOperands().set(0, operand);
+								{	System.out.println("setting operand for phi of block: "+ laterinst.basicblock.getblockno());
+									laterinst.getOperands().set(0, operand);
 					
 								}
 							}
@@ -611,7 +616,7 @@ public class RA {
 			
 			if(ii.getOperator() == "phi" && !phi_list.contains(ii))
 				phi_list.add(ii);
-			if(ii.getOperator() == "end")
+			if(ii.getOperator() == "end" || ii.getOperator() == "call")
 			{
 				continue;
 			}
@@ -662,11 +667,12 @@ public class RA {
 		}
 		else	//its the last instruction in the block
 		{	if(bb.getnextblock() != null || bb.getjoinblock() != null){
-			
+			if(bb.out_set != null){
 				for(int i=0;i<bb.out_set.size();i++)
 				{
 					set.add(bb.out_set.get(i));		//add elements of set of next instruction to this set
 				}
+			}
 			}
 		}
 		
