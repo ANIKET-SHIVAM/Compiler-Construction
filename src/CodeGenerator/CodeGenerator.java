@@ -315,7 +315,11 @@ public class CodeGenerator {
 				for(int i=8;i>=1;i--){
 					machine_insts.add(DLX.assemble(DLX.POP,i, 29,-4));
 				}
+				//result scratch to register
 				machine_insts.add(DLX.assemble(DLX.ADD,inst_register, 0,26));
+				//PC to next instruction
+				machine_insts.add(DLX.assemble(DLX.RET,31));
+				
 				
 				break;
 		case "ret":	
