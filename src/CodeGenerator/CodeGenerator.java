@@ -49,6 +49,7 @@ public class CodeGenerator {
 				int oper1_register=oper1.getInstruction().getRegister();
 				int oper2_register=oper2.getInstruction().getRegister();
 				int jump_index=inline_inst_list.indexOf(oper2.getInstruction())-inline_inst_list.indexOf(inst);
+				System.out.println(inline_inst_list.indexOf(oper2.getInstruction())+"+"+inline_inst_list.indexOf(inst));
 				int inst_register=inst.getRegister();
 				int opcode;
 				switch(operator){
@@ -197,6 +198,7 @@ public class CodeGenerator {
 							machine_insts.add(DLX.assemble(opcode,inst_register,0,oper2.getValue()-oper1.getValue()));	
 							break;
 				case "move":opcode=DLX.ADDI;
+							System.out.println(oper2.getValue()+" "+oper1.getValue());
 							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1.getValue()));	
 							break;	
 				
@@ -232,6 +234,7 @@ public class CodeGenerator {
 			case "write":opcode=DLX.WRD;
 						if(oper1.getType()==Type.instruction){
 							machine_insts.add(DLX.assemble(opcode,oper1.getInstruction().getRegister()));
+							
 						}
 						else if(oper1.getType()==Type.number){
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));

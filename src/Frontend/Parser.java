@@ -280,6 +280,9 @@ public class Parser{
 			E(currentblock);
 			bb=currentblock;
 		}
+		else if(tt.getType() == TokenType.periodToken||tt.getType() == TokenType.endToken){
+			bb=currentblock;
+		}
 		else bb=currentblock;
 		return bb;
 	}
@@ -513,6 +516,7 @@ public class Parser{
 					insts.add(i);				//add instruction to instruction list
 					i.basicblock = currentblock;
 					i.block_id = BasicBlock.block_id;
+					System.out.println("write");
 				}
 				Next();
 				return  currentblock;

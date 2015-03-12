@@ -14,6 +14,7 @@ public class Instruction {
 	public int register;
 	public int cluster;
 	public boolean is_cluster;
+	public Instruction PhitoMove;
 	public Instruction(){}
 	
 	Instruction(String instoperator){
