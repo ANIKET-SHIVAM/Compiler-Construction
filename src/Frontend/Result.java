@@ -10,7 +10,8 @@ public class Result {
 		arr,
 		function,
 		param,
-		instruction
+		instruction,
+		FP
 	}
 	
 	public enum Cond_Type{

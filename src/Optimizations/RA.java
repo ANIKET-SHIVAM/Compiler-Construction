@@ -228,6 +228,8 @@ public class RA {
 					if(is_interfering(Parser.insts.indexOf(i),oper1))
 					{
 						Instruction ins = new Instruction("move",i.getOperands().get(0) ,res);
+						ins.register=i.register;
+						i.PhitoMove=ins;
 						if(i.basicblock.getType() != BlockType.whileblock)
 							i.basicblock.getprevblock().inst_list.add(ins);
 						else
@@ -268,6 +270,7 @@ public class RA {
 
 					Result res1 = new Result(Type.number,i.getOperands().get(0).getValue());
 					Instruction ins = new Instruction("move",res1,res);
+					i.PhitoMove=ins;
 					if(i.basicblock.getType() != BlockType.whileblock)
 						i.basicblock.getprevblock().inst_list.add(ins);
 
@@ -285,6 +288,7 @@ public class RA {
 					if(is_interfering(Parser.insts.indexOf(i),oper2))
 					{
 						Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
+						i.PhitoMove=ins;
 						if(i.basicblock.getType() != BlockType.whileblock){
 							if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
 								i.basicblock.getprevblock2().inst_list.add(ins);
@@ -346,6 +350,7 @@ public class RA {
 				{
 					Result res1 = new Result(Type.number,i.getOperands().get(1).getValue());
 					Instruction ins = new Instruction("move",res1,res);
+					i.PhitoMove=ins;
 					if(i.basicblock.getType() != BlockType.whileblock){
 						if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
 							i.basicblock.getprevblock2().inst_list.add(ins);
@@ -432,6 +437,7 @@ public class RA {
 						{
 							Result res = new Result(Type.number,oper2.getInstruction().register);
 							bb.inst_list.get(j).getOperands().set(1, res);
+							bb.inst_list.get(j).register=oper2.getInstruction().register;
 						}
 					}
 
@@ -450,6 +456,52 @@ public class RA {
 						else
 							System.out.println("RA bra inst patchup fail");
 					}
+
+					if(bb.getType()==BlockType.join){
+						BasicBlock newbb=bb.getprevblock2();
+						String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
+						if(operator.equals("ble")||operator.equals("blt")||operator.equals("bgt")||operator.equals("bne")||operator.equals("bge")||operator.equals("beq")){
+							Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+							Instruction patchbra=bb.inst_list.get(1);
+							Result patchbraup=new Result(Type.instruction,patchbra);
+							bra.getOperands().set(1, patchbraup);
+						}
+						else
+							System.out.println("RA bra inst patchup fail");
+					}
+					
+					Instruction phi=bb.inst_list.get(j);
+					Result operand=new Result(Type.instruction,phi.PhitoMove);
+					for(Instruction laterinst:Parser.insts){
+					if(laterinst.getOperands().size()==2){
+						if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+							if(laterinst.getOperands().get(0).getInstruction()==phi){
+								{laterinst.getOperands().set(0, operand);
+					
+								}
+							}
+						}	
+						if(laterinst.getOperands().get(1).getType()==Result.Type.instruction){
+							if(laterinst.getOperands().get(1).getInstruction()==phi){
+								{laterinst.getOperands().set(1, operand);
+								
+								}
+							}
+						}
+					}
+					else if(laterinst.getOperands().size()==1){
+						if(laterinst.getOperands().get(0).getType()==Result.Type.instruction){
+							if(laterinst.getOperands().get(0).getInstruction()==phi){
+								{System.out.println(laterinst.getOperands().get(0).getInstruction().getOperator()+phi.register+operand.getInstruction().register);
+									laterinst.getOperands().set(0, operand);
+									System.out.println(laterinst.getOperands().get(0).getInstruction().getOperator()+phi.register+laterinst.getOperands().get(0).getInstruction().register);
+									
+								}
+							}
+						}
+					}
+				}
+					Parser.insts.remove(bb.inst_list.get(j));
 					bb.inst_list.remove(j);
 					
 					j--;

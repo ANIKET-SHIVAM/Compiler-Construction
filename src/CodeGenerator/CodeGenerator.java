@@ -3,19 +3,36 @@ import java.io.IOException;
 import java.util.*;
 
 import Frontend.*;
+import Frontend.BasicBlock.BlockType;
 import Frontend.Result.Type;
 import Optimizations.*;
 
 
 public class CodeGenerator {
 	private static ArrayList<Instruction> inline_inst_list=new ArrayList<Instruction>();
-	int scratch_reg_1=26,scratch_reg_2=27;
-	public ArrayList<Integer> machine_insts;		
+	int scratch_reg_1=26,scratch_reg_2=27;int adda_register_1=0,adda_register_2=0;
+	public ArrayList<Integer> machine_insts;
+	public HashMap<String,Integer> array_starting_addr=new HashMap<String,Integer>() ;
 	public CodeGenerator(){
 		inline_inst_list=generate_inline_inst_list();
 		machine_insts=new ArrayList<Integer>();
+		int opcode=DLX.ADDI;
+		machine_insts.add(DLX.assemble(opcode, 29, 0, 5000));//stack pointer
+		machine_insts.add(DLX.assemble(opcode, 28, 0, 5000));//frame pointer
+		int SP=5000;
+		for(Result array: Parser.array_list){
+			int size=1;
+			for(int i:array.getArraySize()){
+				size*=i;
+			}
+			String name=array.getName();
+			int start_addr=SP-5000;
+			array_starting_addr.put(name, start_addr);
+			SP+=size*4;
+			machine_insts.add(DLX.assemble(DLX.ADDI, 29, 0, SP));//stack pointer
+		}
 		for(Instruction inst:inline_inst_list){
-			System.out.println(inline_inst_list.indexOf(inst)+inst.getOperator());
+			System.out.println(inline_inst_list.indexOf(inst)+inst.getOperator()+inst.register);
 			generate_assembly(inst);	
 		}	
 		int[] inst_list = new int[machine_insts.size()];
@@ -37,7 +54,7 @@ public class CodeGenerator {
 		
 	public void generate_assembly(Instruction inst){
 		int operand_size=inst.getOperands().size();
-		int adda_register_1=0,adda_register_2=0;
+		
 
 //for double operand
 						
@@ -49,6 +66,7 @@ public class CodeGenerator {
 				int oper1_register=oper1.getInstruction().getRegister();
 				int oper2_register=oper2.getInstruction().getRegister();
 				int jump_index=inline_inst_list.indexOf(oper2.getInstruction())-inline_inst_list.indexOf(inst);
+				System.out.println(inline_inst_list.indexOf(oper2.getInstruction())+"+"+inline_inst_list.indexOf(inst));
 				int inst_register=inst.getRegister();
 				int opcode;
 				switch(operator){
@@ -197,6 +215,7 @@ public class CodeGenerator {
 							machine_insts.add(DLX.assemble(opcode,inst_register,0,oper2.getValue()-oper1.getValue()));	
 							break;
 				case "move":opcode=DLX.ADDI;
+							System.out.println(oper2.getValue()+" "+oper1.getValue());
 							machine_insts.add(DLX.assemble(opcode,oper2.getValue(), 0, oper1.getValue()));	
 							break;	
 				
@@ -204,9 +223,21 @@ public class CodeGenerator {
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
 				}
 			}
-			
-			
-			
+			else if(oper1.getType()==Type.arr&&oper2.getType()==Type.FP){
+				int inst_register=inst.getRegister();
+				int opcode=DLX.ADDI;
+				machine_insts.add(DLX.assemble(opcode,inst_register,28,array_starting_addr.get(oper1.getName())));	
+			}
+			else if(oper1.getType()==Type.instruction&&oper2.getType()==Type.arr){
+				int inst_register=inst.getRegister();
+				int opcode=DLX.ADD;
+				machine_insts.add(DLX.assemble(opcode,inst_register,0,oper1.getInstruction().register));	
+			}
+			else if(oper1.getType()==Type.number&&oper2.getType()==Type.arr){
+				int inst_register=inst.getRegister();
+				int opcode=DLX.ADDI;
+				machine_insts.add(DLX.assemble(opcode,inst_register,0,oper1.getValue()));	
+			}
 			else
 				throw new IllegalArgumentException("error:Code generator wrong operand type");
 		}
@@ -232,15 +263,22 @@ public class CodeGenerator {
 			case "write":opcode=DLX.WRD;
 						if(oper1.getType()==Type.instruction){
 							machine_insts.add(DLX.assemble(opcode,oper1.getInstruction().getRegister()));
+							
 						}
 						else if(oper1.getType()==Type.number){
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
 							machine_insts.add(DLX.assemble(opcode, scratch_reg_1));
 						}
-						else
+						else	
 							throw new IllegalArgumentException("error:Code generator wrong WRD result");
 						break;
-			
+						
+			case "jump_else":opcode=DLX.BEQ;
+					int jump_else=inline_inst_list.indexOf(inst.getOperands().get(0).getInstruction())-inline_inst_list.indexOf(inst);
+					machine_insts.add(DLX.assemble(opcode, 0, jump_else));
+					break;
+						
+			case "call":
 			default:
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
 			
@@ -275,12 +313,21 @@ public class CodeGenerator {
 	public ArrayList<Instruction> generate_inline_inst_list(){
 		ArrayList<Instruction> list=new ArrayList<Instruction>();
 		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		{	BasicBlock bb = BasicBlock.basicblocks.get(i);
+			if(bb.getType()==BlockType.join){
+				Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
+				Instruction jump_else= new Instruction("jump_else",jump_to);
+				bb.getprevblock().inst_list.add(jump_else);
+			}
+		}
+		for(int i=0;i< BasicBlock.basicblocks.size();i++)
 		{
 			BasicBlock bb = BasicBlock.basicblocks.get(i);
 			for(Instruction inst:bb.inst_list)
 			{list.add(inst);
 			}
 		}
+		
 		return list;
 	}
 }

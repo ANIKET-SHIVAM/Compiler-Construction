@@ -1,16 +1,19 @@
 //Basic if statement test
 main
 var a, b;
-array arr[5];
 {
 	let a <- 1;
-	let b <- 1;
-	if a < 10 then
-		while a < 10 do
-			let b <- 3 + 2;
-		od;
-		let a <- a + 1;
+	let b <- 2;
+	if a > b then
+		let a <- a + 5;
+	else
+		let b <- b + 900;
 	fi;
+	
+	if a > b then
+		let a <- a +100;
+	fi;
+	
 	call OutputNum(a);
-	call OutputNum(b)
+	call OutputNum(b);
 }.

@@ -42,6 +42,8 @@ public class BasicBlock {
 		basicblocks.put(block_id, this);
 		this.Sym_table=Parser.Sym_table;
 		Functions_list.add(this);
+		
+			
 	}
 	
 	BasicBlock(BlockType kind, Function func){							// for function first bb
@@ -51,6 +53,8 @@ public class BasicBlock {
 		basicblocks.put(block_id, this);
 		this.Sym_table=func.get_Sym_table();
 		Functions_list.add(this);
+		
+			
 	}
 	
 	BasicBlock(BlockType kind,BasicBlock bb){
@@ -59,6 +63,7 @@ public class BasicBlock {
 		this.blockno = block_id;
 		basicblocks.put(block_id, this);
 		this.Sym_table=bb.Sym_table;
+		
 	}
 	
 	public BasicBlock createIfTrue(){
@@ -224,7 +229,7 @@ public class BasicBlock {
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
 					oper1="error";
-			
+				System.out.println(inst.getOperator());
 				Result op2=operands.get(1);
 				if(op2.getType()==Type.number)
 					oper2= new StringBuilder(" #").append(op2.getValue()).toString();

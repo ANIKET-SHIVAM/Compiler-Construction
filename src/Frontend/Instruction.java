@@ -14,6 +14,7 @@ public class Instruction {
 	public int register;
 	public int cluster;
 	public boolean is_cluster;
+	public Instruction PhitoMove;
 	public Instruction(){}
 	
 	Instruction(String instoperator){
@@ -23,7 +24,7 @@ public class Instruction {
 			this.is_cluster =false;
 			this.cluster = 0;
 		}
-	Instruction(String instoperator,Result res){
+	public Instruction(String instoperator,Result res){
 //		else if(instoperator=="neg"||instoperator=="load"||instoperator=="bra"||instoperator=="write"){
 			this.type=1;
 			this.operator=instoperator;

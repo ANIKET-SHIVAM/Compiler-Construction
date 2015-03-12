@@ -23,6 +23,8 @@ public class CFG {
     	if(Ra==0)
     		BasicBlock.inline_inst_list.clear();
     	BasicBlock bb = BasicBlock.mainblock;
+    	
+    		
     	int block_length =bb.block_id;
     	int [] block_done = new int[block_length];
         printer.println("graph: { title: \"Control Flow Graph\"");
@@ -45,6 +47,7 @@ public class CFG {
         		printEdge(bb.getprevblock().getblockno(),bb.getblockno());
         	}	
         	if(bb.getprevblock2()!=null){
+        		
         		printEdge(bb.getprevblock2().getblockno(),bb.getblockno());
         	}
         	if(bb.checkdotowhile()){
@@ -91,6 +94,7 @@ public class CFG {
     
     
     public void printEdge(int source, int target){
+    	
     	if(edgesPrinted.containsKey(source)){
     		if(!edgesPrinted.get(source).contains(target)){
     			edgesPrinted.get(source).add(target);
