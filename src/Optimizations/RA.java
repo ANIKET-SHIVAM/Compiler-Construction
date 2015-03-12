@@ -537,11 +537,11 @@ public class RA {
 	{
 		ArrayList<Integer> final_set = new ArrayList<Integer>();
 		int i=0;
-		if(if_set.size() != 0){
+		if(if_set != null){
 		for(i=0;i < if_set.size();i++)
 			final_set.add(if_set.get(i));
 		}
-		if(else_set.size()!= 0){
+		if(else_set!=null){
 		for(i=0;i < else_set.size();i++)
 		{
 			if(!final_set.contains(else_set.get(i)))
