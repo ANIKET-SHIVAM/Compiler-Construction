@@ -467,7 +467,7 @@ public class RA {
 							bra.getOperands().set(1, patchbraup);
 						}
 						else
-							System.out.println("RA bra inst patchup fail");
+							System.out.println("RA bra inst patchup failkjkjklp");
 					}
 					
 					Instruction phi=bb.inst_list.get(j);

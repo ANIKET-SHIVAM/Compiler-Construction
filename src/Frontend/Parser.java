@@ -271,8 +271,11 @@ public class Parser{
 			bb=currentblock;}
 		else if(tt.getType() == TokenType.letToken)	//let 
 		{	assignment(currentblock);
+			if(tt.getType() != TokenType.semiToken)
+				throw new IllegalArgumentException("error: missing semicolon");
+			else{
 			Next();
-			bb=currentblock;
+			bb=currentblock;}
 		}
 		else if(tt.getType() == TokenType.callToken)	//call
 		{
@@ -283,7 +286,8 @@ public class Parser{
 		else if(tt.getType() == TokenType.ifToken)	//if
 		{	
 			bb=ifStatement(currentblock);
-			if(tt.getType()==TokenType.fiToken)Next();
+			if(tt.getType()==TokenType.fiToken)
+				Next();
 		}
 		else if(tt.getType() == TokenType.whileToken)	//while
 		{
@@ -294,6 +298,10 @@ public class Parser{
 		{
 			Next();
 			Result res = E(currentblock);
+			Instruction ii = new Instruction("ret",res);
+			ii.basicblock = currentblock;
+			insts.add(ii);
+			currentblock.inst_list.add(ii);
 			calledfunction.setreturninst(res.getInstruction());
 			bb=currentblock;
 		}
@@ -752,6 +760,7 @@ public class Parser{
 				}	
 				else
 					currentblock.setjoin(phi_block);
+				phi_block.jointoif = currentblock;
 				System.out.println("\nJoin block: "+ BasicBlock.block_id+"\n");
 				BasicBlock.block_id++;
 				if(store_inst_bb.containsKey(iftruebb.getblockno())){
@@ -803,6 +812,8 @@ public class Parser{
 								i2 = currentblock.get_Sym_table().get(i).elementAt(top);
 							}
 							
+							if(i1.basicblock.getblockno() > currentblock.getblockno() || i2.basicblock.getblockno() > currentblock.getblockno()){
+							//if(i1.block_id > phi_block.jointoif.block_id || i2.block_id > phi_block.jointoif.block_id){
 							Result oper1= new Result(Type.instruction,i1);
 							Result oper2= new Result(Type.instruction,i2);
 							Instruction ii;
@@ -821,7 +832,7 @@ public class Parser{
 							phi_block.inst_list.add(ii);
 							currentblock.get_Sym_table().get(i).push(ii);
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
-							
+							}
 						}
 				
 				}
@@ -838,6 +849,8 @@ public class Parser{
 				}
 				//BasicBlock.block_id++;	
 				Next();
+				if(tt.getType() != TokenType.semiToken)
+					throw new IllegalArgumentException("error:missing semicolon");
 				else_flag=0;
 			}
 	
@@ -1314,6 +1327,8 @@ public class Parser{
 			res = num();
 			Next();
 		}
+		//if(tt.getType() != TokenType.semiToken)
+			//throw new IllegalArgumentException("error:missing semi colon");
 		return res;
 	}
 	
