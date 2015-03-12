@@ -13,6 +13,7 @@ public class CodeGenerator {
 	int scratch_reg_1=26,scratch_reg_2=27;int adda_register_1=0,adda_register_2=0;
 	public ArrayList<Integer> machine_insts;
 	public HashMap<String,Integer> array_starting_addr=new HashMap<String,Integer>() ;
+	public HashMap<String,Integer> function_starting_addr=new HashMap<String,Integer>() ;
 	public CodeGenerator(){
 		inline_inst_list=generate_inline_inst_list();
 		machine_insts=new ArrayList<Integer>();
@@ -274,11 +275,57 @@ public class CodeGenerator {
 						break;
 						
 			case "jump_else":opcode=DLX.BEQ;
-					int jump_else=inline_inst_list.indexOf(inst.getOperands().get(0).getInstruction())-inline_inst_list.indexOf(inst);
+					int jump_else=inline_inst_list.indexOf(oper1.getInstruction())-inline_inst_list.indexOf(inst);
 					machine_insts.add(DLX.assemble(opcode, 0, jump_else));
 					break;
 						
 			case "call":
+				Function func=Parser.Function_list.get(oper1.getName());
+				int jump_inst=function_starting_addr.get(oper1.getName());
+				jump_index=jump_inst-inline_inst_list.indexOf(inst);
+				
+				//push registers1-8
+				for(int i=1;i<=8;i++){
+					machine_insts.add(DLX.assemble(DLX.PSH,i, 29,4));
+				}
+				//push params
+				for(int i=0;i<func.params.size();i++){
+					//TODO:passs by value
+					machine_insts.add(DLX.assemble(DLX.PSH,i, 29,4));
+				}
+				//push FP
+				machine_insts.add(DLX.assemble(DLX.PSH,28, 29,4));
+				//push RA=0
+				machine_insts.add(DLX.assemble(DLX.PSH,0, 29,4));
+				//make FP=SP
+				machine_insts.add(DLX.assemble(DLX.ADD,28, 0,29));
+				
+				machine_insts.add(DLX.assemble(DLX.BSR, jump_index));
+				//make SP=FP
+				machine_insts.add(DLX.assemble(DLX.ADD,29, 0,28));
+				//pop RA to scratch register
+				machine_insts.add(DLX.assemble(DLX.POP,26, 29,-4));
+				//pop FP
+				machine_insts.add(DLX.assemble(DLX.POP,28, 29,-4));
+				//pop params
+				for(int i=0;i<func.params.size();i++){
+					machine_insts.add(DLX.assemble(DLX.POP,0, 29,-4));
+				}
+				//pop registers
+				for(int i=8;i>=1;i--){
+					machine_insts.add(DLX.assemble(DLX.POP,i, 29,-4));
+				}
+				machine_insts.add(DLX.assemble(DLX.ADD,inst_register, 0,26));
+				
+				break;
+		case "ret":	
+				if(oper1.getType()==Type.number)
+					machine_insts.add(DLX.assemble(DLX.STW,oper1.getValue(), 28,-4));
+				else if(oper1.getType()==Type.instruction)
+					machine_insts.add(DLX.assemble(DLX.STW,oper1.getInstruction().register, 28,-4));
+				else
+					throw new IllegalArgumentException("error:Code generator wrong return type");
+				break;
 			default:
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
 			
@@ -320,14 +367,22 @@ public class CodeGenerator {
 				bb.getprevblock().inst_list.add(jump_else);
 			}
 		}
-		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		for(int i=BasicBlock.mainblock.getblockno();i< BasicBlock.basicblocks.size();i++)
 		{
 			BasicBlock bb = BasicBlock.basicblocks.get(i);
 			for(Instruction inst:bb.inst_list)
 			{list.add(inst);
 			}
 		}
-		
+		for(Function func:Parser.Functions){
+			function_starting_addr.put(func.funcname, list.size()-1);
+			for(int i=func.getfirstbb().getblockno();i<= func.getreturnbb().getblockno();i++){
+				BasicBlock bb = BasicBlock.basicblocks.get(i);
+				for(Instruction inst:bb.inst_list)
+				{list.add(inst);
+				}
+			}
+		}
 		return list;
 	}
 }
