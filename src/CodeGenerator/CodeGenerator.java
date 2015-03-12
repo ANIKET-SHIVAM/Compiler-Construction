@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.*;
 
 import Frontend.*;
+import Frontend.BasicBlock.BlockType;
 import Frontend.Result.Type;
 import Optimizations.*;
 
@@ -268,10 +269,16 @@ public class CodeGenerator {
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
 							machine_insts.add(DLX.assemble(opcode, scratch_reg_1));
 						}
-						else
+						else	
 							throw new IllegalArgumentException("error:Code generator wrong WRD result");
 						break;
-			
+						
+			case "jump_else":opcode=DLX.BEQ;
+					int jump_else=inline_inst_list.indexOf(inst.getOperands().get(0).getInstruction())-inline_inst_list.indexOf(inst);
+					machine_insts.add(DLX.assemble(opcode, 0, jump_else));
+					break;
+						
+			case "call":
 			default:
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
 			
@@ -306,12 +313,21 @@ public class CodeGenerator {
 	public ArrayList<Instruction> generate_inline_inst_list(){
 		ArrayList<Instruction> list=new ArrayList<Instruction>();
 		for(int i=0;i< BasicBlock.basicblocks.size();i++)
+		{	BasicBlock bb = BasicBlock.basicblocks.get(i);
+			if(bb.getType()==BlockType.join){
+				Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
+				Instruction jump_else= new Instruction("jump_else",jump_to);
+				bb.getprevblock().inst_list.add(jump_else);
+			}
+		}
+		for(int i=0;i< BasicBlock.basicblocks.size();i++)
 		{
 			BasicBlock bb = BasicBlock.basicblocks.get(i);
 			for(Instruction inst:bb.inst_list)
 			{list.add(inst);
 			}
 		}
+		
 		return list;
 	}
 }

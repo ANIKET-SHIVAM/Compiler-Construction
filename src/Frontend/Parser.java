@@ -559,8 +559,8 @@ public class Parser{
 		else if(Function_list.containsKey(tt.getCharacters())){
 			Function func=Function_list.get(tt.getCharacters());
 			calledfunction=func;
-			Instruction jump_ins = func.getfirstbb().inst_list.get(0);
-			Result jump_res = new Result(Type.instruction,jump_ins);
+			//Instruction jump_ins = func.getfirstbb().inst_list.get(0);
+			Result jump_res = new Result(Type.variable,tt.getCharacters());
 			Instruction call_inst = new Instruction("call",jump_res);
 			call_inst.basicblock = currentblock;
 			call_inst.block_id = BasicBlock.block_id;
