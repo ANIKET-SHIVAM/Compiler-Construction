@@ -2,6 +2,7 @@
 // Added final let statement to test that phi propagation continues after all
 // the phi instructions.
 main
+<<<<<<< HEAD
 var a, b, c;
 {
 	let a <- 1;
@@ -26,3 +27,24 @@ var a, b, c;
 	let a <- a + 1;
 }
 .
+=======
+var a,b,c;
+function foo(x,y);
+var i,z;
+{
+let i <- x + 10;
+let z <- y + 99;
+return i;
+};
+
+{
+let a <- call foo(3,4);
+let b <- 100;
+let b <- b * 3;
+let c <- 19;
+call OutputNum(b);
+call OutputNum(c);
+call OutputNum(a);
+
+}.
+>>>>>>> 4f8ce36eec16c7bdd9f9ce0e6df5f5d4248646e2

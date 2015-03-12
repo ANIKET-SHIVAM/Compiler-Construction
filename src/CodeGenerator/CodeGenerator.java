@@ -31,7 +31,7 @@ public class CodeGenerator {
 			machine_insts.add(DLX.assemble(DLX.ADDI, 29, 0, SP));//stack pointer
 		}
 		for(Instruction inst:inline_inst_list){
-			System.out.println(inline_inst_list.indexOf(inst)+inst.getOperator());
+			System.out.println(inline_inst_list.indexOf(inst)+inst.getOperator()+inst.register);
 			generate_assembly(inst);	
 		}	
 		int[] inst_list = new int[machine_insts.size()];

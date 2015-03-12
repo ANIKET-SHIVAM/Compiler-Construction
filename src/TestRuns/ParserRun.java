@@ -8,37 +8,75 @@ public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
 			
-			String filename = "testprogs/arithemetic.txt";
-			//String filename = "testprogs/test004.txt";
+
+			//String filename = "testprogs/arithemetic.txt";
+			String filename = "testprogs/test002.txt";
 
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
 			System.out.println("\n!!! Parsed successfully !!!");
 			DominatorTree domtree=new DominatorTree();
 
-			//CFG graph=new CFG("test004");
-			CFG graph=new CFG("arithemetic");
+
+			CFG graph=new CFG("test003");
+			//CFG graph=new CFG("arithemetic");
 			graph.printCFG(Ra);
 			
 			System.out.println("\n!!! optimization successfully !!!");
-	//optimizations
+			//optimizations
 			CP.doCP();CFG graphx=new CFG("test004woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
 
 			//CFG graph1=new CFG("arithemeticwo");
 
-			CFG graph1=new CFG("test004wo");
+			CFG graph1=new CFG("test003wo");
 
 			graph1.printCFG(Ra);
-			RA.doLivenessAnalysis();
+			//for functions
+			int blocks =0;
+			int first_inst_index=0;
+			int last_inst_index=0;
+			if(!Parser.func_mapping.isEmpty()){
+			for(int i=0;i< Parser.func_mapping.size();i++)
+			{
+				String fun_name = Parser.func_mapping.get(i);
+				BasicBlock first_block=Parser.Function_list.get(fun_name).getfirstbb();
+				int first_block_id  = first_block.getblockno();
+				first_inst_index = Parser.insts.indexOf(first_block.inst_list.get(0));
+				
+				BasicBlock last_block=Parser.Function_list.get(fun_name).getreturnbb();
+				int last_block_id  = last_block.getblockno();
+				last_inst_index = Parser.insts.indexOf(last_block.inst_list.get(last_block.inst_list.size()-1));
+				
+				RA.doLivenessAnalysis(first_block_id,last_block_id);
+				
+				blocks++;
+				RA.coalese_phis();
+				RA.color_node(first_inst_index,last_inst_index);
+				
+				for(int ii=0;ii<RA.Reg.size();ii++)
+				{
+					System.out.println("For reg:"+(ii+1));
+					for(int j=0;j < RA.Reg.get(ii+1).size();j++)
+					{
+						System.out.print(RA.Reg.get(ii+1).get(j)+",");
+					}
+					System.out.println();
+				}
+				RA.remove_phis(first_block_id,last_block_id);
+				last_inst_index++;
+			}
+			}
+			//for normal code
+			RA.doLivenessAnalysis(blocks,BasicBlock.basicblocks.size()-1);
 
 			Ra=1;
-			IG graph2 = new IG("arithemetic_IG");
-			//IG graph2 = new IG("test003_IG");
+			//IG graph2 = new IG("arithemetic_IG");
+			IG graph2 = new IG("test003_IG");
 
 			graph2.printIG();
 			RA.coalese_phis();
-			RA.color_node();
+			RA.color_node(last_inst_index,Parser.insts.size()-1);
 			for(int i=0;i<RA.Reg.size();i++)
 			{
 				System.out.println("For reg:"+(i+1));
@@ -48,7 +86,7 @@ public class ParserRun {
 				}
 				System.out.println();
 			}
-			RA.remove_phis();
+			RA.remove_phis(blocks,BasicBlock.basicblocks.size()-1);
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
 			System.out.println("\n!!! RA successfully !!!");
