@@ -17,6 +17,7 @@ public class Parser{
 	public static HashMap<Integer,Stack<Instruction>> Sym_table;		//stack per variable
 //	public static HashMap<String,HashMap<Integer,Stack<Instruction>>> Func_Sym_table;
 	public static HashMap<String,Function> Function_list=new HashMap<String,Function>();
+	public static ArrayList<Function> Functions=new ArrayList<Function>();
 	public Stack<Instruction> if_stack = new Stack<Instruction>();
 	public Stack<Instruction> while_stack = new Stack<Instruction>();
 	public char sym;
@@ -233,6 +234,7 @@ public class Parser{
 		Function.func_id++;
 		
 		Function_list.put(funcname, func);
+		Functions.add(func);
 		Next();Next();
 		while(tt.getType() == TokenType.varToken||tt.getType() == TokenType.arrToken){
 			var_decl();

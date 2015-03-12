@@ -5,11 +5,11 @@ import Frontend.BasicBlock.BlockType;
 
 public class Function {
 	public enum Type{procedure,function};
-	private String funcname;
+	public String funcname;
 	private Type type;
 	//private ArrayList<Result> localvars;
 	private ArrayList<Result> globalvars;
-	private ArrayList<Result>  params;
+	public ArrayList<Result>  params;
 	private HashMap<Integer,Stack<Instruction>> Sym_table;
 	public HashMap<Instruction,ArrayList<Result>> func_call_params;
 	private Result returninst;
