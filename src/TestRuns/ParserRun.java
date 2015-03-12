@@ -62,6 +62,7 @@ public class ParserRun {
 					System.out.println();
 				}
 				RA.remove_phis(first_block_id,last_block_id);
+				last_inst_index++;
 			}
 			}
 			//for normal code
@@ -73,7 +74,7 @@ public class ParserRun {
 
 			graph2.printIG();
 			RA.coalese_phis();
-			last_inst_index++;
+			
 			RA.color_node(last_inst_index,Parser.insts.size()-1);
 			for(int i=0;i<RA.Reg.size();i++)
 			{
@@ -88,6 +89,10 @@ public class ParserRun {
 			CFG graph3 = new CFG("testRA");
 			graph3.printCFG(Ra);
 			System.out.println("\n!!! RA successfully !!!");
+			for(int i=0;i<Parser.insts.size();i++)
+			{
+				System.out.println("reg forinstruction"+ i +":" + Parser.insts.get(i).register);
+			}
 			CFG graph4=new CFG("test001aRA");
 			graph4.printCFG(0);
 			System.out.println("\n!!! Compile successfully !!!");

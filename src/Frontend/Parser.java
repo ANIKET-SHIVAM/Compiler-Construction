@@ -71,9 +71,9 @@ public class Parser{
 		if(tt.getType() != TokenType.mainToken || tt.getType() == TokenType.errorToken)	//if main is not the first token,error
 			error("Syntax error : Missing 'main'");
 		else								 //after parsing main
-		{
+		{	int error=0;
 			while(tt.getType()!= TokenType.periodToken)	//"." at the end
-			{
+			{	error++;
 				Next();
 				while(tt.getType() == TokenType.varToken || tt.getType() == TokenType.arrToken)	//if its a var
 					var_decl();
@@ -109,12 +109,12 @@ public class Parser{
 						error("Syntax error : Missing '}'");
 					}
 				}
+				if(error == 1500)	//"."
+				{
+					throw new IllegalArgumentException("error:no . symbol");
+				}
 			}
-			/*if(tt.getType() != TokenType.periodToken)	//"."
-			{
-				Token.checkToken("");
-				error("Syntax error : Missing '.' at the end");
-			}*/
+			
 		}
 			
 		return currentblock;	
