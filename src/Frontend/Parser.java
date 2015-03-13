@@ -538,7 +538,8 @@ public class Parser{
 			{	Next();
 				if(tt.getType()==TokenType.callToken){
 					currentblock=stat_seq(currentblock);
-					Result x=calledfunction.getreturninst();
+					Instruction returnfromcall=calledfunction.call_insts.get(calledfunction.call_insts.size()-1);
+					Result x=new Result(Type.instruction,returnfromcall);
 					Instruction i = new Instruction("write",x);
 					currentblock.inst_list.add(i);
 					insts.add(i);				//add instruction to instruction list
