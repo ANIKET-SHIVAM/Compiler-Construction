@@ -364,8 +364,10 @@ public class RA {
 					}
 					else
 					{
+						BasicBlock prev_block = i.basicblock.getprevblock();
 						//its phi of while block
-						BasicBlock prev_block = i.basicblock.getprevblock();  
+						if(i.basicblock.getprevblock().inst_list.size() !=0){
+						  
 						String ss =prev_block.inst_list.get(prev_block.inst_list.size()-1).getOperator();
 						switch(ss)
 						{
@@ -382,6 +384,11 @@ public class RA {
 							//or else add at last
 							prev_block.inst_list.add(ins);
 							break;
+						}
+						}
+						else
+						{
+							prev_block.inst_list.add(ins);
 						}
 					}
 				}
@@ -612,6 +619,14 @@ public class RA {
 	
 	public static void create_liveset(BasicBlock bb)
 	{
+		if(bb.getType() == BlockType.whileblock)
+		{
+			if(bb.getnextblock()!= null && bb.getnextblock().getfollowblock()!=null)
+			{
+				create_liveset(bb.getnextblock().getfollowblock());
+			}
+		}
+		
 		int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
 		for(int index1=last_inst;index1 >= 0;index1--){
 			Instruction ii = bb.inst_list.get(index1);
@@ -694,8 +709,9 @@ public class RA {
 
 		if(bb.inst_list.indexOf(ii) == 0){
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
-			
-			if(bb.getType() == BlockType.follow)	//if its follow block of while
+			if(bb.getType() == BlockType.doblock && bb.getnextblock()!=null && bb.getnextblock().getfollowblock()!=null)
+				create_liveset(bb.getnextblock().getfollowblock());
+			else if(bb.getType() == BlockType.follow)	//if its follow block of while
 			{
 				BasicBlock while_block = bb.getprevblock();
 				BasicBlock do_block = while_block.getnextblock();
@@ -710,6 +726,15 @@ public class RA {
 				{
 					create_liveset(do_block.getfollowblock());
 				}
+				else if(do_block.inst_list.size()>=2 && do_block.inst_list.get(do_block.inst_list.size()-2).getOperator() == "cmp")
+				{
+					//if under while
+					create_liveset(do_block.getnextblock().getjoinblock());
+					if(do_block.getnextblock().getjoinblock().getprevblock2() != null)
+						create_liveset(do_block.getnextblock().getjoinblock().getprevblock2());
+					create_liveset(do_block.getnextblock().getjoinblock().getprevblock());
+					create_liveset(do_block);
+				}
 				else
 				{	//no nested while
 					create_liveset(do_block);	//liveset for do block
@@ -717,10 +742,11 @@ public class RA {
 				
 				while_block.out_set = merge_set(while_block.out_set,do_block.in_set);
 				create_liveset(while_block);	//second iteration for while block
-				
+				if(while_block.getprevblock().inst_list.size() !=0){
 				if(while_block.getprevblock().inst_list.get(0).getOperator() != "phi")
 				{
 					while_block.getprevblock().out_set = while_block.in_set;
+				}
 				}
 			}
 		}
