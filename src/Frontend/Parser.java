@@ -788,11 +788,11 @@ public class Parser{
 				
 				for(i=1;i<=currentblock.get_Sym_table().size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
 				{
-
+					var = IdtoString(i);//Todo
 					if(currentblock.get_Sym_table().get(i) !=null){
-					if(currentblock.get_Sym_table().get(i).size()>1)
-					{
-							var = IdtoString(i);//Todo
+						if(currentblock.get_Sym_table().get(i).size()>1)
+						{
+							
 							
 							//Instruction i1 = currentblock.get_Sym_table().get(i).pop();
 							
@@ -851,27 +851,44 @@ public class Parser{
 								}	
 								
 								
-							Result oper1= new Result(Type.instruction,i1);
-							Result oper2= new Result(Type.instruction,i2);
-							Instruction ii;
-							if(else_flag==0)
-								ii = new Instruction("phi",var,oper1,oper2);
-							else
-							{
-								if(oper1.getInstruction().basicblock.getType() == BlockType.iftrue)
+								Result oper1= new Result(Type.instruction,i1);
+								Result oper2= new Result(Type.instruction,i2);
+								Instruction ii;
+								if(else_flag==0)
 									ii = new Instruction("phi",var,oper1,oper2);
 								else
-									ii = new Instruction("phi",var,oper2,oper1);
+								{
+									if(oper1.getInstruction().basicblock.getType() == BlockType.iftrue)
+										ii = new Instruction("phi",var,oper1,oper2);
+									else
+										ii = new Instruction("phi",var,oper2,oper1);
+								}
+								ii.basicblock=phi_block;
+								insts.add(ii);
+								ii.block_id = BasicBlock.block_id;
+								phi_block.inst_list.add(ii);
+								currentblock.get_Sym_table().get(i).push(ii);
+								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 							}
+						}
+						else if(currentblock.get_Sym_table().get(i).size() == 1)
+						{
+							Instruction i1 = currentblock.get_Sym_table().get(i).peek();
+							Result oper1 = new Result(Type.instruction,i1);
+							Result oper2 = new Result(Type.number,0);
+							Instruction ii = new Instruction();
+							if(oper1.getInstruction().basicblock.getType() == BlockType.iftrue)
+								ii = new Instruction("phi",var,oper1,oper2);
+							else
+								ii = new Instruction("phi",var,oper2,oper1);
 							ii.basicblock=phi_block;
 							insts.add(ii);
 							ii.block_id = BasicBlock.block_id;
 							phi_block.inst_list.add(ii);
 							currentblock.get_Sym_table().get(i).push(ii);
-							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
-							}
+							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "#" + oper2.getValue());
 						}
-				}
+					}
 
 				}
 				if(else_flag==0)
@@ -1006,10 +1023,11 @@ public class Parser{
 					Instruction firstWhileInst=while_block.inst_list.get(0);
 					for(counter=1;counter<=currentblock.get_Sym_table().size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{	
+						String var = IdtoString(counter);//Todo
 						if(currentblock.get_Sym_table().get(counter) != null){
 						if(currentblock.get_Sym_table().get(counter).size()>1)
 						{
-								String var = IdtoString(counter);//Todo
+								
 								Instruction i1 = currentblock.get_Sym_table().get(counter).peek();
 								int top = currentblock.get_Sym_table().get(counter).size()-2;			//second element from top
 								while(currentblock.get_Sym_table().get(counter).elementAt(top).block_id >= i1.block_id && top>0){
@@ -1025,6 +1043,22 @@ public class Parser{
 								varsInDo.put(oper2.getInstruction(), ii);
 								currentblock.get_Sym_table().get(counter).push(ii);
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
+						}
+						if(currentblock.get_Sym_table().get(counter).size() == 1)
+						{
+							Instruction i1 = currentblock.get_Sym_table().get(counter).peek();
+							Result oper1 = new Result(Type.instruction,i1);
+							Result oper2 = new Result(Type.number,0);
+							Instruction ii = new Instruction();
+							
+							ii = new Instruction("phi",var,oper1,oper2);
+							
+							ii.basicblock=while_block;
+							insts.add(ii);
+							while_block.inst_list.add(phi_counter++, ii);
+							//varsInDo.put(oper2.getInstruction(), ii);
+							currentblock.get_Sym_table().get(counter).push(ii);
+							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "#" + oper2.getValue());
 						}
 						}
 					}

@@ -561,10 +561,10 @@ public class RA {
 	public static void fill_matrix(ArrayList<Integer> set)
 	{
 		int i=0,j=0;
-		System.out.println("size of set: "+ set.size());
-		System.out.println("elemnts of matrix are:");
-		for(i=0;i<set.size();i++)
-			System.out.println(set.get(i)+",");
+	//	System.out.println("size of set: "+ set.size());
+		//System.out.println("elemnts of matrix are:");
+		//for(i=0;i<set.size();i++)
+			//System.out.println(set.get(i)+",");
 		for(i=0;i<set.size()-1;i++)
 		{
 			for(j=i+1;j< set.size();j++)
