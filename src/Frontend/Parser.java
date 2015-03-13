@@ -271,7 +271,7 @@ public class Parser{
 	}
 	
 	public BasicBlock statement(BasicBlock currentblock)
-	{	System.out.println(tt.getCharacters());
+	{	//System.out.println(tt.getCharacters());
 		BasicBlock bb;
 		if(tt.getType() == TokenType.semiToken){	//";"
 			Next();
@@ -298,6 +298,11 @@ public class Parser{
 			bb=ifStatement(currentblock);
 			if(tt.getType()==TokenType.fiToken)
 				Next();
+		}
+		else if(tt.getType()==TokenType.fiToken)
+		{
+			bb=currentblock;
+			Next();
 		}
 		else if(tt.getType() == TokenType.whileToken)	//while
 		{
@@ -820,8 +825,11 @@ public class Parser{
 							Instruction i2 = new Instruction();
 							int top = currentblock.get_Sym_table().get(i).size()-2;
 							if(else_flag != 0){
+								if(phi_block.getblockno() == 16)
+									System.out.println("top are :"+top+"for block:"+phi_block.getblockno());
 								//top = currentblock.get_Sym_table().get(i).size()-2;
-								while(currentblock.get_Sym_table().get(i).get(top).block_id >= i1.block_id && currentblock.get_Sym_table().get(i).size()>1){
+								//while(currentblock.get_Sym_table().get(i).size()>1 && currentblock.get_Sym_table().get(i).get(top).block_id >= i1.block_id ){
+								  while(top>1 && currentblock.get_Sym_table().get(i).get(top).block_id >= i1.block_id ){
 									i2 = currentblock.get_Sym_table().get(i).get(top);	
 									top--;
 								}
@@ -1450,18 +1458,21 @@ public class Parser{
 							if(parameter.getType()==Type.param){
 								res=parameter;
 							}
+							else
+							{
+								res=new Result(Type.number,0);
+							}
 							Next();
 						}
-						else{			//for initailizing with zero
+						/*else{			//for initailizing with zero
 							if(Result_cache.containsKey(tt.getCharacters())){
-								System.out.println("thisvar not defined:"+tt.getCharacters());
 								res=new Result(Type.number,0);
 								Next();
 							}
 							else
 								throw new IllegalArgumentException("error:undefined variable");
 							
-						}
+						}*/
 					}
 					
 			}

@@ -456,7 +456,7 @@ public class CodeGenerator {
 					machine_insts.add(DLX.assemble(DLX.PSH,i, 29,4));
 				}
 				//push params
-				if(!func.func_call_params.get(inst).isEmpty()){
+				if(func.func_call_params.get(inst)!=null){
 				for(int i=func.func_call_params.get(inst).size()-1;i>=0;i--){
 					Result param=func.func_call_params.get(inst).get(i);
 					if(param.getType()==Type.instruction){
@@ -564,14 +564,16 @@ public class CodeGenerator {
 							else
 								bb = bb.getnextblock();
 							k=0;
+							if(bb != null && bb.inst_list != null){
 							for(int j=0;j<bb.inst_list.size();j++){
 								if(bb.inst_list.get(j).getOperator()=="phi")
 								k++;
-							}
+							}}
 						}
+					if(bb!=null){	
 					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
 					Instruction jump_else= new Instruction("jump_else",jump_to);
-					bb.getprevblock().inst_list.add(jump_else);
+					bb.getprevblock().inst_list.add(jump_else);}
 					}
 				}
 				else
@@ -594,7 +596,7 @@ public class CodeGenerator {
 					}
 				}
 			}
-			if(bb.getType()==BlockType.whileblock){
+			if(bb!=null && bb.getType()==BlockType.whileblock){
 				BasicBlock newbb=bb.getwhiletodo();
 				if(newbb.inst_list.get(newbb.inst_list.size()-1).getOperator()=="bra"){
 					int k=0;
@@ -611,7 +613,7 @@ public class CodeGenerator {
 					System.out.println("RA bra inst patchup fail");
 			}
 
-			if(bb.getType()==BlockType.join){
+			if(bb != null && bb.getType()==BlockType.join){
 				BasicBlock newbb=bb.getprevblock2();
 				if(newbb != null && newbb.inst_list.size() != 0){
 				String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
@@ -672,7 +674,7 @@ public class CodeGenerator {
 					System.out.println("RA bra inst patchup fail");
 				}
 			}
-			if(bb.getType()==BlockType.follow){
+			if(bb!=null && bb.getType()==BlockType.follow){
 				BasicBlock newbb=bb.getprevblock();
 				if(newbb != null && newbb.inst_list.size() != 0){
 				String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
@@ -728,11 +730,13 @@ public class CodeGenerator {
 	}
 	public void patchBranches(){
 		for(int i:JumpIndex){		//i-jump inst index
+			int jump_by=0;
 			System.out.println("jump by: "+i);
 			Instruction JumpTo=JumpToInst.get(i);
 			Instruction JumpInst=JumpType.get(i);
 			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpTo.getPhiVar()+JumpTo.register+JumpInst.getOperator());
-			int jump_by=InstToIndex.get(JumpTo)-i;
+			if(InstToIndex!=null)
+				jump_by=InstToIndex.get(JumpTo)-i;
 			String operator=JumpInst.getOperator();
 			int opcode;
 			switch(operator){

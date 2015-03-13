@@ -677,6 +677,7 @@ public class RA {
 				phi_list.add(ii);
 			if(ii.getOperator() == "end" || ii.getOperator() == "call")
 			{
+				if(bb.getType()!= BlockType.follow)
 				continue;
 			}
 		ArrayList<Integer> set = new ArrayList<Integer>();
@@ -772,10 +773,14 @@ public class RA {
 				else if(do_block.inst_list.size()>=2 && do_block.inst_list.get(do_block.inst_list.size()-2).getOperator() == "cmp")
 				{
 					//if under while
-					create_liveset(do_block.getnextblock().getjoinblock());
-					if(do_block.getnextblock().getjoinblock().getprevblock2() != null)
-						create_liveset(do_block.getnextblock().getjoinblock().getprevblock2());
-					create_liveset(do_block.getnextblock().getjoinblock().getprevblock());
+					if(do_block.getnextblock()!=null){
+						if( do_block.getnextblock().getjoinblock()!=null)
+							create_liveset(do_block.getnextblock().getjoinblock());
+						if(do_block.getnextblock().getjoinblock()!= null && do_block.getnextblock().getjoinblock().getprevblock2() != null)
+							create_liveset(do_block.getnextblock().getjoinblock().getprevblock2());
+						if(do_block.getnextblock().getjoinblock()!= null && do_block.getnextblock().getjoinblock().getprevblock() != null)
+						create_liveset(do_block.getnextblock().getjoinblock().getprevblock());
+					}
 					create_liveset(do_block);
 				}
 				else

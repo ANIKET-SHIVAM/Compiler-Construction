@@ -7,8 +7,6 @@ import CodeGenerator.*;
 public class ParserRun {
 		public static void main(String []args){
 			int Ra=0;
-			
-
 			//String filename = "testprogs/arithemetic.txt";
 			String filename = "testprogs/test001.txt";
 
@@ -68,6 +66,7 @@ public class ParserRun {
 				last_inst_index++;
 			}
 			}
+			System.out.println(BasicBlock.basicblocks.size());
 			//for normal code
 			RA.doLivenessAnalysis(blocks,BasicBlock.basicblocks.size()-1);
 

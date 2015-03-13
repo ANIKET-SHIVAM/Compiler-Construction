@@ -184,7 +184,11 @@ public class Scanner {
 	public Token check_main()
 	{
 		int i=0;
-		while(inputSym != 'n'){
+		char [] buff = new char[4];
+		String str=new String();
+		//while(inputSym != 'n')i{
+		while(i!=3){
+			buff[i] = inputSym;
 			i++;
 			Next();
 		}
