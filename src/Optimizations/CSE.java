@@ -92,7 +92,13 @@ public class CSE {
 					}
 					else if(inst.getOperands().size()==1){
 						if(inst.getOperands().get(0).getType()==Result.Type.instruction){
-							if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
+							if(inst.getOperator()=="bra"){
+								Instruction jump_to=inst.getOperands().get(0).getInstruction();
+								Instruction new_jump_to=Parser.insts.get(Parser.insts.indexOf(jump_to)+1);
+								Result new_jump=new Result(Type.instruction,bb.getdotowhile().inst_list.get(0));
+								inst.getOperands().set(0, new_jump);
+							}
+						   else if(replaceInst.containsKey(inst.getOperands().get(0).getInstruction())){
 								Instruction replaceinst=replaceInst.get(inst.getOperands().get(0).getInstruction());
 								Result replacewith=new Result(Type.instruction,replaceinst);
 								inst.getOperands().set(0, replacewith);

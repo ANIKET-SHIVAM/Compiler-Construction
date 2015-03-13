@@ -151,6 +151,9 @@ public class Parser{
 				{	s1=tt.getCharacters();
 					ArrayList<Integer> arrsize=new ArrayList<Integer>();
 					Next();
+					if(tt.getType() != TokenType.openbracketToken)
+						throw new IllegalArgumentException("error declaration: no array size defined");
+						
 					while(tt.getType() == TokenType.openbracketToken)	//array [
 					{	
 						Next();

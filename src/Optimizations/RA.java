@@ -197,7 +197,7 @@ public class RA {
 		for(int i=0;i<Live_Set.size();i++)
 		{
 			count=0;
-			
+			if(Live_Set.containsKey(i)){
 			for(int k=0;k<Live_Set.get(i).size();k++)
 			{
 				if(Live_Set.get(i).get(k) == res_node || Live_Set.get(i).get(k) == oper_node)
@@ -207,7 +207,7 @@ public class RA {
 				if(count==2)
 					return true;
 			}
-		
+			}
 		}
 		return false;
 	}
