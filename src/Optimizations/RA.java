@@ -619,12 +619,18 @@ public class RA {
 	
 	public static void create_liveset(BasicBlock bb)
 	{
+		if(bb.getType() == BlockType.whileblock)
+		{
+			if(bb.getnextblock()!= null && bb.getnextblock().getfollowblock()!=null)
+			{
+				create_liveset(bb.getnextblock().getfollowblock());
+			}
+		}
+		
 		int last_inst = bb.inst_list.size()-1;	//last instruction in BasicBlock
 		for(int index1=last_inst;index1 >= 0;index1--){
 			Instruction ii = bb.inst_list.get(index1);
 			
-			if(bb.getblockno() == 5)
-				System.out.println("here I Am!!!");
 			if(ii.getOperator() == "phi" && !phi_list.contains(ii))
 				phi_list.add(ii);
 			if(ii.getOperator() == "end" || ii.getOperator() == "call")
@@ -703,8 +709,9 @@ public class RA {
 
 		if(bb.inst_list.indexOf(ii) == 0){
 			bb.in_set = set;	//setting in_set to set at first instruction in basic block
-			
-			if(bb.getType() == BlockType.follow)	//if its follow block of while
+			if(bb.getType() == BlockType.doblock && bb.getnextblock()!=null && bb.getnextblock().getfollowblock()!=null)
+				create_liveset(bb.getnextblock().getfollowblock());
+			else if(bb.getType() == BlockType.follow)	//if its follow block of while
 			{
 				BasicBlock while_block = bb.getprevblock();
 				BasicBlock do_block = while_block.getnextblock();
@@ -719,7 +726,7 @@ public class RA {
 				{
 					create_liveset(do_block.getfollowblock());
 				}
-				else if(do_block.inst_list.get(do_block.inst_list.size()-2).getOperator() == "cmp")
+				else if(do_block.inst_list.size()>=2 && do_block.inst_list.get(do_block.inst_list.size()-2).getOperator() == "cmp")
 				{
 					//if under while
 					create_liveset(do_block.getnextblock().getjoinblock());
