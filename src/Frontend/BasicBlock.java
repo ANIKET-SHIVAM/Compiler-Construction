@@ -23,7 +23,7 @@ public class BasicBlock {
 	private BasicBlock dotowhileblock;
 	private BasicBlock whiletodoblock;
 	private BasicBlock functionblock;
-	private HashMap<Integer,Stack<Instruction>> Sym_table;
+	public HashMap<Integer,Stack<Instruction>> Sym_table;
 	public BasicBlock jointoif;
 	public int start_instruction_index;
 	public int end_instruction_index;

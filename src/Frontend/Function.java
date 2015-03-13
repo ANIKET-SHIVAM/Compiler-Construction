@@ -10,7 +10,7 @@ public class Function {
 	//private ArrayList<Result> localvars;
 	private ArrayList<Result> globalvars;
 	public ArrayList<Result>  params=new ArrayList<Result>();
-	private HashMap<Integer,Stack<Instruction>> Sym_table;
+	private static HashMap<Integer,Stack<Instruction>> Sym_table;
 	public HashMap<Instruction,ArrayList<Result>> func_call_params;
 	private Result returninst;
 	private BasicBlock firstbb;
