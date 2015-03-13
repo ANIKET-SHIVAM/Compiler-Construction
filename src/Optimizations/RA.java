@@ -292,8 +292,28 @@ public class RA {
 						Instruction ins = new Instruction("move",i.getOperands().get(1) ,res);
 						i.PhitoMove=ins;
 						if(i.basicblock.getType() != BlockType.whileblock){
-							if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
-								i.basicblock.getprevblock2().inst_list.add(ins);
+							if(i.basicblock.getprevblock2().getType() == BlockType.ifelse){
+								if(i.basicblock.getprevblock2().inst_list != null)
+								{
+									String ss = i.basicblock.getprevblock2().inst_list.get(i.basicblock.getprevblock2().inst_list.size()-1).getOperator();
+									switch(ss)
+									{
+									case "bge":
+									case "ble":
+									case "beq":
+									case "bne":		
+									case "bgt":
+									case "blt":
+										//add before bge
+										i.basicblock.getprevblock2().inst_list.add(i.basicblock.getprevblock2().inst_list.size()-1, ins);
+										break;
+									default:
+										//or else add at last
+										i.basicblock.getprevblock2().inst_list.add(ins);
+										break;
+									}
+								}
+							}
 							else
 							{
 								int pos = i.basicblock.getprevblock2().inst_list.size()-1; 
@@ -354,8 +374,29 @@ public class RA {
 					Instruction ins = new Instruction("move",res1,res);
 					i.PhitoMove=ins;
 					if(i.basicblock.getType() != BlockType.whileblock){
-						if(i.basicblock.getprevblock2().getType() == BlockType.ifelse)
-							i.basicblock.getprevblock2().inst_list.add(ins);
+						if(i.basicblock.getprevblock2().getType() == BlockType.ifelse){
+							if(i.basicblock.getprevblock2().inst_list != null)
+							{
+								String ss = i.basicblock.getprevblock2().inst_list.get(i.basicblock.getprevblock2().inst_list.size()-1).getOperator();
+								switch(ss)
+								{
+								case "bge":
+								case "ble":
+								case "beq":
+								case "bne":		
+								case "bgt":
+								case "blt":
+									//add before bge
+									i.basicblock.getprevblock2().inst_list.add(i.basicblock.getprevblock2().inst_list.size()-1, ins);
+									break;
+								default:
+									//or else add at last
+									i.basicblock.getprevblock2().inst_list.add(ins);
+									break;
+								}
+							}
+						//	i.basicblock.getprevblock2().inst_list.add(ins);
+						}
 						else
 						{
 							int pos = i.basicblock.getprevblock2().inst_list.size()-1;

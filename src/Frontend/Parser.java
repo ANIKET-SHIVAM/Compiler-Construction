@@ -1453,6 +1453,7 @@ public class Parser{
 						}
 						else{			//for initailizing with zero
 							if(Result_cache.containsKey(tt.getCharacters())){
+								System.out.println("thisvar not defined:"+tt.getCharacters());
 								res=new Result(Type.number,0);
 								Next();
 							}

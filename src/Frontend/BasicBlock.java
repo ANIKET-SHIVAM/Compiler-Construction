@@ -261,7 +261,7 @@ public class BasicBlock {
 					oper2= new StringBuilder(" ").append("FP").toString();
 				
 				else
-					oper2="error"+op2.getType().toString();
+					oper2="error";
 				
 				if(inst.getOperator()=="phi"){
 					String phivar=inst.getPhiVar();
@@ -354,7 +354,7 @@ public class BasicBlock {
 				else if(op2.getType()==Type.arr)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
 				else
-					oper2="error"+op2.getType().toString();
+					oper2="error";
 				
 				if(inst.getOperator()=="phi"){
 					String phivar=inst.getPhiVar();
