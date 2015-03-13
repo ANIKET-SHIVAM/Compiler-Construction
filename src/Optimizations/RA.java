@@ -52,6 +52,7 @@ public class RA {
 	//add the node to IG
 	public static void add(int node)
 	{
+		if(Live_Set.get(node) != null)
 		fill_matrix(Live_Set.get(node));
 	}
 	
@@ -559,22 +560,20 @@ public class RA {
 	public static void fill_matrix(ArrayList<Integer> set)
 	{
 		int i=0,j=0;
-		
+		System.out.println("size of set: "+ set.size());
+		System.out.println("elemnts of matrix are:");
+		for(i=0;i<set.size();i++)
+			System.out.println(set.get(i)+",");
 		for(i=0;i<set.size()-1;i++)
 		{
 			for(j=i+1;j< set.size();j++)
 			{
+					if(set.get(i)>-1 && set.get(j)>-1){
 					IGMatrix[set.get(i)][set.get(j)] =  1; //IGMatrix[set[i]][set[j]]=1
 					IGMatrix[set.get(j)][set.get(i)] =  1;
+					}
 			}
 		}
-	}
-	
-	//for functions only
-	public static void doFuncLivenessAnalysis(int first_block_id,int last_block_id)
-	{
-		
-		
 	}
 	
 	
@@ -725,7 +724,7 @@ public class RA {
 			}
 		}
 			Live_Set.put(inst_index, set);	//add set corresponding to instruction
-
+			if(set != null)
 			fill_matrix(set);	//fill matrix for IG creation
 			System.out.println("Live Set for BasicBlock:"+ bb.getblockno());
 			System.out.print(inst_index+":- ");
