@@ -42,7 +42,15 @@ public class Scanner {
 		}
 	
 		if(inputSym == 'm')
+		{	 
+			/*String ss = check_main();
+			if(ss == "")
+				Prev();
+		//		return Token.checkToken("");
+			if(ss == "main")
+				return Token.checkToken("main");*/
 			return check_main();
+		}
 		
 		if(inputSym >='0' && inputSym<= '9') {
 			return isNumber();}
@@ -186,17 +194,25 @@ public class Scanner {
 		int i=0;
 		char [] buff = new char[4];
 		String str=new String();
-		//while(inputSym != 'n')i{
-		while(i!=3){
+		while(inputSym != 'n'){
+		//while(i!=4){
 			buff[i] = inputSym;
 			i++;
+		//	if(i!=4)
 			Next();
 		}
+		
 		if(i>3)
 			return Token.checkToken("");//error
 		else{
 			Next();
 			return Token.checkToken("main");
 		}
+		/*if(!buff.equals("main"))
+			return ("");//error
+		else{
+			Next();
+			return ("main");*/
+		//}
 	}
 }
