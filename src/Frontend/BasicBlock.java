@@ -226,6 +226,8 @@ public class BasicBlock {
 					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
 				else if (op1.getType()==Type.variable)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
+				else if (op1.getType()==Type.param)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else if(op1.getType()==Type.arr)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
@@ -242,12 +244,16 @@ public class BasicBlock {
 					if(Parser.insts.indexOf(op2.getInstruction())==-1&&this.getjoinblock()!=null){
 						op2.setInstruction(this.getjoinblock().inst_list.get(0));
 						}
+					if(op2.getInstruction().getOperator()=="patch branch")
+						op2.setInstruction(this.getjoinblock().inst_list.get(0));
 						//oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 					//}
 					//else	
 						oper2= new StringBuilder(" (").append(Parser.insts.indexOf(op2.getInstruction())).append(") ").toString();
 				}
 				else if (op2.getType()==Type.variable)
+					oper2= new StringBuilder(" ").append(op2.getName()).toString();
+				else if (op2.getType()==Type.param)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
 				else if(op2.getType()==Type.arr)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
@@ -266,12 +272,16 @@ public class BasicBlock {
 			}
 			else if (operands.size()==1){
 				Result op1=operands.get(0);
+				if(inst.getOperator()=="ret")
+					System.out.println("ssssssssssssssssss"+op1.getType());
 				if(op1.getType()==Type.number)
 					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
 				if(op1.getType()==Type.variable||op1.getType()==Type.arr)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else if(op1.getType()==Type.instruction)
 					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();
+				else if (op1.getType()==Type.param)
+					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else
 					oper1="error";
 				

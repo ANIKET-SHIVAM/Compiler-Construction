@@ -407,11 +407,23 @@ public class CodeGenerator {
 				if(bb.inst_list.size() != 0){
 					String operator=bb.getprevblock().inst_list.get(bb.getprevblock().inst_list.size()-1).getOperator();
 					if(!operator.equals("ble")&&!operator.equals("blt")&&!operator.equals("bgt")&&!operator.equals("bne")&&!operator.equals("bge")&&!operator.equals("beq")){
+						
 						int k=0;
-					for(int j=0;j<bb.inst_list.size();j++){
-						if(bb.inst_list.get(j).getOperator()=="phi")
+						for(int j=0;j<bb.inst_list.size();j++){
+							if(bb.inst_list.get(j).getOperator()=="phi")
 							k++;
-					}
+						}
+						if(k==bb.inst_list.size()){
+							if(bb.getjoinblock() != null)
+								bb = bb.getjoinblock();
+							else
+								bb = bb.getnextblock();
+							k=0;
+							for(int j=0;j<bb.inst_list.size();j++){
+								if(bb.inst_list.get(j).getOperator()=="phi")
+								k++;
+							}
+						}
 					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
 					Instruction jump_else= new Instruction("jump_else",jump_to);
 					bb.getprevblock().inst_list.add(jump_else);
@@ -465,6 +477,17 @@ public class CodeGenerator {
 						if(bb.inst_list.get(j).getOperator()=="phi")
 							k++;
 					}
+					if(k==bb.inst_list.size()){
+						if(bb.getjoinblock() != null)
+							bb = bb.getjoinblock();
+						else
+							bb = bb.getnextblock();
+						k=0;
+						for(int j=0;j<bb.inst_list.size();j++){
+							if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+						}
+					}
 					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
 					Instruction patchbra=bb.inst_list.get(k);
 					Result patchbraup=new Result(Type.instruction,patchbra);
@@ -484,6 +507,17 @@ public class CodeGenerator {
 						if(bb.inst_list.get(j).getOperator()=="phi")
 							k++;
 					}
+					if(k==bb.inst_list.size()){
+						if(bb.getjoinblock() != null)
+							bb = bb.getjoinblock();
+						else
+							bb = bb.getnextblock();
+						k=0;
+						for(int j=0;j<bb.inst_list.size();j++){
+							if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+						}
+					}
 					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
 					Instruction patchbra=bb.inst_list.get(k);
 					Result patchbraup=new Result(Type.instruction,patchbra);
@@ -502,6 +536,17 @@ public class CodeGenerator {
 					for(int j=0;j<bb.inst_list.size();j++){
 						if(bb.inst_list.get(j).getOperator()=="phi")
 							k++;
+					}
+					if(k==bb.inst_list.size()){
+						if(bb.getjoinblock() != null)
+							bb = bb.getjoinblock();
+						else
+							bb = bb.getnextblock();
+						k=0;
+						for(int j=0;j<bb.inst_list.size();j++){
+							if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+						}
 					}
 					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
 					Instruction patchbra=bb.inst_list.get(k);
@@ -529,7 +574,8 @@ public class CodeGenerator {
 			for(int i=func.getfirstbb().getblockno();i<= func.getreturnbb().getblockno();i++){
 				BasicBlock bb = BasicBlock.basicblocks.get(i);
 				for(Instruction inst:bb.inst_list)
-				{list.add(inst);
+				{if(!inst.getOperator().equals("phi"))
+					list.add(inst);
 				}
 			}
 		}
@@ -540,7 +586,7 @@ public class CodeGenerator {
 			System.out.println("jump by: "+i);
 			Instruction JumpTo=JumpToInst.get(i);
 			Instruction JumpInst=JumpType.get(i);
-			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpTo.getOperator()+JumpInst.getbb());
+			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpTo.getPhiVar()+JumpTo.register+JumpInst.getOperator());
 			int jump_by=InstToIndex.get(JumpTo)-i;
 			String operator=JumpInst.getOperator();
 			int opcode;

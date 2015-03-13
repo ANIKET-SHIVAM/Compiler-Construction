@@ -28,7 +28,7 @@ public class Result {
 	private int baseaddr; //for array
 	private ArrayList<Integer> arrsize=new ArrayList<Integer>();//for array
 	private Instruction ins=null;	//for instruction pointer
-	
+	public int param_index=0;
 	public Result(){}
 	
 	Result(Type kind,TokenType ss)

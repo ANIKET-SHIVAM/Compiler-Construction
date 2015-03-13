@@ -12,6 +12,7 @@ public class Function {
 	public ArrayList<Result>  params=new ArrayList<Result>();
 	private static HashMap<Integer,Stack<Instruction>> Sym_table;
 	public HashMap<Instruction,ArrayList<Result>> func_call_params;
+	public ArrayList<Instruction>  call_insts=new ArrayList<Instruction>();
 	private Result returninst;
 	private BasicBlock firstbb;
 	private BasicBlock returnbb;

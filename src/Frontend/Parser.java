@@ -219,6 +219,7 @@ public class Parser{
 					Next();//to skip comma
 				String ss = tt.getCharacters();
 				Result x = new Result(Type.param,ss);
+				x.param_index=param_list.size();
 				param_list.add(x);
 				Result_cache.put(ss,x); //store variable name in hash map
 				Next();
@@ -576,10 +577,7 @@ public class Parser{
 			//Instruction jump_ins = func.getfirstbb().inst_list.get(0);
 			Result jump_res = new Result(Type.variable,tt.getCharacters());
 			Instruction call_inst = new Instruction("call",jump_res);
-			call_inst.basicblock = currentblock;
-			call_inst.block_id = BasicBlock.block_id;
-			currentblock.inst_list.add(call_inst);
-			insts.add(call_inst);
+			
 			Next();
 			if (tt.getType()==TokenType.openparenToken)
 			{	Next();
@@ -593,10 +591,15 @@ public class Parser{
 					params.add(x);
 				}
 				func.add_param_call(call_inst, params);
+				func.call_insts.add(call_inst);
 			}
 		//	BasicBlock nextblock=currentblock.createafterfunction(func.getfirstbb());
 		//	BasicBlock.block_id++;
 		//	return nextblock;	
+			call_inst.basicblock = currentblock;
+			call_inst.block_id = BasicBlock.block_id;
+			currentblock.inst_list.add(call_inst);
+			insts.add(call_inst);
 			return  currentblock;
 		}
 		else
@@ -639,6 +642,10 @@ public class Parser{
 						{
 							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
 						}
+						else if(op2.getType() == Type.param)	//second operand is also pointer to instruction
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") (" + insts.indexOf(op2.getName()) + ")"); 
+						}
 						else	//second operand is a number
 						{
 							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getInstruction()) + ") #" + op2.getValue());
@@ -649,6 +656,10 @@ public class Parser{
 						if(op2.getType() == Type.instruction)
 						{
 							System.out.println(insts.indexOf(i)+":"+"cmp #" + op1.getValue() + " (" + insts.indexOf(op2.getInstruction()) + ")");
+						}
+						else if(op2.getType() == Type.param)	//second operand is also pointer to instruction
+						{
+							System.out.println(insts.indexOf(i)+":"+"cmp (" + insts.indexOf(op1.getName()) + ") (" + insts.indexOf(op2.getInstruction()) + ")"); 
 						}
 						else
 						{
@@ -901,9 +912,15 @@ public class Parser{
 					Result res2 = my_fix.getOperands().get(len);
 					
 					//Instruction fix_loc = res.getFixupLocation();
+					if(!phi_block.inst_list.isEmpty()){
 					Instruction fix_loc = phi_block.inst_list.get(0);
 					//res2.setFixupLocation(fix_loc);
-					res2.setInstruction(fix_loc);
+					res2.setInstruction(fix_loc);}
+					else{
+						Instruction fix_loc = new Instruction("patch branch");
+						//res2.setFixupLocation(fix_loc);
+						res2.setInstruction(fix_loc);
+					}
 				}
 				//BasicBlock.block_id++;	
 				Next();
@@ -1144,7 +1161,9 @@ public class Parser{
 		//int res=0;
 		Result res;
 		Result final_res;
+		
 		final_res = res = T(currentblock);
+			
 		Result res1 = new Result();
 		String oper;
 		while(tt.getType() == TokenType.plusToken || tt.getType()==TokenType.minusToken)
@@ -1241,6 +1260,15 @@ public class Parser{
 					Next();
 				else
 					error("Syntax error : Missing ')'");
+			}
+			else if (tt.getType()==TokenType.callToken){
+				currentblock=stat_seq(currentblock);
+				if (read_statement_boolean==true){
+					read_statement_boolean=false;
+					res =new Result(Type.instruction,insts.get(insts.size()-1));}
+				else{	
+					res =new Result(Type.instruction,calledfunction.call_insts.get(calledfunction.call_insts.size()-1));
+				}
 			}
 			else if(tt.getType() == TokenType.ident)//if its a var
 			{
@@ -1410,6 +1438,13 @@ public class Parser{
 							}
 							res = res1;
 							//s.push(res1.getInstruction());
+							Next();
+						}
+						else if(Result_cache.containsKey(tt.getCharacters())){
+							Result parameter=Result_cache.get(tt.getCharacters());
+							if(parameter.getType()==Type.param){
+								res=parameter;
+							}
 							Next();
 						}
 						else{			//for initailizing with zero
