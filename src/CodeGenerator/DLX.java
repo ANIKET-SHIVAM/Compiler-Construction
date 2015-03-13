@@ -134,20 +134,12 @@ public class DLX {
 					M[(R[b]+c) / 4] = R[a]; 
 					break;
 				case POP:
-					if(a==28)
-					System.out.println("FP :"+ M[R[b] / 4]);
 					R[a] = M[R[b] / 4];
 					R[b] = R[b] + c;
-					if(a==28)
-						System.out.println("FP :"+ R[a]);
 					break;
 				case PSH:
-					if(a==28)
-						System.out.println("push FP :"+ R[a]);
 					R[b] = R[b] + c;
 					M[R[b] / 4] = R[a];
-					if(a==28)
-						System.out.println("push FP :"+ R[b] / 4);
 					break;
 				case BEQ:
 					if (R[a] == 0) nextPC = PC + c;

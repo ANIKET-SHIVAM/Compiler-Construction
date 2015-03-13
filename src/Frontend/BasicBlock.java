@@ -272,11 +272,9 @@ public class BasicBlock {
 			}
 			else if (operands.size()==1){
 				Result op1=operands.get(0);
-				if(inst.getOperator()=="ret")
-					System.out.println("ssssssssssssssssss"+op1.getType());
 				if(op1.getType()==Type.number)
 					oper1= new StringBuilder(" #").append(op1.getValue()).toString();
-				if(op1.getType()==Type.variable||op1.getType()==Type.arr)
+				else if(op1.getType()==Type.variable||op1.getType()==Type.arr)
 					oper1= new StringBuilder(" ").append(op1.getName()).toString();
 				else if(op1.getType()==Type.instruction)
 					oper1= new StringBuilder(" (").append(Parser.insts.indexOf(op1.getInstruction())).append(") ").toString();

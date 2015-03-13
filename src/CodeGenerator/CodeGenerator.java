@@ -180,6 +180,37 @@ public class CodeGenerator {
 				}
 			}
 			
+			else if(oper1.getType()==Type.instruction&&oper2.getType()==Type.param){
+				int param_index=oper2.param_index+1;
+				int oper1_register=oper1.getInstruction().getRegister();
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADD;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register,26 ));	
+							break;
+				case "sub":opcode=DLX.SUB;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register,26 ));	
+							break;
+				case "mul":opcode=DLX.MUL;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register,26 ));	
+							break;
+				case "div":opcode=DLX.DIV;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register,26 ));	
+							break;
+				case "cmp":opcode=DLX.CMP;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper1_register,26 ));	
+							break;
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction"+operator);
+				}
+			}
 			
 			
 			
@@ -200,8 +231,9 @@ public class CodeGenerator {
 				case "div":opcode=DLX.DIVI;
 							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
 							break;
-				case "cmp":opcode=DLX.CMPI;
-							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register, oper1.getValue()));	
+				case "cmp":opcode=DLX.CMP;
+							machine_insts.add(DLX.assemble(DLX.ADDI,26, 0, oper1.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26, oper2_register));	
 							break;
 					
 				
@@ -215,6 +247,36 @@ public class CodeGenerator {
 				}
 			}
 			
+			else if(oper2.getType()==Type.instruction&&oper1.getType()==Type.param){
+				int param_index=oper1.param_index+1;
+				int oper2_register=oper2.getInstruction().getRegister();
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADD;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register,26 ));	
+							break;
+				case "sub":opcode=DLX.SUB;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register,26 ));	
+							break;
+				case "mul":opcode=DLX.MUL;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register,26 ));	
+							break;
+				case "div":opcode=DLX.DIV;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, oper2_register,26 ));	
+							break;
+				case "cmp":opcode=DLX.CMP;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2_register ));	
+							break;
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
 			
 			
 			
@@ -247,6 +309,75 @@ public class CodeGenerator {
 					throw new IllegalArgumentException("error:Code generator wrong instruction");
 				}
 			}
+			
+			else if(oper1.getType()==Type.number&&oper2.getType()==Type.param){
+				int param_index=oper2.param_index+1;
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADD;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(DLX.ADDI,27, 0, oper1.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 27,26));	
+							break;
+				case "sub":opcode=DLX.SUB;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(DLX.ADDI,27, 0, oper1.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 27,26));
+							break;
+				case "mul":opcode=DLX.MUL;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(DLX.ADDI,27, 0, oper1.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 27,26));
+							break;
+				case "div":opcode=DLX.DIV;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 26, oper1.getValue()));	
+							break;
+				case "cmp":opcode=DLX.CMP;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(DLX.ADDI,27, 0, oper1.getValue()));	
+							machine_insts.add(DLX.assemble(opcode,inst_register, 27, 26));	
+							break;
+				
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			else if(oper1.getType()==Type.param&&oper2.getType()==Type.number){
+				int param_index=oper1.param_index+1;
+				int inst_register=inst.getRegister();
+				int opcode;
+				switch(operator){
+				case "add":opcode=DLX.ADDI;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2.getValue()));	
+							break;
+				case "sub":opcode=DLX.SUBI;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2.getValue()));	
+							break;
+				case "mul":opcode=DLX.MULI;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2.getValue()));	
+							break;
+				case "div":opcode=DLX.DIVI;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2.getValue()));	
+							break;
+				case "cmp":opcode=DLX.CMPI;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));	
+							machine_insts.add(DLX.assemble(opcode,inst_register,26,oper2.getValue()));	
+							break;
+				
+				default:
+					throw new IllegalArgumentException("error:Code generator wrong instruction");
+				}
+			}
+			
+			
 			else if(oper1.getType()==Type.arr&&oper2.getType()==Type.FP){
 				int inst_register=inst.getRegister();
 				int opcode=DLX.ADDI;
@@ -296,6 +427,11 @@ public class CodeGenerator {
 							machine_insts.add(DLX.assemble(DLX.ADDI, scratch_reg_1, 0, oper1.getValue()));
 							machine_insts.add(DLX.assemble(opcode, scratch_reg_1));
 						}
+						else if(oper1.getType()==Type.param){
+							int param_index=oper1.param_index+1;
+							machine_insts.add(DLX.assemble(DLX.LDW,26, 28,-param_index*4 -4 ));
+							machine_insts.add(DLX.assemble(opcode, 26));
+						}
 						else	
 							throw new IllegalArgumentException("error:Code generator wrong WRD result");
 						break;
@@ -309,7 +445,9 @@ public class CodeGenerator {
 					break;
 						
 			case "call":
+				System.out.println(inst_register+"xxxxxxxxxxxxxxxxxxxx");
 				Function func=Parser.Function_list.get(oper1.getName());
+				ArrayList<Result> params=func.func_call_params.get(inst);
 				int jump_inst=inline_inst_list.indexOf(function_starting_addr.get(oper1.getName()));
 				jump_index=jump_inst-inline_inst_list.indexOf(inst);
 				
@@ -318,10 +456,16 @@ public class CodeGenerator {
 					machine_insts.add(DLX.assemble(DLX.PSH,i, 29,4));
 				}
 				//push params
-				if(!func.params.isEmpty()){
-				for(int i=0;i<func.params.size();i++){
-					//TODO:passs by value
-					machine_insts.add(DLX.assemble(DLX.PSH,i, 29,4));
+				if(!func.func_call_params.get(inst).isEmpty()){
+				for(int i=func.func_call_params.get(inst).size()-1;i>=0;i--){
+					Result param=func.func_call_params.get(inst).get(i);
+					if(param.getType()==Type.instruction){
+						machine_insts.add(DLX.assemble(DLX.PSH,param.getInstruction().register, 29,4));
+					}
+					else{ //number
+						machine_insts.add(DLX.assemble(DLX.ADDI,26, 0,param.getValue()));
+						machine_insts.add(DLX.assemble(DLX.PSH,26, 29,4));
+					}
 				}
 				}
 				//push FP
@@ -353,6 +497,7 @@ public class CodeGenerator {
 					machine_insts.add(DLX.assemble(DLX.POP,i, 29,-4));
 				}
 				//result scratch to register
+				System.out.println(inst_register+"xxxxxxxxxxxxxxxxxxxx");
 				machine_insts.add(DLX.assemble(DLX.ADD,inst_register, 0,26));
 				
 				

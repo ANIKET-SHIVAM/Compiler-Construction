@@ -59,7 +59,8 @@ public class RA {
 	
 	//assign register to node
 	public static void assign_reg(int node)
-	{	
+	{	if(node==9)
+		System.out.println("fgfghfghfgfgfggffggfgffg");
 		int i=0;
 		//if its the top most node
 		if(top == node_stack.size()-1)
@@ -675,10 +676,11 @@ public class RA {
 			if(next_ins.getOperator() != "end")
 			{
 				ArrayList<Integer> tmp = Live_Set.get(Parser.insts.indexOf(next_ins));	//get elements of set of next instruction	
-		
-				for(int i=0;i<tmp.size();i++)
+				if(tmp!=null){
+				for(int i:tmp)
 				{
-					set.add(tmp.get(i));		//add elements of set of next instruction to this set
+					set.add(i);		//add elements of set of next instruction to this set
+				}
 				}
 			}
 		}
