@@ -10,7 +10,7 @@ public class ParserRun {
 			
 
 			//String filename = "testprogs/arithemetic.txt";
-			String filename = "testprogs/test001.txt";
+			String filename = "tests/test027.txt";
 
 			Parser parse = new Parser(filename);
 			BasicBlock bb = parse.compute();
@@ -26,7 +26,8 @@ public class ParserRun {
 			//optimizations
 			CP.doCP();CFG graphx=new CFG("test001woCP");graphx.printCFG(Ra);
 			CSE.doCSE();
-
+				
+			BasicBlock.kill_remove();
 			//CFG graph1=new CFG("arithemeticwo");
 
 			CFG graph1=new CFG("test001wo");

@@ -2,6 +2,7 @@ package Frontend;
 import java.util.*;
 
 import Frontend.Result.Type;
+import Graph.DominatorTree;
 import Optimizations.*;
 public class BasicBlock {
 	public enum BlockType{
@@ -250,6 +251,9 @@ public class BasicBlock {
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
 				else if(op2.getType()==Type.arr)
 					oper2= new StringBuilder(" ").append(op2.getName()).toString();
+				else if(op2.getType()==Type.FP)
+					oper2= new StringBuilder(" ").append("FP").toString();
+				
 				else
 					oper2="error"+op2.getType().toString();
 				
@@ -372,5 +376,19 @@ public class BasicBlock {
 		}
 		return bb_insts;
 	}
-
+	public static void kill_remove(){
+		BasicBlock bb;
+		for(int bbno=0;bbno<BasicBlock.basicblocks.size();bbno++){
+				bb=Frontend.BasicBlock.basicblocks.get(bbno);
+				Instruction instkill=new Instruction();
+				for(Instruction inst:bb.inst_list){
+					if(inst.getOperator()=="kill"){
+						Parser.insts.remove(inst);
+						instkill=inst;
+					}
+						bb.inst_list.remove(instkill);
+				}
+	
+		}
+	}
 }
