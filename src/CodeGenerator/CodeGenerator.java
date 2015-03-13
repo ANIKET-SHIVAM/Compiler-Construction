@@ -405,9 +405,14 @@ public class CodeGenerator {
 		{	BasicBlock bb = BasicBlock.basicblocks.get(i);
 			if(bb.getType()==BlockType.join){
 				if(bb.inst_list.size() != 0){
-				Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
-				Instruction jump_else= new Instruction("jump_else",jump_to);
-				bb.getprevblock().inst_list.add(jump_else);
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
+					Instruction jump_else= new Instruction("jump_else",jump_to);
+					bb.getprevblock().inst_list.add(jump_else);
 				}
 				else
 				{
@@ -415,7 +420,12 @@ public class CodeGenerator {
 						bb = bb.getjoinblock();
 					else
 						bb = bb.getnextblock();
-					Result jump_to=new Result(Type.instruction,bb.inst_list.get(0));
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
 					Instruction jump_else= new Instruction("jump_else",jump_to);
 					bb.getprevblock().getprevblock().inst_list.add(jump_else);
 				}
@@ -425,7 +435,8 @@ public class CodeGenerator {
 		{
 			BasicBlock bb = BasicBlock.basicblocks.get(i);
 			for(Instruction inst:bb.inst_list)
-			{list.add(inst);
+			{	if(!inst.getOperator().equals("phi"))
+				list.add(inst);
 			}
 		}
 		for(Function func:Parser.Functions){
@@ -447,7 +458,7 @@ public class CodeGenerator {
 			System.out.println("jump by: "+i);
 			Instruction JumpTo=JumpToInst.get(i);
 			Instruction JumpInst=JumpType.get(i);
-			System.out.println("jump by: "+machine_insts.indexOf(JumpTo));
+			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpInst.getOperator());
 			int jump_by=InstToIndex.get(JumpTo)-i;
 			String operator=JumpInst.getOperator();
 			int opcode;

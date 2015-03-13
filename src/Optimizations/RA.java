@@ -472,6 +472,8 @@ public class RA {
 							System.out.println("RA bra inst patchup failkjkjklp");
 						}
 					}
+				}
+					/*
 					
 					Instruction phi=bb.inst_list.get(j);
 					System.out.println("patching phi of block:"+ phi.basicblock.getblockno());
@@ -511,7 +513,7 @@ public class RA {
 					
 					j--;
 
-				}
+				}*/
 				
 			}
 		}
