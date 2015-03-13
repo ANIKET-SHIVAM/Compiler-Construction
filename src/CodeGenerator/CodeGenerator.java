@@ -405,7 +405,9 @@ public class CodeGenerator {
 		{	BasicBlock bb = BasicBlock.basicblocks.get(i);
 			if(bb.getType()==BlockType.join){
 				if(bb.inst_list.size() != 0){
-					int k=0;
+					String operator=bb.getprevblock().inst_list.get(bb.getprevblock().inst_list.size()-1).getOperator();
+					if(!operator.equals("ble")&&!operator.equals("blt")&&!operator.equals("bgt")&&!operator.equals("bne")&&!operator.equals("bge")&&!operator.equals("beq")){
+						int k=0;
 					for(int j=0;j<bb.inst_list.size();j++){
 						if(bb.inst_list.get(j).getOperator()=="phi")
 							k++;
@@ -413,6 +415,7 @@ public class CodeGenerator {
 					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
 					Instruction jump_else= new Instruction("jump_else",jump_to);
 					bb.getprevblock().inst_list.add(jump_else);
+					}
 				}
 				else
 				{
@@ -420,6 +423,9 @@ public class CodeGenerator {
 						bb = bb.getjoinblock();
 					else
 						bb = bb.getnextblock();
+					String operator=bb.getprevblock().inst_list.get(bb.getprevblock().inst_list.size()-1).getOperator();
+					if(!operator.equals("ble")&&!operator.equals("blt")&&!operator.equals("bgt")&&!operator.equals("bne")&&!operator.equals("bge")&&!operator.equals("beq")){
+					
 					int k=0;
 					for(int j=0;j<bb.inst_list.size();j++){
 						if(bb.inst_list.get(j).getOperator()=="phi")
@@ -428,6 +434,82 @@ public class CodeGenerator {
 					Result jump_to=new Result(Type.instruction,bb.inst_list.get(k));
 					Instruction jump_else= new Instruction("jump_else",jump_to);
 					bb.getprevblock().getprevblock().inst_list.add(jump_else);
+					}
+				}
+			}
+			if(bb.getType()==BlockType.whileblock){
+				BasicBlock newbb=bb.getwhiletodo();
+				if(newbb.inst_list.get(newbb.inst_list.size()-1).getOperator()=="bra"){
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+					Instruction patchbra=bb.inst_list.get(k);
+					Result patchbraup=new Result(Type.instruction,patchbra);
+					bra.getOperands().set(0, patchbraup);
+				}
+				else
+					System.out.println("RA bra inst patchup fail");
+			}
+
+			if(bb.getType()==BlockType.join){
+				BasicBlock newbb=bb.getprevblock2();
+				if(newbb != null && newbb.inst_list.size() != 0){
+				String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
+				if(operator.equals("ble")||operator.equals("blt")||operator.equals("bgt")||operator.equals("bne")||operator.equals("bge")||operator.equals("beq")){
+					
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+					Instruction patchbra=bb.inst_list.get(k);
+					Result patchbraup=new Result(Type.instruction,patchbra);
+					bra.getOperands().set(1, patchbraup);
+				}
+				else
+					System.out.println("RA bra inst patchup failkjkjklp");
+				}
+				 newbb=bb.getprevblock();
+				if(newbb != null && newbb.inst_list.size() != 0){
+				String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
+				
+				if(operator.equals("ble")||operator.equals("blt")||operator.equals("bgt")||operator.equals("bne")||operator.equals("bge")||operator.equals("beq")){
+					
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+					Instruction patchbra=bb.inst_list.get(k);
+					Result patchbraup=new Result(Type.instruction,patchbra);
+					bra.getOperands().set(1, patchbraup);
+				}
+				else
+					System.out.println("RA bra inst patchup fail");
+				}
+			}
+			if(bb.getType()==BlockType.follow){
+				BasicBlock newbb=bb.getprevblock();
+				if(newbb != null && newbb.inst_list.size() != 0){
+				String operator=newbb.inst_list.get(newbb.inst_list.size()-1).getOperator();
+				if(operator.equals("ble")||operator.equals("blt")||operator.equals("bgt")||operator.equals("bne")||operator.equals("bge")||operator.equals("beq")){
+					int k=0;
+					for(int j=0;j<bb.inst_list.size();j++){
+						if(bb.inst_list.get(j).getOperator()=="phi")
+							k++;
+					}
+					Instruction bra=newbb.inst_list.get(newbb.inst_list.size()-1);
+					Instruction patchbra=bb.inst_list.get(k);
+					Result patchbraup=new Result(Type.instruction,patchbra);
+					bra.getOperands().set(1, patchbraup);
+				}
+				else
+					System.out.println("RA bra inst patchup failkjkjklp");
 				}
 			}
 		}
@@ -458,7 +540,7 @@ public class CodeGenerator {
 			System.out.println("jump by: "+i);
 			Instruction JumpTo=JumpToInst.get(i);
 			Instruction JumpInst=JumpType.get(i);
-			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpInst.getOperator());
+			System.out.println("jump by: "+InstToIndex.get(JumpTo)+JumpTo.getOperator()+JumpInst.getbb());
 			int jump_by=InstToIndex.get(JumpTo)-i;
 			String operator=JumpInst.getOperator();
 			int opcode;

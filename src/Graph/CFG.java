@@ -32,6 +32,7 @@ public class CFG {
         printer.println("manhattan_edges: yes");
         printer.println("smanhattan_edges: yes");
         R=Ra;
+       
         if(bb.getblockno()>0){
         	for(int i=0;i<bb.getblockno();i++){
         		blocks.add(BasicBlock.getblockbyid(i));
@@ -79,7 +80,7 @@ public class CFG {
     	block_done[bb.getblockno()]=1;
         printer.println("node: {");
         printer.println("title: \"" + bb.getblockno() + "\"");
-        	printer.println("label: \"" + bb.getblockno() + "[");
+        	printer.println("label: \"" + bb.getblockno() +bb.getType()+ "[");
         ArrayList<String> insts=new ArrayList<>();
         if(R==0)
         insts=bb.printInstructions();

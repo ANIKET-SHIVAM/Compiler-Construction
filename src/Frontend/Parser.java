@@ -87,7 +87,8 @@ public class Parser{
 						func_decl(Function.Type.procedure);
 				}	
 				if(tt.getType() == TokenType.beginToken) //"{"
-				{	currentblock = new BasicBlock(); // main block
+				{	
+					currentblock = new BasicBlock(); // main block
 					BasicBlock.mainblock=currentblock;
 					System.out.println("Basic Block: "+ BasicBlock.block_id);
 					BasicBlock.block_id++;
@@ -787,6 +788,7 @@ public class Parser{
 				
 				for(i=1;i<=currentblock.get_Sym_table().size();i++)	//iterate thru each var and check if it has more than 1 value in its stack
 				{
+					if(currentblock.get_Sym_table().get(i) != null){
 					if(currentblock.get_Sym_table().get(i).size()>1)
 					{
 							var = IdtoString(i);//Todo
@@ -868,6 +870,7 @@ public class Parser{
 							System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 							}
 						}
+				}
 				
 				}
 				if(else_flag==0)

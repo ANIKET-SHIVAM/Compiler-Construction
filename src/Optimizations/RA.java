@@ -52,7 +52,8 @@ public class RA {
 	//add the node to IG
 	public static void add(int node)
 	{
-		fill_matrix(Live_Set.get(node));
+		if(Live_Set.get(node)!=null)
+			fill_matrix(Live_Set.get(node));
 	}
 	
 	//assign register to node
