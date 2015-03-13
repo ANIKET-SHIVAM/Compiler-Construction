@@ -29,6 +29,8 @@ public class Parser{
 
 	public static HashMap<Integer,String> func_mapping = new HashMap<Integer,String>();
 	
+	public static HashMap<String,Boolean> defined_variables=new HashMap<String,Boolean>();
+	
 	public Parser(String filename){
 		scanner = new Scanner(filename);				//initialize scanner
 		Result_cache = new HashMap<String,Result>();	//initialize result_cache
@@ -135,6 +137,7 @@ public class Parser{
 					String ss = tt.getCharacters();
 					Result x = new Result(Type.variable,ss);
 					Result_cache.put(ss,x); //store var in hash map
+					defined_variables.put(ss, false);
 				}
 				
 			}
@@ -434,6 +437,7 @@ public class Parser{
 						Stack<Instruction> ss = new Stack<Instruction>();
 						ss.push(i);
 						currentblock.get_Sym_table().put(index, ss);
+						defined_variables.put(var, true);
 					}
 					else										//if the entry is present
 					{
@@ -874,7 +878,7 @@ public class Parser{
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 							}
 						}
-						else if(currentblock.get_Sym_table().get(i).size() == 1)
+						else if(currentblock.get_Sym_table().get(i).size() == 1 && defined_variables.get(var) == false)
 						{
 							Instruction i1 = currentblock.get_Sym_table().get(i).peek();
 							Result oper1 = new Result(Type.instruction,i1);
@@ -1047,7 +1051,7 @@ public class Parser{
 								currentblock.get_Sym_table().get(counter).push(ii);
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 						}
-						if(currentblock.get_Sym_table().get(counter).size() == 1)
+						if(currentblock.get_Sym_table().get(counter).size() == 1 && defined_variables.get(var) == false)
 						{
 							Instruction i1 = currentblock.get_Sym_table().get(counter).peek();
 							Result oper1 = new Result(Type.instruction,i1);
