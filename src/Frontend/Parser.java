@@ -216,7 +216,7 @@ public class Parser{
 				String ss = tt.getCharacters();
 				Result x = new Result(Type.param,ss);
 				param_list.add(x);
-				Result_cache.put(ss,x); //store function name in hash map
+				Result_cache.put(ss,x); //store variable name in hash map
 				Next();
 			}
 		}
@@ -1002,6 +1002,7 @@ public class Parser{
 					Instruction firstWhileInst=while_block.inst_list.get(0);
 					for(counter=1;counter<=currentblock.get_Sym_table().size();counter++)	//iterate thru each var and check if it has more than 1 value in its stack
 					{	
+						if(currentblock.get_Sym_table().get(counter) != null){
 						if(currentblock.get_Sym_table().get(counter).size()>1)
 						{
 								String var = IdtoString(counter);//Todo
@@ -1021,7 +1022,7 @@ public class Parser{
 								currentblock.get_Sym_table().get(counter).push(ii);
 								System.out.println(insts.indexOf(ii)+":"+"phi "+ var +"_"+insts.indexOf(ii)+ " (" + insts.indexOf(i1)+") " + "(" + insts.indexOf(i2) + ")");
 						}
-					
+						}
 					}
 					for(int i=insts.indexOf(firstWhileInst);i<insts.size()-phi_counter;i++){
 						Instruction inst=insts.get(i);
