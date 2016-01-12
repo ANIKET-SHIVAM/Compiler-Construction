@@ -1,0 +1,1 @@
+Designing and implementing a compiler from scratch in Java with the following features: constant folding, common sub expression elimination, copy propagation, calculation of live ranges and register allocation.
